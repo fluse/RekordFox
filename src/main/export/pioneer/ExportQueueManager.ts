@@ -16,18 +16,23 @@ export class ExportQueueManager {
   private cancelRequested = false
   private isRunning = false
   private activeFiles: string[] = []
-  private pendingAnalysisResolve: ((value: { peaks: WaveformPeak[]; rms: WaveformPeak[] }) => void) | null = null
+  private pendingAnalysisResolve:
+    | ((value: { peaks: WaveformPeak[]; rms: WaveformPeak[] }) => void)
+    | null = null
   private pendingAnalysisReject: ((reason: any) => void) | null = null
   private activeTrackId: string | null = null
 
   constructor() {
     // Listen for the analysis response from the Renderer
-    ipcMain.on('waveform:analysis-response', (_, trackId: string, result: { peaks: WaveformPeak[]; rms: WaveformPeak[] }) => {
-      if (this.activeTrackId === trackId && this.pendingAnalysisResolve) {
-        this.pendingAnalysisResolve(result)
-        this.clearPendingAnalysis()
+    ipcMain.on(
+      'waveform:analysis-response',
+      (_, trackId: string, result: { peaks: WaveformPeak[]; rms: WaveformPeak[] }) => {
+        if (this.activeTrackId === trackId && this.pendingAnalysisResolve) {
+          this.pendingAnalysisResolve(result)
+          this.clearPendingAnalysis()
+        }
       }
-    })
+    )
   }
 
   private clearPendingAnalysis(): void {
@@ -123,7 +128,7 @@ export class ExportQueueManager {
       // 2. Open SQLite database on the USB stick
       const pdbPath = join(usbPath, 'PIONEER', 'export.pdb')
       dbUpdater = new PioneerDbUpdater(pdbPath)
-      
+
       // Note: If export.pdb doesn't exist, we skip updating PDB but still write files.
       // Usually, Rekordbox USB sticks have export.pdb.
       let pdbEnabled = false
@@ -132,7 +137,9 @@ export class ExportQueueManager {
         pdbEnabled = true
         console.log('[ExportQueueManager] Successfully connected to export.pdb')
       } catch (dbErr: any) {
-        console.warn(`[ExportQueueManager] Pioneer export.pdb not found or could not be opened: ${dbErr.message}. Skipping database updates.`)
+        console.warn(
+          `[ExportQueueManager] Pioneer export.pdb not found or could not be opened: ${dbErr.message}. Skipping database updates.`
+        )
       }
 
       // 3. Process each track
@@ -250,12 +257,15 @@ export class ExportQueueManager {
           // Normalize paths to use forward slashes for Pioneer compatibility
           const sqlAnlz = '/' + relAnlzPath.replace(/\\/g, '/')
           const sqlExt = '/' + relExtPath.replace(/\\/g, '/')
-          
+
           // Execute database update. If it throws (e.g. trackId mismatch), we catch it
           try {
             dbUpdater.linkWaveformToTrack(track.id, sqlAnlz, sqlExt)
           } catch (dbUpdateErr) {
-            console.error(`[ExportQueueManager] Failed to link database entry for track ${track.id}:`, dbUpdateErr)
+            console.error(
+              `[ExportQueueManager] Failed to link database entry for track ${track.id}:`,
+              dbUpdateErr
+            )
           }
         }
 
@@ -330,7 +340,10 @@ function downsamplePeaks(peaks: WaveformPeak[], targetLength: number): WaveformP
   for (let t = 0; t < targetLength; t++) {
     const start = Math.floor((t / targetLength) * N)
     const end = Math.max(start + 1, Math.floor(((t + 1) / targetLength) * N))
-    let maxLow = 0, maxMid = 0, maxHigh = 0, maxAll = 0
+    let maxLow = 0,
+      maxMid = 0,
+      maxHigh = 0,
+      maxAll = 0
     const limit = end < N ? end : N
     for (let i = start; i < limit; i++) {
       const p = peaks[i]

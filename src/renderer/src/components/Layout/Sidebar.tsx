@@ -10,9 +10,9 @@ import {
   Pencil
 } from 'lucide-react'
 import type { Playlist } from '@main/db'
-import logo from '../assets/logo-rekordfox.svg'
-import logoLight from '../assets/logo-rekordfox-light.svg'
-import { useLanguage } from '../i18n'
+import logo from '@renderer/assets/logo-rekordfox.svg'
+import logoLight from '@renderer/assets/logo-rekordfox-light.svg'
+import { useLanguage } from '@renderer/i18n'
 
 interface SidebarProps {
   playlists: Playlist[]

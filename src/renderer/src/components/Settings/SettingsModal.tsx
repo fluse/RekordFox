@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { X, Folder, FolderOpen, Sun, Moon, Loader2 } from 'lucide-react'
 import type { AppSettings } from '@main/db'
-import { useLanguage, type Language } from '../i18n'
+import { useLanguage, type Language } from '@renderer/i18n'
 
 interface SettingsModalProps {
   isOpen: boolean

@@ -23,11 +23,11 @@ export default function Knob({
   const [isDragging, setIsDragging] = useState(false)
 
   // Double click resets to default value
-  const handleDoubleClick = () => {
+  const handleDoubleClick = (): void => {
     onChange(defaultValue)
   }
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent): void => {
     e.preventDefault()
     setIsDragging(true)
 
@@ -36,14 +36,14 @@ export default function Knob({
     const range = max - min
     const pixelsPerUnit = 150 / range // 150px drag sweeps full range
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+    const handleMouseMove = (moveEvent: MouseEvent): void => {
       const deltaY = startY - moveEvent.clientY // drag up increases value
       const newValue = startValue + deltaY / pixelsPerUnit
       const clampedValue = Math.max(min, Math.min(max, newValue))
       onChange(Math.round(clampedValue))
     }
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (): void => {
       setIsDragging(false)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)

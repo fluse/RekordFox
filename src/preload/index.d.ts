@@ -99,10 +99,7 @@ declare global {
       onWaveformAnalysisRequest: (
         callback: (data: { trackId: string; filepath: string }) => void
       ) => () => void
-      sendWaveformAnalysisResponse: (
-        trackId: string,
-        result: { peaks: any[]; rms: any[] }
-      ) => void
+      sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }) => void
       logError: (message: string) => void
     }
   }

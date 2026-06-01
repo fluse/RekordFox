@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { HardDrive, X, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
-import { useLanguage } from '../../i18n'
+import { useLanguage } from '@renderer/i18n'
 
 interface UsbDrive {
   name: string
@@ -209,11 +209,13 @@ export default function UsbExportModal({
                   </select>
                 </div>
 
-                {exportFormat === 'pioneer' && selectedDrive && !selectedDrive.isPioneerInitialized && (
-                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-400/90">
-                    {t('usbExport.notInitializedWarning')}
-                  </div>
-                )}
+                {exportFormat === 'pioneer' &&
+                  selectedDrive &&
+                  !selectedDrive.isPioneerInitialized && (
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-400/90">
+                      {t('usbExport.notInitializedWarning')}
+                    </div>
+                  )}
               </div>
             )}
 
@@ -246,7 +248,7 @@ export default function UsbExportModal({
                     }
                   }}
                   disabled={!selectedDrive}
-                  className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-lg shadow-primary/20 cursor-pointer"
+                  className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/95 disabled:opacity-50 transition-colors shadow-lg shadow-primary/20 cursor-pointer"
                 >
                   {t('usbExport.exportBtn')}
                 </button>
@@ -359,7 +361,7 @@ export default function UsbExportModal({
               <button
                 type="button"
                 onClick={(): Promise<void> => scanDrives()}
-                className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition-colors shadow-lg cursor-pointer"
+                className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/95 transition-colors shadow-lg cursor-pointer"
               >
                 {t('usbExport.tryAgainBtn')}
               </button>

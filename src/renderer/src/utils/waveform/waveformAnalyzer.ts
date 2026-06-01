@@ -206,5 +206,11 @@ export async function analyzeWaveform(
   const filtered = await runCrossoverFilters(channelData, sampleRate, lowCutoff, highCutoff)
 
   // Compute Peaks and RMS values
-  return computePeaksAndRms(filtered.low, filtered.mid, filtered.high, channelData, samplesPerWindow)
+  return computePeaksAndRms(
+    filtered.low,
+    filtered.mid,
+    filtered.high,
+    channelData,
+    samplesPerWindow
+  )
 }

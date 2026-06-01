@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react'
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, HardDrive, SlidersHorizontal } from 'lucide-react'
 import type { Track } from '@main/db'
-import { useLanguage, type TranslationKey } from '../i18n'
-import { useTrackScanner } from '../hooks/useTrackScanner'
+import { useLanguage, type TranslationKey } from '@renderer/i18n'
+import { useTrackScanner } from '@renderer/hooks/useTrackScanner'
 import TrackRow from './TrackRow'
-import UsbExportModal from './export/UsbExportModal'
-import PioneerExportModal from './export/pioneer/PioneerExportModal'
+import { UsbExportModal, PioneerExportModal } from '@renderer/components/Export'
 
 interface TracklistProps {
   playlistId: string

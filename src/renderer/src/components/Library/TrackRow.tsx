@@ -1,8 +1,8 @@
 import React from 'react'
 import { Loader2, Music, Star } from 'lucide-react'
 import type { Track } from '@main/db'
-import { formatDuration, getMediaUrl } from '../utils/audio'
-import { useLanguage } from '../i18n'
+import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
+import { useLanguage } from '@renderer/i18n'
 
 // Camelot wheel color – maps the number (1–12) to a hue on the color wheel
 function camelotColor(camelot: string): string {

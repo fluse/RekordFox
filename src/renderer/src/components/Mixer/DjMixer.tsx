@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import Deck from './Deck'
+import Deck from '@renderer/components/Deck'
 import Mixer from './Mixer'
 import type { Track } from '@main/db'
 import { useMixerStore } from '@renderer/store/useMixerStore'

@@ -138,20 +138,15 @@ const api = {
   onWaveformAnalysisRequest: (
     callback: (data: { trackId: string; filepath: string }) => void
   ): (() => void) => {
-    const subscription = (
-      _event: unknown,
-      data: { trackId: string; filepath: string }
-    ): void => callback(data)
+    const subscription = (_event: unknown, data: { trackId: string; filepath: string }): void =>
+      callback(data)
     ipcRenderer.on('waveform:analysis-request', subscription)
     return (): void => {
       ipcRenderer.removeListener('waveform:analysis-request', subscription)
     }
   },
 
-  sendWaveformAnalysisResponse: (
-    trackId: string,
-    result: { peaks: any[]; rms: any[] }
-  ): void => {
+  sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }): void => {
     ipcRenderer.send('waveform:analysis-response', trackId, result)
   },
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import logoSvg from '../assets/logo-rekordfox.svg'
+import logoSvg from '@renderer/assets/logo-rekordfox.svg'
 
 interface SplashScreenProps {
   onDone: () => void

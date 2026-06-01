@@ -10,10 +10,10 @@ export interface WaveformPeak {
 }
 
 // Visual Palette constants
-const COLOR_LOW = { r: 255, g: 75, b: 75 }    // Coral Red
-const COLOR_MID = { r: 0, g: 230, b: 118 }    // Mint Green
-const COLOR_HIGH = { r: 0, g: 176, b: 255 }   // Electric Blue
-const COLOR_QUIET = { r: 39, g: 39, b: 42 }   // Zinc-800
+const COLOR_LOW = { r: 255, g: 75, b: 75 } // Coral Red
+const COLOR_MID = { r: 0, g: 230, b: 118 } // Mint Green
+const COLOR_HIGH = { r: 0, g: 176, b: 255 } // Electric Blue
+const COLOR_QUIET = { r: 39, g: 39, b: 42 } // Zinc-800
 
 /**
  * Pre-renders a scrolling waveform to an offscreen canvas.
@@ -57,7 +57,7 @@ export function preRenderScrollWaveform(
 
         // Scale by overall amplitude
         const amp = Math.min(1, all * 1.5)
-        
+
         if (isPlayed) {
           // Full brightness
           const factor = 0.4 + 0.6 * amp
@@ -109,7 +109,9 @@ export function preRenderOverviewWaveform(
       const { low, mid, high, all } = peak
       const sum = low + mid + high
 
-      let r = 63, g = 63, b = 70 // default dark gray (#3f3f46)
+      let r = 63,
+        g = 63,
+        b = 70 // default dark gray (#3f3f46)
       if (sum > 0) {
         const rRatio = low / sum
         const gRatio = mid / sum

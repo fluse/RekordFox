@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Loader2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
-import { analyzeWaveform } from './waveformAnalyzer'
-import { useLanguage } from '../../../i18n'
+import { analyzeWaveform } from '@renderer/utils/waveform/waveformAnalyzer'
+import { useLanguage } from '@renderer/i18n'
 
 interface PioneerExportModalProps {
   isOpen: boolean
@@ -38,6 +38,7 @@ export default function PioneerExportModal({
   useEffect((): (() => void) | undefined => {
     if (!isOpen) return undefined
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStep('exporting')
     setErrorMessage('')
     setProgress({
@@ -111,8 +112,12 @@ export default function PioneerExportModal({
 
         // Send results back to Main Process
         window.api.sendWaveformAnalysisResponse(data.trackId, analysis)
-      } catch (err: any) {
-        console.error(`[PioneerExportModal] Waveform analysis failed for track ${data.trackId}:`, err)
+      } catch (err: unknown) {
+        const error = err as Error
+        console.error(
+          `[PioneerExportModal] Waveform analysis failed for track ${data.trackId}:`,
+          error
+        )
         // Respond with empty peak/RMS data to prevent freezing the queue
         window.api.sendWaveformAnalysisResponse(data.trackId, { peaks: [], rms: [] })
       }
@@ -136,7 +141,6 @@ export default function PioneerExportModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        
         {/* Header */}
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -203,7 +207,11 @@ export default function PioneerExportModal({
             <div>
               <p className="text-sm font-bold text-zinc-100">Export erfolgreich abgeschlossen!</p>
               <p className="text-xs text-zinc-500 mt-2 max-w-[290px] leading-relaxed">
-                Deine Tracks und Pioneer ANLZ-Waveforms wurden sicher auf den USB-Stick unter <code className="font-mono bg-zinc-900 px-1 py-0.5 rounded text-zinc-300">{usbPath}</code> exportiert.
+                Deine Tracks und Pioneer ANLZ-Waveforms wurden sicher auf den USB-Stick unter{' '}
+                <code className="font-mono bg-zinc-900 px-1 py-0.5 rounded text-zinc-300">
+                  {usbPath}
+                </code>{' '}
+                exportiert.
               </p>
             </div>
             <button
@@ -225,7 +233,8 @@ export default function PioneerExportModal({
             <div>
               <p className="text-sm font-bold text-zinc-100">Export abgebrochen</p>
               <p className="text-xs text-zinc-500 mt-2 max-w-[280px] leading-relaxed">
-                Der Exportvorgang wurde durch den Benutzer abgebrochen. Teilweise kopierte Dateien wurden vom USB-Stick gelöscht.
+                Der Exportvorgang wurde durch den Benutzer abgebrochen. Teilweise kopierte Dateien
+                wurden vom USB-Stick gelöscht.
               </p>
             </div>
             <button
@@ -243,7 +252,7 @@ export default function PioneerExportModal({
           <div className="space-y-4">
             <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-center">
               <AlertCircle className="mx-auto h-7 w-7 text-red-500 mb-2" />
-              <p className="text-sm font-medium text-zinc-200">Export fehlgeschlagen</p>
+              <p className="text-sm font-medium text-zinc-200">Export failed</p>
               <p className="text-xs text-red-400 mt-2.5 bg-red-500/10 p-3 rounded border border-red-500/20 text-left font-mono break-all max-h-24 overflow-y-auto leading-relaxed">
                 {errorMessage}
               </p>

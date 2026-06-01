@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Plus, Loader2, X } from 'lucide-react'
-import { useLanguage } from '../i18n'
+import { useLanguage } from '@renderer/i18n'
 
 interface AddPlaylistModalProps {
   isOpen: boolean
@@ -20,7 +20,7 @@ export default function AddPlaylistModal({
 
   if (!isOpen) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     if (!url.trim()) return
 
@@ -37,8 +37,9 @@ export default function AddPlaylistModal({
       await onAdd(url.trim())
       setUrl('')
       onClose()
-    } catch (e: any) {
-      setError(e.message || t('addPlaylist.errorAddFailed'))
+    } catch (e: unknown) {
+      const err = e as Error
+      setError(err.message || t('addPlaylist.errorAddFailed'))
     } finally {
       setLoading(false)
     }

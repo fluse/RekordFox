@@ -575,7 +575,7 @@ export function useDeckEngine(options: UseDeckEngineOptions): DeckEngine {
 
         const sampleRate = audioBuffer.sampleRate
         // 1st order IIR filter coefficients: alpha = 1 - exp(-2 * pi * fc / fs)
-        const alphaLow = 1 - Math.exp((-2 * Math.PI * 150) / sampleRate)  // 150 Hz crossover for low/bass
+        const alphaLow = 1 - Math.exp((-2 * Math.PI * 150) / sampleRate) // 150 Hz crossover for low/bass
         const alphaMid = 1 - Math.exp((-2 * Math.PI * 4000) / sampleRate) // 4000 Hz crossover for mid/high
 
         let lpf1 = 0
