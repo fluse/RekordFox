@@ -17,6 +17,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import type { Track } from '@main/db'
 import { getMediaUrl } from '../utils/audio'
+import type { WaveformPeak } from '@renderer/components/Deck/waveformDrawHelpers'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export interface DeckEngine {
   activeLoopBeats: number | null
 
   // Waveform data
-  peaks: number[]
+  peaks: WaveformPeak[]
   decoding: boolean
 
   // Actions
@@ -277,7 +278,7 @@ export function useDeckEngine(options: UseDeckEngineOptions): DeckEngine {
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
   const [activeLoopBeats, setActiveLoopBeats] = useState<number | null>(null)
-  const [peaks, setPeaks] = useState<number[]>([])
+  const [peaks, setPeaks] = useState<WaveformPeak[]>([])
   const [decoding, setDecoding] = useState(false)
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -566,19 +567,51 @@ export function useDeckEngine(options: UseDeckEngineOptions): DeckEngine {
         audioBufferRef.current = audioBuffer
         setDuration(audioBuffer.duration)
 
-        // Generate waveform peaks from left channel
+        // Generate frequency-colored waveform peaks from left channel
         const channelData = audioBuffer.getChannelData(0)
-        const numBars = 500
+        const numBars = 1000
         const step = Math.ceil(channelData.length / numBars)
-        const generatedPeaks: number[] = []
+        const generatedPeaks: WaveformPeak[] = []
+
+        const sampleRate = audioBuffer.sampleRate
+        // 1st order IIR filter coefficients: alpha = 1 - exp(-2 * pi * fc / fs)
+        const alphaLow = 1 - Math.exp((-2 * Math.PI * 150) / sampleRate)  // 150 Hz crossover for low/bass
+        const alphaMid = 1 - Math.exp((-2 * Math.PI * 4000) / sampleRate) // 4000 Hz crossover for mid/high
+
+        let lpf1 = 0
+        let lpf2 = 0
 
         for (let i = 0; i < channelData.length; i += step) {
-          let max = 0
-          for (let j = 0; j < step && i + j < channelData.length; j++) {
-            const v = Math.abs(channelData[i + j])
-            if (v > max) max = v
+          let maxLow = 0
+          let maxMid = 0
+          let maxHigh = 0
+          let maxAll = 0
+
+          const end = Math.min(i + step, channelData.length)
+          for (let j = i; j < end; j++) {
+            const x = channelData[j]
+            const absX = Math.abs(x)
+            if (absX > maxAll) maxAll = absX
+
+            // Apply lowpass filters
+            lpf1 += alphaLow * (x - lpf1)
+            lpf2 += alphaMid * (x - lpf2)
+
+            const lowVal = Math.abs(lpf1)
+            const midVal = Math.abs(lpf2 - lpf1)
+            const highVal = Math.abs(x - lpf2)
+
+            if (lowVal > maxLow) maxLow = lowVal
+            if (midVal > maxMid) maxMid = midVal
+            if (highVal > maxHigh) maxHigh = highVal
           }
-          generatedPeaks.push(max)
+
+          generatedPeaks.push({
+            low: maxLow,
+            mid: maxMid,
+            high: maxHigh,
+            all: maxAll
+          })
         }
         setPeaks(generatedPeaks)
       } catch (err) {

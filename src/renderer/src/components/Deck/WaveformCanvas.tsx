@@ -10,13 +10,14 @@ import {
   drawMainPlayhead,
   drawOverviewWaveform,
   drawOverviewPlayhead,
-  drawOverviewCue
+  drawOverviewCue,
+  WaveformPeak
 } from './waveformDrawHelpers'
 
 interface WaveformCanvasProps {
   deckId: 'A' | 'B'
   track: Track | null
-  peaks: number[]
+  peaks: WaveformPeak[]
   duration: number
   decoding: boolean
   loopStart: number | null
@@ -72,43 +73,42 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
     const peakWidth = width / span
     const scrollCanvasWidth = peaks.length * peakWidth + width
 
-    // 1. Scroll Played Canvas
+    // 1. Scroll Played Canvas (full colored)
     offscreenScrollPlayedRef.current = preRenderScrollWaveform(
       peaks,
       scrollCanvasWidth,
       scrollHeight,
       peakWidth,
       width,
-      activeColor
+      true
     )
 
-    // 2. Scroll Unplayed Canvas
+    // 2. Scroll Unplayed Canvas (dimmed colored)
     offscreenScrollUnplayedRef.current = preRenderScrollWaveform(
       peaks,
       scrollCanvasWidth,
       scrollHeight,
       peakWidth,
       width,
-      '#3f3f46'
+      false
     )
 
-    // 3. Overview Played Canvas
-    const playedColor = activeColor === '#a855f7' ? '#c084fc' : '#a855f7'
+    // 3. Overview Played Canvas (full colored)
     offscreenOverviewPlayedRef.current = preRenderOverviewWaveform(
       peaks,
       width,
       overviewHeight,
-      playedColor
+      true
     )
 
-    // 4. Overview Unplayed Canvas
+    // 4. Overview Unplayed Canvas (dimmed colored)
     offscreenOverviewUnplayedRef.current = preRenderOverviewWaveform(
       peaks,
       width,
       overviewHeight,
-      '#52525b'
+      false
     )
-  }, [peaks, duration, activeColor])
+  }, [peaks, duration])
 
   // Draw loop (RAF-driven, reads time dynamically, hardware-accelerated drawing)
   useEffect(() => {

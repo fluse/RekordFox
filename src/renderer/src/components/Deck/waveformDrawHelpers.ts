@@ -2,16 +2,29 @@
  * Helper functions for pre-rendering and drawing waveforms and markers on canvas.
  */
 
+export interface WaveformPeak {
+  low: number
+  mid: number
+  high: number
+  all: number
+}
+
+// Visual Palette constants
+const COLOR_LOW = { r: 255, g: 75, b: 75 }    // Coral Red
+const COLOR_MID = { r: 0, g: 230, b: 118 }    // Mint Green
+const COLOR_HIGH = { r: 0, g: 176, b: 255 }   // Electric Blue
+const COLOR_QUIET = { r: 39, g: 39, b: 42 }   // Zinc-800
+
 /**
  * Pre-renders a scrolling waveform to an offscreen canvas.
  */
 export function preRenderScrollWaveform(
-  peaks: number[],
+  peaks: WaveformPeak[],
   canvasWidth: number,
   scrollHeight: number,
   peakWidth: number,
   waveformWidth: number,
-  color: string
+  isPlayed: boolean
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = canvasWidth
@@ -20,12 +33,48 @@ export function preRenderScrollWaveform(
   if (ctx) {
     ctx.lineWidth = 3
     ctx.lineCap = 'round'
-    ctx.strokeStyle = color
     const scrollCenterY = scrollHeight / 2
     for (let i = 0; i < peaks.length; i++) {
       const x = waveformWidth / 2 + i * peakWidth
-      const peakValue = peaks[i] || 0
-      const h = peakValue * scrollHeight * 0.95
+      const peak = peaks[i]
+      if (!peak) continue
+
+      const { low, mid, high, all } = peak
+      const sum = low + mid + high
+
+      let r = COLOR_QUIET.r
+      let g = COLOR_QUIET.g
+      let b = COLOR_QUIET.b
+
+      if (sum > 0) {
+        const rRatio = low / sum
+        const gRatio = mid / sum
+        const bRatio = high / sum
+
+        const blendedR = rRatio * COLOR_LOW.r + gRatio * COLOR_MID.r + bRatio * COLOR_HIGH.r
+        const blendedG = rRatio * COLOR_LOW.g + gRatio * COLOR_MID.g + bRatio * COLOR_HIGH.g
+        const blendedB = rRatio * COLOR_LOW.b + gRatio * COLOR_MID.b + bRatio * COLOR_HIGH.b
+
+        // Scale by overall amplitude
+        const amp = Math.min(1, all * 1.5)
+        
+        if (isPlayed) {
+          // Full brightness
+          const factor = 0.4 + 0.6 * amp
+          r = Math.round(blendedR * factor)
+          g = Math.round(blendedG * factor)
+          b = Math.round(blendedB * factor)
+        } else {
+          // Dimmed and desaturated for unplayed
+          const factor = 0.15 + 0.25 * amp
+          r = Math.round(blendedR * factor)
+          g = Math.round(blendedG * factor)
+          b = Math.round(blendedB * factor)
+        }
+      }
+
+      ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`
+      const h = all * scrollHeight * 0.95
       ctx.beginPath()
       ctx.moveTo(x, scrollCenterY - h / 2)
       ctx.lineTo(x, scrollCenterY + h / 2)
@@ -39,10 +88,10 @@ export function preRenderScrollWaveform(
  * Pre-renders an overview waveform to an offscreen canvas.
  */
 export function preRenderOverviewWaveform(
-  peaks: number[],
+  peaks: WaveformPeak[],
   width: number,
   overviewHeight: number,
-  color: string
+  isPlayed: boolean
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = width
@@ -51,12 +100,41 @@ export function preRenderOverviewWaveform(
   if (ctx) {
     ctx.lineWidth = 1.5
     ctx.lineCap = 'butt'
-    ctx.strokeStyle = color
     const overviewCenterY = overviewHeight / 2
     for (let x = 0; x < width; x += 2) {
       const peakIdx = Math.floor((x / width) * peaks.length)
-      const peakValue = peaks[peakIdx] || 0
-      const h = peakValue * (overviewHeight - 4)
+      const peak = peaks[peakIdx]
+      if (!peak) continue
+
+      const { low, mid, high, all } = peak
+      const sum = low + mid + high
+
+      let r = 63, g = 63, b = 70 // default dark gray (#3f3f46)
+      if (sum > 0) {
+        const rRatio = low / sum
+        const gRatio = mid / sum
+        const bRatio = high / sum
+
+        const blendedR = rRatio * COLOR_LOW.r + gRatio * COLOR_MID.r + bRatio * COLOR_HIGH.r
+        const blendedG = rRatio * COLOR_LOW.g + gRatio * COLOR_MID.g + bRatio * COLOR_HIGH.g
+        const blendedB = rRatio * COLOR_LOW.b + gRatio * COLOR_MID.b + bRatio * COLOR_HIGH.b
+
+        const amp = Math.min(1, all * 1.5)
+        if (isPlayed) {
+          const factor = 0.5 + 0.5 * amp
+          r = Math.round(blendedR * factor)
+          g = Math.round(blendedG * factor)
+          b = Math.round(blendedB * factor)
+        } else {
+          const factor = 0.2 + 0.3 * amp
+          r = Math.round(blendedR * factor)
+          g = Math.round(blendedG * factor)
+          b = Math.round(blendedB * factor)
+        }
+      }
+
+      ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`
+      const h = all * (overviewHeight - 4)
       ctx.beginPath()
       ctx.moveTo(x, overviewCenterY - h / 2)
       ctx.lineTo(x, overviewCenterY + h / 2)
