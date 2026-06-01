@@ -1,6 +1,6 @@
 export const de = {
   // App General
-  'app.name': 'RecordFox',
+  'app.name': 'RekordFox',
   'app.tagline': 'Deine DJ-Sync-Station',
   'app.selectPlaylistPrompt':
     'Wähle eine Playlist aus oder füge eine neue hinzu, um Tracks anzuzeigen.',
@@ -109,6 +109,8 @@ export const de = {
   'usbExport.closeBtn': 'Schließen',
   'usbExport.tryAgainBtn': 'Erneut versuchen',
   'usbExport.errorScanDrives': 'Fehler beim Scannen der USB-Sticks.',
+  'usbExport.notInitializedWarning':
+    '⚠️ Dieser Stick wurde noch nicht mit Rekordbox initialisiert. Der Export funktioniert (Musikdateien werden kopiert), aber die Waveforms können auf CDJs erst nach einer Rekordbox-Vorbereitung geladen werden.',
 
   // Actions & Confirmations (useApp)
   'actions.confirmDeletePlaylist':

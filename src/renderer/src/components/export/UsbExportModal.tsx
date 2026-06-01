@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { HardDrive, X, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
-import { useLanguage } from '../i18n'
+import { useLanguage } from '../../i18n'
 
 interface UsbDrive {
   name: string
   path: string
+  isPioneerInitialized: boolean
 }
 
 interface UsbExportModalProps {
@@ -12,19 +13,22 @@ interface UsbExportModalProps {
   onClose: () => void
   playlistId: string
   playlistTitle: string
+  onStartPioneerExport?: (usbPath: string) => void
 }
 
 export default function UsbExportModal({
   isOpen,
   onClose,
   playlistId,
-  playlistTitle
+  playlistTitle,
+  onStartPioneerExport
 }: UsbExportModalProps): React.JSX.Element | null {
   const [step, setStep] = useState<
     'scanning' | 'select' | 'confirm_overwrite' | 'exporting' | 'success' | 'error'
   >('scanning')
   const [drives, setDrives] = useState<UsbDrive[]>([])
   const [selectedDrive, setSelectedDrive] = useState<UsbDrive | null>(null)
+  const [exportFormat, setExportFormat] = useState<'m3u8' | 'pioneer'>('m3u8')
   const [progress, setProgress] = useState<{
     current: number
     total: number
@@ -189,6 +193,30 @@ export default function UsbExportModal({
               </div>
             )}
 
+            {drives.length > 0 && (
+              <div className="border-t border-zinc-900 pt-3 space-y-3">
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Export-Format
+                  </label>
+                  <select
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value as 'm3u8' | 'pioneer')}
+                    className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-xs text-zinc-300 outline-none transition focus:border-primary/50 focus:ring-1 focus:ring-primary/30 cursor-pointer"
+                  >
+                    <option value="m3u8">M3U8 Playlist & MP3 Ordner (Standard)</option>
+                    <option value="pioneer">Pioneer CDJ / Rekordbox (inkl. Waveforms)</option>
+                  </select>
+                </div>
+
+                {exportFormat === 'pioneer' && selectedDrive && !selectedDrive.isPioneerInitialized && (
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-400/90">
+                    {t('usbExport.notInitializedWarning')}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -209,7 +237,14 @@ export default function UsbExportModal({
               ) : (
                 <button
                   type="button"
-                  onClick={(): Promise<void> => handleExport(false)}
+                  onClick={(): void => {
+                    if (!selectedDrive) return
+                    if (exportFormat === 'pioneer' && onStartPioneerExport) {
+                      onStartPioneerExport(selectedDrive.path)
+                    } else {
+                      handleExport(false)
+                    }
+                  }}
                   disabled={!selectedDrive}
                   className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-lg shadow-primary/20 cursor-pointer"
                 >

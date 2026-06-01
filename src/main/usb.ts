@@ -5,6 +5,7 @@ import { join, basename } from 'path'
 export interface UsbDrive {
   name: string
   path: string
+  isPioneerInitialized: boolean
 }
 
 /**
@@ -13,7 +14,7 @@ export interface UsbDrive {
  */
 export async function detectUsbDrives(): Promise<UsbDrive[]> {
   const platform = process.platform
-  const drives: UsbDrive[] = []
+  const drives: { name: string; path: string }[] = []
 
   if (platform === 'darwin') {
     try {
@@ -223,5 +224,8 @@ export async function detectUsbDrives(): Promise<UsbDrive[]> {
     }
   }
 
-  return drives
+  return drives.map((d) => ({
+    ...d,
+    isPioneerInitialized: existsSync(join(d.path, 'PIONEER', 'export.pdb'))
+  }))
 }

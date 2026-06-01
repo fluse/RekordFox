@@ -2,11 +2,11 @@
 trigger: always_on
 ---
 
-# 🦊 RecordFox AI Agent Guidelines
+# 🦊 RekordFox AI Agent Guidelines
 
 ## 🎯 Project Context
 
-This project is **RecordFox** – a modern, lightning-fast, and intuitive DJ library management software being developed as a lightweight alternative to Rekordbox.
+This project is **RekordFox** – a modern, lightning-fast, and intuitive DJ library management software being developed as a lightweight alternative to Rekordbox.
 Our main focus is on **performance**, **seamless user experience (UX)**, and a clean UI without visual noise.
 
 ## 💻 Tech Stack
@@ -47,4 +47,4 @@ Our main focus is on **performance**, **seamless user experience (UX)**, and a c
 - Think like a Senior Electron Developer.
 - When generating code, always provide the complete, runnable block for the specific file without omitting important existing logic.
 - Before suggesting a new NPM library, ask for permission first.
-- Ensure that any UI changes maintain the clean, distraction-free design principles of RecordFox.
+- Ensure that any UI changes maintain the clean, distraction-free design principles of RekordFox.

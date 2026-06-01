@@ -1,5 +1,5 @@
 {
-  "name": "recordfox",
+  "name": "rekordfox",
   "version": "0.1.2",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
@@ -7,7 +7,7 @@
   "homepage": "https://electron-vite.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fluse/recordfox.git"
+    "url": "https://github.com/fluse/rekordfox.git"
   },
   "scripts": {
     "format": "prettier --write .",
@@ -29,6 +29,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@ffprobe-installer/ffprobe": "^2.1.2",
+    "better-sqlite3": "^12.10.0",
     "lucide-react": "^1.17.0",
     "music-tempo": "^1.0.3",
     "node-id3": "^0.2.9",
@@ -39,6 +40,7 @@
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@tailwindcss/vite": "^4.3.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.19.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

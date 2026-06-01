@@ -69,7 +69,7 @@ declare global {
         playlistId: string,
         filepath: string
       ) => Promise<{ success: boolean; key?: string; error?: string }>
-      getUsbDrives: () => Promise<{ name: string; path: string }[]>
+      getUsbDrives: () => Promise<{ name: string; path: string; isPioneerInitialized: boolean }[]>
       exportPlaylist: (
         playlistId: string,
         usbPath: string,
@@ -83,6 +83,26 @@ declare global {
           trackTitle: string
         }) => void
       ) => () => void
+      startPioneerExport: (
+        playlistId: string,
+        usbPath: string
+      ) => Promise<{ success: boolean; error?: string }>
+      cancelPioneerExport: () => Promise<void>
+      onPioneerExportProgress: (
+        callback: (data: {
+          currentTrack: number
+          totalTracks: number
+          statusText: string
+          progressPercent: number
+        }) => void
+      ) => () => void
+      onWaveformAnalysisRequest: (
+        callback: (data: { trackId: string; filepath: string }) => void
+      ) => () => void
+      sendWaveformAnalysisResponse: (
+        trackId: string,
+        result: { peaks: any[]; rms: any[] }
+      ) => void
       logError: (message: string) => void
     }
   }

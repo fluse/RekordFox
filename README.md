@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="./resources/logo-recordfox-light.svg" alt="RecordFox Logo" width="250" />
+  <img src="./resources/logo-rekordfox-light.svg" alt="RekordFox Logo" width="250" />
 
-  <h1>RecordFox</h1>
+  <h1>RekordFox</h1>
   
   <p><strong>The modern, intuitive, and fast DJ library management alternative to Rekordbox.</strong></p>
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/fluse/recordfox/release.yml?branch=main)](https://github.com/fluse/recordfox/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/fluse/rekordfox/release.yml?branch=main)](https://github.com/fluse/rekordfox/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
@@ -16,7 +16,7 @@
 
 RecordFox was born out of a simple frustration: established DJ software like Rekordbox has become bloated, cluttered, and sluggish to navigate over the years.
 
-**RecordFox puts an end to this.** It is a lightweight, cross-platform (Windows, macOS, Linux) Electron app focused on what truly matters: managing your music library efficiently, quickly, and with an outstanding user experience.
+**RekordFox puts an end to this.** It is a lightweight, cross-platform (Windows, macOS, Linux) Electron app focused on what truly matters: managing your music library efficiently, quickly, and with an outstanding user experience.
 
 ## ✨ Features (Planned / In Development)
 
@@ -28,7 +28,7 @@ RecordFox was born out of a simple frustration: established DJ software like Rek
 
 ## 🚀 Installation & Development
 
-Want to run RecordFox locally or contribute to its development? Here is how to set up the project:
+Want to run RekordFox locally or contribute to its development? Here is how to set up the project:
 
 ### Prerequisites
 
@@ -40,8 +40,8 @@ Want to run RecordFox locally or contribute to its development? Here is how to s
 1. **Clone the repository**
 
 ````bash
-   git clone [https://github.com/fluse/recordfox.git](https://github.com/fluse/recordfox.git)
-   cd recordfox
+   git clone [https://github.com/fluse/rekordfox.git](https://github.com/fluse/rekordfox.git)
+   cd rekordfox
 
 ## Recommended IDE Setup
 

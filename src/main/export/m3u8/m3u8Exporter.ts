@@ -1,7 +1,7 @@
 import { copyFileSync, mkdirSync, writeFileSync, existsSync, rmSync } from 'fs'
 import { join, extname } from 'path'
 import { BrowserWindow } from 'electron'
-import { getTracksForPlaylist, getPlaylists } from './db'
+import { getTracksForPlaylist, getPlaylists } from '../../db'
 
 export async function exportPlaylistToUsb(
   playlistId: string,
@@ -23,7 +23,7 @@ export async function exportPlaylistToUsb(
     }
 
     // Prepare paths
-    const exportFolderBase = join(usbPath, 'RecordFox_Export')
+    const exportFolderBase = join(usbPath, 'RekordFox_Export')
     const playlistFolderName = sanitizeFolderName(playlist.title)
     const exportFolderPlaylist = join(exportFolderBase, playlistFolderName)
     const m3uPath = join(exportFolderBase, `${playlistFolderName}.m3u8`)
@@ -38,7 +38,7 @@ export async function exportPlaylistToUsb(
 
     // Clean up old folder if force-overwriting
     if (forceOverwrite && folderExists) {
-      if (exportFolderPlaylist.includes('RecordFox_Export') && playlistFolderName.length > 0) {
+      if (exportFolderPlaylist.includes('RekordFox_Export') && playlistFolderName.length > 0) {
         try {
           rmSync(exportFolderPlaylist, { recursive: true, force: true })
         } catch (rmErr) {
@@ -80,8 +80,8 @@ export async function exportPlaylistToUsb(
       }
 
       // Add to M3U8 list
-      // Relative path: from [usbPath]/RecordFox_Export/[playlist].m3u8
-      // to [usbPath]/RecordFox_Export/[playlist]/[track].mp3
+      // Relative path: from [usbPath]/RekordFox_Export/[playlist].m3u8
+      // to [usbPath]/RekordFox_Export/[playlist]/[track].mp3
       // is [playlist]/[track].mp3
       const relativePath = `${playlistFolderName}/${sanitizedFilename}`
       m3uLines.push(`#EXTINF:${Math.round(track.duration)},${track.artist} - ${track.title}`)

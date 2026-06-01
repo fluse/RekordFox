@@ -107,6 +107,54 @@ const api = {
     }
   },
 
+  startPioneerExport: (playlistId: string, usbPath: string) =>
+    ipcRenderer.invoke('pioneer:export-start', playlistId, usbPath),
+
+  cancelPioneerExport: () => ipcRenderer.invoke('pioneer:export-cancel'),
+
+  onPioneerExportProgress: (
+    callback: (data: {
+      currentTrack: number
+      totalTracks: number
+      statusText: string
+      progressPercent: number
+    }) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      data: {
+        currentTrack: number
+        totalTracks: number
+        statusText: string
+        progressPercent: number
+      }
+    ): void => callback(data)
+    ipcRenderer.on('pioneer:export-progress', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('pioneer:export-progress', subscription)
+    }
+  },
+
+  onWaveformAnalysisRequest: (
+    callback: (data: { trackId: string; filepath: string }) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      data: { trackId: string; filepath: string }
+    ): void => callback(data)
+    ipcRenderer.on('waveform:analysis-request', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('waveform:analysis-request', subscription)
+    }
+  },
+
+  sendWaveformAnalysisResponse: (
+    trackId: string,
+    result: { peaks: any[]; rms: any[] }
+  ): void => {
+    ipcRenderer.send('waveform:analysis-response', trackId, result)
+  },
+
   logError: (message: string) => ipcRenderer.send('log-error', message)
 }
 

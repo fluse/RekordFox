@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import logoSvg from '../assets/logo-recordfox.svg'
+import logoSvg from '../assets/logo-rekordfox.svg'
 
 interface SplashScreenProps {
   onDone: () => void
 }
 
-export default function SplashScreen({ onDone }: SplashScreenProps) {
+export default function SplashScreen({ onDone }: SplashScreenProps): React.JSX.Element {
   const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in')
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
       >
         <img
           src={logoSvg}
-          alt="RecordFox"
+          alt="RekordFox"
           style={{
             width: 180,
             height: 180,
@@ -78,7 +78,7 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
           animation: 'rfSplashIn 0.75s 0.15s cubic-bezier(0.34, 1.2, 0.64, 1) both'
         }}
       >
-        RecordFox
+        RekordFox
       </div>
 
       {/* Subtle tagline */}

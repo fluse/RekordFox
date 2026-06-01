@@ -10,8 +10,8 @@ import {
   Pencil
 } from 'lucide-react'
 import type { Playlist } from '@main/db'
-import logo from '../assets/logo-recordfox.svg'
-import logoLight from '../assets/logo-recordfox-light.svg'
+import logo from '../assets/logo-rekordfox.svg'
+import logoLight from '../assets/logo-rekordfox-light.svg'
 import { useLanguage } from '../i18n'
 
 interface SidebarProps {
@@ -79,9 +79,9 @@ export default function Sidebar({
           <img
             src={theme === 'light' ? logo : logoLight}
             className="h-13 w-13 object-contain"
-            alt="RecordFox"
+            alt="RekordFox"
           />
-          <span className="text-2xl font-semibold">RecordFox</span>
+          <span className="text-2xl font-semibold">RekordFox</span>
         </div>
       </div>
 

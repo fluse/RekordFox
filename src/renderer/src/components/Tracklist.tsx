@@ -4,7 +4,8 @@ import type { Track } from '@main/db'
 import { useLanguage, type TranslationKey } from '../i18n'
 import { useTrackScanner } from '../hooks/useTrackScanner'
 import TrackRow from './TrackRow'
-import UsbExportModal from './UsbExportModal'
+import UsbExportModal from './export/UsbExportModal'
+import PioneerExportModal from './export/pioneer/PioneerExportModal'
 
 interface TracklistProps {
   playlistId: string
@@ -132,6 +133,8 @@ export default function Tracklist({
   const [sortField, setSortField] = useState<SortField>('position')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [isPioneerProgressOpen, setIsPioneerProgressOpen] = useState(false)
+  const [pioneerUsbPath, setPioneerUsbPath] = useState('')
   const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null)
   const [dragOverTrackId, setDragOverTrackId] = useState<string | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<'above' | 'below' | null>(null)
@@ -140,12 +143,12 @@ export default function Tracklist({
   const [isColMenuOpen, setIsColMenuOpen] = useState(false)
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
-    const saved = localStorage.getItem('recordfox_visible_columns')
+    const saved = localStorage.getItem('rekordfox_visible_columns')
     return saved ? JSON.parse(saved) : DEFAULT_VISIBLE_COLUMNS
   })
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('recordfox_column_widths')
+    const saved = localStorage.getItem('rekordfox_column_widths')
     return saved ? JSON.parse(saved) : DEFAULT_COLUMN_WIDTHS
   })
 
@@ -157,7 +160,7 @@ export default function Tracklist({
       } else {
         next = COLUMN_DEFS.filter((c) => c.id === colId || prev.includes(c.id)).map((c) => c.id)
       }
-      localStorage.setItem('recordfox_visible_columns', JSON.stringify(next))
+      localStorage.setItem('rekordfox_visible_columns', JSON.stringify(next))
       return next
     })
   }
@@ -182,7 +185,7 @@ export default function Tracklist({
       window.removeEventListener('mouseup', handleMouseUp)
 
       setColumnWidths((prev) => {
-        localStorage.setItem('recordfox_column_widths', JSON.stringify(prev))
+        localStorage.setItem('rekordfox_column_widths', JSON.stringify(prev))
         return prev
       })
     }
@@ -463,6 +466,18 @@ export default function Tracklist({
         onClose={(): void => setIsExportModalOpen(false)}
         playlistId={playlistId}
         playlistTitle={playlistTitle}
+        onStartPioneerExport={(usbPath): void => {
+          setIsExportModalOpen(false)
+          setPioneerUsbPath(usbPath)
+          setIsPioneerProgressOpen(true)
+        }}
+      />
+      <PioneerExportModal
+        isOpen={isPioneerProgressOpen}
+        onClose={(): void => setIsPioneerProgressOpen(false)}
+        playlistId={playlistId}
+        playlistTitle={playlistTitle}
+        usbPath={pioneerUsbPath}
       />
     </div>
   )

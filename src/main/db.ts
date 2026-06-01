@@ -189,7 +189,7 @@ export function initDb(): void {
               if (!currentTags || !currentTags.image) {
                 if (fs.existsSync(track.coverPath)) {
                   const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
-                  const albumName = playlist ? playlist.title : 'RecordFox'
+                  const albumName = playlist ? playlist.title : 'RekordFox'
                   const tags = {
                     title: track.title,
                     artist: track.artist,

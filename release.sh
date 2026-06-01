@@ -3,7 +3,7 @@
 # Abort the script if an error occurs
 set -e
 
-echo "🚀 Starting RecordFox release process..."
+echo "🚀 Starting RekordFox release process..."
 echo "--------------------------------------"
 
 # 1. Ask for version and validate

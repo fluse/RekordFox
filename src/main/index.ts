@@ -27,7 +27,10 @@ import { syncPlaylist, startBackgroundSync, stopBackgroundSync } from './sync'
 import { analyzeBpm } from './bpm'
 import { analyzeKey } from './key'
 import { detectUsbDrives } from './usb'
-import { exportPlaylistToUsb } from './exporter'
+import { exportPlaylistToUsb } from './export/m3u8/m3u8Exporter'
+import { ExportQueueManager } from './export/pioneer/ExportQueueManager'
+
+const exportQueueManager = new ExportQueueManager()
 
 // Register custom media protocol to serve local MP3 files securely and support audio streaming/seeking
 protocol.registerSchemesAsPrivileged([
@@ -50,7 +53,7 @@ function createWindow(): void {
     height: 800,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -108,6 +111,10 @@ app.whenReady().then(async () => {
   })
 
   electronApp.setAppUserModelId('com.electron')
+
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(icon)
+  }
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -311,6 +318,20 @@ app.whenReady().then(async () => {
       return exportPlaylistToUsb(playlistId, usbPath, mainWindow, forceOverwrite)
     }
   )
+
+  ipcMain.handle(
+    'pioneer:export-start',
+    async (_, playlistId: string, usbPath: string) => {
+      if (!mainWindow) return { success: false, error: 'Main window not available' }
+      // Run asynchronously so we don't block the IPC response loop, but returns the final promise
+      return exportQueueManager.exportPlaylist(playlistId, usbPath, mainWindow)
+    }
+  )
+
+  ipcMain.handle('pioneer:export-cancel', async () => {
+    exportQueueManager.cancel()
+    return { success: true }
+  })
 
   ipcMain.on('log-error', (_, msg) => {
     console.error('[Renderer Error]', msg)

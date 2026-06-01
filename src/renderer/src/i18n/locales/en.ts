@@ -1,6 +1,6 @@
 export const en = {
   // App General
-  'app.name': 'RecordFox',
+  'app.name': 'RekordFox',
   'app.tagline': 'Your DJ Sync Station',
   'app.selectPlaylistPrompt': 'Select a playlist or add a new one to view tracks.',
 
@@ -107,6 +107,8 @@ export const en = {
   'usbExport.closeBtn': 'Close',
   'usbExport.tryAgainBtn': 'Try again',
   'usbExport.errorScanDrives': 'Error scanning USB drives.',
+  'usbExport.notInitializedWarning':
+    '⚠️ This drive has not been initialized with Rekordbox yet. The export will still work (music files will be copied), but waveforms will not load on CDJs until the drive is prepared in Rekordbox.',
 
   // Actions & Confirmations (useApp)
   'actions.confirmDeletePlaylist':

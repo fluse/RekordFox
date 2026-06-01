@@ -1,6 +1,6 @@
-# Konzept: RecordFox (Desktop-App)
+# Konzept: RekordFox (Desktop-App)
 
-Dieses Dokument beschreibt das technische und gestalterische Konzept für **RecordFox**, eine macOS-Desktop-Anwendung zur Synchronisation von YouTube-Playlists und zum Abspielen der Musiktitel in einem DJ-Mix-Player.
+Dieses Dokument beschreibt das technische und gestalterische Konzept für **RekordFox**, eine macOS-Desktop-Anwendung zur Synchronisation von YouTube-Playlists und zum Abspielen der Musiktitel in einem DJ-Mix-Player.
 
 ---
 
@@ -150,9 +150,9 @@ Die Mixer-Sektion setzt auf authentische **runde Drehregler (Potis)** für die E
 
 ## 5. Datei- & Speicherpfade (macOS)
 
-- **Datenverzeichnis:** `~/Library/Application Support/RecordFox/`
-- **Standard-Musikdateien:** `~/Library/Application Support/RecordFox/downloads/[Playlist-ID]/[Track-ID].mp3` (sofern nicht in den Einstellungen geändert)
-- **Datenbank / Konfiguration:** `~/Library/Application Support/RecordFox/db.json`
+- **Datenverzeichnis:** `~/Library/Application Support/RekordFox/`
+- **Standard-Musikdateien:** `~/Library/Application Support/RekordFox/downloads/[Playlist-ID]/[Track-ID].mp3` (sofern nicht in den Einstellungen geändert)
+- **Datenbank / Konfiguration:** `~/Library/Application Support/RekordFox/db.json`
 - **yt-dlp Binärdatei:** Wird im Anwendungs-Ressourcenverzeichnis (`bin/`) abgelegt.
 
 ---

@@ -1,6 +1,6 @@
 export const es = {
   // App General
-  'app.name': 'RecordFox',
+  'app.name': 'RekordFox',
   'app.tagline': 'Tu estación de sincronización DJ',
   'app.selectPlaylistPrompt':
     'Selecciona una lista de reproducción o añade una nueva para ver los temas.',
@@ -110,6 +110,8 @@ export const es = {
   'usbExport.closeBtn': 'Cerrar',
   'usbExport.tryAgainBtn': 'Reintentar',
   'usbExport.errorScanDrives': 'Error al buscar memorias USB.',
+  'usbExport.notInitializedWarning':
+    '⚠️ Esta unidad no ha sido inicializada con Rekordbox todavía. La exportación funcionará (los archivos se copiarán), pero las formas de onda no se cargarán en los CDJ hasta que prepares la unidad en Rekordbox.',
 
   // Actions & Confirmations (useApp)
   'actions.confirmDeletePlaylist':
