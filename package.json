@@ -7,7 +7,7 @@
   "homepage": "https://electron-vite.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fluse/rekordfox.git"
+    "url": "https://github.com/fluse/RekordFox.git"
   },
   "scripts": {
     "format": "prettier --write .",
