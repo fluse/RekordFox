@@ -138,6 +138,7 @@ export default function PreviewPlayerQueue({
   const [draggedQueueId, setDraggedQueueId] = useState<string | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [dragOverPosition, setDragOverPosition] = useState<'above' | 'below' | null>(null)
+  const [isDragOverEmpty, setIsDragOverEmpty] = useState(false)
 
   const fallbackTracks = originContext
     ? originContext.tracks.slice(originContext.lastPlayedIndex + 1)
@@ -187,6 +188,7 @@ export default function PreviewPlayerQueue({
       const track = parseTrackFromDataTransfer(e.dataTransfer)
       if (track) insertIntoQueueAt(track, manualQueue.length)
     }
+    setIsDragOverEmpty(false)
     resetDragState()
   }
 
@@ -206,12 +208,20 @@ export default function PreviewPlayerQueue({
               if (manualQueue.length === 0) {
                 e.preventDefault()
                 e.dataTransfer.dropEffect = 'move'
+                setIsDragOverEmpty(true)
               }
             }}
+            onDragLeave={() => setIsDragOverEmpty(false)}
             onDrop={manualQueue.length === 0 ? handleDropAtEnd : undefined}
           >
             {manualQueue.length === 0 && (
-              <div className="rounded-lg border border-dashed border-zinc-800 px-2 py-3 text-center text-[10px] text-zinc-600">
+              <div
+                className={`rounded-lg border border-dashed px-2 py-3 text-center text-[10px] transition-colors ${
+                  isDragOverEmpty
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-zinc-800 text-zinc-600'
+                }`}
+              >
                 {t('preview.queue.empty')}
               </div>
             )}
