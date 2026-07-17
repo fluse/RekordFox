@@ -172,7 +172,19 @@ const api = {
     ipcRenderer.send('waveform:analysis-response', trackId, result)
   },
 
-  logError: (message: string) => ipcRenderer.send('log-error', message)
+  logError: (message: string) => ipcRenderer.send('log-error', message),
+
+  windowMinimize: () => ipcRenderer.send('window:minimize'),
+  windowMaximizeToggle: () => ipcRenderer.send('window:maximize-toggle'),
+  windowClose: () => ipcRenderer.send('window:close'),
+  windowIsMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+  onWindowMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+    const subscription = (_event: any, isMaximized: boolean) => callback(isMaximized)
+    ipcRenderer.on('window:maximized-change', subscription)
+    return () => {
+      ipcRenderer.removeListener('window:maximized-change', subscription)
+    }
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

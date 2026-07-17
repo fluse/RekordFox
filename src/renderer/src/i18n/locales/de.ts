@@ -5,6 +5,12 @@ export const de = {
   'app.selectPlaylistPrompt':
     'Wähle eine Playlist aus oder füge eine neue hinzu, um Tracks anzuzeigen.',
 
+  // Title Bar
+  'titlebar.minimize': 'Minimieren',
+  'titlebar.maximize': 'Maximieren',
+  'titlebar.restore': 'Wiederherstellen',
+  'titlebar.close': 'Schließen',
+
   // Mixer
   'mixer.show': 'Mixer einblenden',
   'mixer.hide': 'Mixer ausblenden',

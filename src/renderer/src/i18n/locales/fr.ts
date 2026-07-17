@@ -5,6 +5,12 @@ export const fr = {
   'app.selectPlaylistPrompt':
     'Sélectionnez une playlist ou ajoutez-en une nouvelle pour voir les pistes.',
 
+  // Title Bar
+  'titlebar.minimize': 'Réduire',
+  'titlebar.maximize': 'Agrandir',
+  'titlebar.restore': 'Restaurer',
+  'titlebar.close': 'Fermer',
+
   // Mixer
   'mixer.show': 'Afficher le mixeur',
   'mixer.hide': 'Masquer le mixeur',

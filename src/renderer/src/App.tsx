@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Sidebar, SplashScreen } from '@renderer/components/Layout'
+import { Sidebar, SplashScreen, TitleBar } from '@renderer/components/Layout'
 import {
   Tracklist,
   AddPlaylistModal,
@@ -52,6 +52,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-zinc-950 text-zinc-100 font-sans antialiased">
       {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
+      <TitleBar theme={settings.theme} />
       {/* Top Half: DJ Mixer Dashboard */}
       <div className="relative flex-shrink-0 z-20">
         <div

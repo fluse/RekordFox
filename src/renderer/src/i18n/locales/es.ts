@@ -5,6 +5,12 @@ export const es = {
   'app.selectPlaylistPrompt':
     'Selecciona una lista de reproducción o añade una nueva para ver los temas.',
 
+  // Title Bar
+  'titlebar.minimize': 'Minimizar',
+  'titlebar.maximize': 'Maximizar',
+  'titlebar.restore': 'Restaurar',
+  'titlebar.close': 'Cerrar',
+
   // Mixer
   'mixer.show': 'Mostrar mezclador',
   'mixer.hide': 'Ocultar mezclador',

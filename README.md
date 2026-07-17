@@ -14,7 +14,7 @@
 
 ## 🎵 About the Project
 
-RecordFox was born out of a simple frustration: established DJ software like Rekordbox has become bloated, cluttered, and sluggish to navigate over the years.
+RekordFox was born out of a simple frustration: established DJ software like Rekordbox has become bloated, cluttered, and sluggish to navigate over the years.
 
 **RekordFox puts an end to this.** It is a lightweight, cross-platform (Windows, macOS, Linux) Electron app focused on what truly matters: managing your music library efficiently, quickly, and with an outstanding user experience.
 

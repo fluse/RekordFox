@@ -32,6 +32,8 @@ import { exportPlaylistToUsb } from './export/m3u8/m3u8Exporter'
 import { ExportQueueManager } from './export/pioneer/ExportQueueManager'
 import { handleMediaRequest } from './media'
 
+app.setName('RekordFox')
+
 const exportQueueManager = new ExportQueueManager()
 
 // Register custom media protocol to serve local MP3 files securely and support audio streaming/seeking
@@ -57,6 +59,7 @@ function createWindow(): void {
     height: 800,
     show: false,
     autoHideMenuBar: true,
+    frame: false,
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -66,6 +69,14 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     if (mainWindow) mainWindow.show()
+  })
+
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window:maximized-change', true)
+  })
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window:maximized-change', false)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -412,6 +423,25 @@ app.whenReady().then(async () => {
   ipcMain.on('log-error', (_, msg) => {
     console.error('[Renderer Error]', msg)
   })
+
+  ipcMain.on('window:minimize', () => {
+    mainWindow?.minimize()
+  })
+
+  ipcMain.on('window:maximize-toggle', () => {
+    if (!mainWindow) return
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize()
+    } else {
+      mainWindow.maximize()
+    }
+  })
+
+  ipcMain.on('window:close', () => {
+    mainWindow?.close()
+  })
+
+  ipcMain.handle('window:is-maximized', () => mainWindow?.isMaximized() ?? false)
 
   createWindow()
 

@@ -112,6 +112,11 @@ declare global {
       ) => () => void
       sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }) => void
       logError: (message: string) => void
+      windowMinimize: () => void
+      windowMaximizeToggle: () => void
+      windowClose: () => void
+      windowIsMaximized: () => Promise<boolean>
+      onWindowMaximizedChange: (callback: (isMaximized: boolean) => void) => () => void
     }
   }
 }

@@ -4,6 +4,12 @@ export const en = {
   'app.tagline': 'Your DJ Sync Station',
   'app.selectPlaylistPrompt': 'Select a playlist or add a new one to view tracks.',
 
+  // Title Bar
+  'titlebar.minimize': 'Minimize',
+  'titlebar.maximize': 'Maximize',
+  'titlebar.restore': 'Restore',
+  'titlebar.close': 'Close',
+
   // Mixer
   'mixer.show': 'Show Mixer',
   'mixer.hide': 'Hide Mixer',
