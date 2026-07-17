@@ -36,6 +36,9 @@ export const en = {
 
   // Settings Modal
   'settings.title': 'Settings',
+  'settings.categoryGeneral': 'General',
+  'settings.categoryLibrary': 'Library',
+  'settings.categoryDownloads': 'Downloads & Sync',
   'settings.theme': 'Color Scheme',
   'settings.themeDark': 'Dark',
   'settings.themeLight': 'Light',
@@ -78,6 +81,10 @@ export const en = {
   'settings.rekordboxXmlExportNowTooltip': 'Manually export entire collection as XML now',
   'settings.rekordboxXmlSuccess': 'Rekordbox XML exported successfully!',
   'settings.rekordboxXmlError': 'XML export failed: {{error}}',
+  'settings.historyLimitLabel': 'History Size',
+  'settings.historyLimitCount': '{{count}} Tracks',
+  'settings.historyLimitHelp': 'Sets how many recently played tracks are kept in the history (10 to 200).',
+  'settings.errorChangeHistoryLimit': 'Error changing history size.',
 
   // Deck
   'deck.loadingWaveform': 'Decoding waveform...',
@@ -156,6 +163,8 @@ export const en = {
   'preview.close': 'Close',
   'preview.controls.previous': 'Previous',
   'preview.controls.next': 'Next',
+  'preview.dock.toSidebar': 'Dock as sidebar',
+  'preview.dock.toFloating': 'Undock to floating',
   'preview.queue.toggle': 'Queue',
   'preview.queue.nextUp': 'Next Up',
   'preview.queue.fallback': 'Then',
@@ -170,6 +179,6 @@ export const en = {
   // History
   'sidebar.history': 'Recently Played',
   'history.title': 'Recently Played',
-  'history.subtitle': 'The last 50 played tracks',
+  'history.subtitle': 'The last {{count}} played tracks',
   'history.empty': 'No tracks played yet.'
 }

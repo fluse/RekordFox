@@ -24,9 +24,12 @@ export default function PreviewPlayer(): React.JSX.Element | null {
     toggleQueuePanel,
     advance,
     previous,
-    addToQueue
+    addToQueue,
+    dockMode,
+    toggleDockMode
   } = usePreviewStore()
   const { t } = useLanguage()
+  const isDocked = dockMode === 'sidebar'
   const { position, handleMouseDown } = useDraggablePosition()
   const { height: queueHeight, handleResizeStart } = useResizableHeight()
   const {
@@ -79,10 +82,14 @@ export default function PreviewPlayer(): React.JSX.Element | null {
 
   return (
     <div
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      style={isDocked ? undefined : { left: `${position.x}px`, top: `${position.y}px` }}
       onDragOver={handlePlayerDragOver}
       onDrop={handlePlayerDrop}
-      className="fixed z-50 w-[320px] select-none rounded-xl border border-zinc-800/80 bg-zinc-950/95 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 fade-in duration-150"
+      className={
+        isDocked
+          ? 'relative z-10 flex h-full w-[320px] flex-shrink-0 select-none flex-col border-l border-zinc-800/80 bg-zinc-950/95 shadow-2xl'
+          : 'fixed z-50 w-[320px] select-none rounded-xl border border-zinc-800/80 bg-zinc-950/95 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 fade-in duration-150'
+      }
     >
       {/* Audio element */}
       <audio
@@ -95,11 +102,14 @@ export default function PreviewPlayer(): React.JSX.Element | null {
 
       <PreviewPlayerHeader
         title={t('preview.title')}
-        onDragStart={handleMouseDown}
+        onDragStart={isDocked ? () => {} : handleMouseDown}
         onClose={stopTrack}
         isQueueOpen={isQueuePanelOpen}
         onToggleQueue={toggleQueuePanel}
         queueToggleLabel={t('preview.queue.toggle')}
+        isDocked={isDocked}
+        onToggleDock={toggleDockMode}
+        dockToggleLabel={isDocked ? t('preview.dock.toFloating') : t('preview.dock.toSidebar')}
       />
 
       <div className="p-4 flex flex-col gap-3">

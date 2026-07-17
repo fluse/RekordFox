@@ -89,7 +89,7 @@ export default function Sidebar({
         <div className="flex items-center gap-2 font-bold text-zinc-100">
           <img
             src={theme === 'light' ? logo : logoLight}
-            className="h-13 w-13 object-contain"
+            className="h-10 w-10 object-contain"
             alt="RekordFox"
           />
           <span className="text-2xl font-semibold">RekordFox</span>

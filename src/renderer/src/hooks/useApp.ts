@@ -5,6 +5,7 @@ import { en } from '../i18n/locales/en'
 import { fr } from '../i18n/locales/fr'
 import { es } from '../i18n/locales/es'
 import type { TranslationKey } from '../i18n'
+import { usePreviewStore } from '../store/usePreviewStore'
 
 const translations = { de, en, fr, es }
 
@@ -65,6 +66,10 @@ export function useApp(): UseAppReturn {
   })
   const [sidebarWidth, setSidebarWidth] = useState(256)
   const sidebarWidthRef = useRef<number>(sidebarWidth)
+
+  useEffect(() => {
+    usePreviewStore.getState().setHistoryLimit(settings.historyLimit ?? 50)
+  }, [settings.historyLimit])
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string => {

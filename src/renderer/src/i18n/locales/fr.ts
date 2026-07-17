@@ -37,6 +37,9 @@ export const fr = {
 
   // Settings Modal
   'settings.title': 'Paramètres',
+  'settings.categoryGeneral': 'Général',
+  'settings.categoryLibrary': 'Bibliothèque',
+  'settings.categoryDownloads': 'Téléchargements et synchro',
   'settings.theme': 'Schéma de couleurs',
   'settings.themeDark': 'Sombre',
   'settings.themeLight': 'Clair',
@@ -81,6 +84,11 @@ export const fr = {
     'Exporter manuellement toute la collection en XML maintenant',
   'settings.rekordboxXmlSuccess': 'XML Rekordbox exporté avec succès !',
   'settings.rekordboxXmlError': "Échec de l'exportation XML : {{error}}",
+  'settings.historyLimitLabel': "Taille de l'historique",
+  'settings.historyLimitCount': '{{count}} titres',
+  'settings.historyLimitHelp':
+    "Définit le nombre de titres récemment écoutés conservés dans l'historique (10 à 200).",
+  'settings.errorChangeHistoryLimit': "Erreur lors du changement de taille de l'historique.",
 
   // Deck
   'deck.loadingWaveform': "Décodage de la forme d'onde...",
@@ -161,6 +169,8 @@ export const fr = {
   'preview.close': 'Fermer',
   'preview.controls.previous': 'Précédent',
   'preview.controls.next': 'Suivant',
+  'preview.dock.toSidebar': 'Ancrer en barre latérale',
+  'preview.dock.toFloating': 'Détacher en fenêtre flottante',
   'preview.queue.toggle': "File d'attente",
   'preview.queue.nextUp': 'À suivre',
   'preview.queue.fallback': 'Ensuite',
@@ -175,6 +185,6 @@ export const fr = {
   // History
   'sidebar.history': 'Écoutés récemment',
   'history.title': 'Écoutés récemment',
-  'history.subtitle': 'Les 50 derniers titres écoutés',
+  'history.subtitle': 'Les {{count}} derniers titres écoutés',
   'history.empty': 'Aucun titre écouté pour le moment.'
 }

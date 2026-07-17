@@ -9,6 +9,7 @@ import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackCo
 export default function HistoryView(): React.JSX.Element {
   const { t } = useLanguage()
   const history = usePreviewStore((s) => s.history)
+  const historyLimit = usePreviewStore((s) => s.historyLimit)
   const playNow = usePreviewStore((s) => s.playNow)
   const addToQueue = usePreviewStore((s) => s.addToQueue)
   const { contextMenu, open: openContextMenu, close: closeContextMenu } = useTrackContextMenu()
@@ -19,7 +20,7 @@ export default function HistoryView(): React.JSX.Element {
     <div className="flex flex-1 flex-col bg-zinc-900/40 min-h-0 overflow-hidden">
       <div className="flex h-16 flex-col justify-center border-b border-zinc-900 px-6">
         <h1 className="text-lg font-bold text-zinc-200">{t('history.title')}</h1>
-        <p className="text-xs text-zinc-500">{t('history.subtitle')}</p>
+        <p className="text-xs text-zinc-500">{t('history.subtitle', { count: historyLimit })}</p>
       </div>
 
       <div className="flex-1 overflow-auto px-6 py-4 min-h-0">

@@ -67,9 +67,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         {/* Toggle Button */}
         <button
           onClick={() => setIsMixerCollapsed(!isMixerCollapsed)}
-          className={`absolute left-1/2 -translate-x-1/2 z-30 flex h-6 w-12 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-100 hover:border-primary/55 shadow-lg cursor-pointer transition-all duration-300 ${
-            isMixerCollapsed ? 'bottom-[-24px]' : 'bottom-[-12px]'
-          }`}
+          className={`absolute left-1/2 -translate-x-1/2 z-30 flex h-6 w-12 items-center justify-center rounded-full border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-100 hover:border-primary/55 shadow-lg cursor-pointer transition-all duration-300 bottom-[-12px]`}
           title={isMixerCollapsed ? t('mixer.show') : t('mixer.hide')}
         >
           <ChevronDown
@@ -130,6 +128,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             {t('app.selectPlaylistPrompt')}
           </div>
         )}
+
+        <PreviewPlayer />
       </div>
 
       {/* Modal Dialogs */}
@@ -148,8 +148,6 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         isSyncing={Object.keys(activeSyncs).length > 0}
         renamingStatus={renamingStatus}
       />
-
-      <PreviewPlayer />
     </div>
   )
 }

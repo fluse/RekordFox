@@ -1,5 +1,5 @@
 import React from 'react'
-import { GripHorizontal, ListMusic, X } from 'lucide-react'
+import { GripHorizontal, ListMusic, PanelRightOpen, X } from 'lucide-react'
 
 interface PreviewPlayerHeaderProps {
   title: string
@@ -8,6 +8,9 @@ interface PreviewPlayerHeaderProps {
   isQueueOpen: boolean
   onToggleQueue: () => void
   queueToggleLabel: string
+  isDocked: boolean
+  onToggleDock: () => void
+  dockToggleLabel: string
 }
 
 export const PreviewPlayerHeader: React.FC<PreviewPlayerHeaderProps> = ({
@@ -16,18 +19,39 @@ export const PreviewPlayerHeader: React.FC<PreviewPlayerHeaderProps> = ({
   onClose,
   isQueueOpen,
   onToggleQueue,
-  queueToggleLabel
+  queueToggleLabel,
+  isDocked,
+  onToggleDock,
+  dockToggleLabel
 }) => {
   return (
     <div
       onMouseDown={onDragStart}
-      className="flex items-center justify-between border-b border-zinc-900 bg-zinc-900/40 px-3 py-2 cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-200 transition-colors"
+      className={`flex items-center justify-between border-b border-zinc-900 bg-zinc-900/40 px-3 py-2 text-zinc-400 hover:text-zinc-200 transition-colors ${
+        isDocked ? '' : 'cursor-grab active:cursor-grabbing'
+      }`}
     >
       <div className="flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase">
         <GripHorizontal className="h-3.5 w-3.5" />
         <span>{title}</span>
       </div>
       <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleDock()
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          title={dockToggleLabel}
+          className={`rounded p-1 transition cursor-pointer ${
+            isDocked
+              ? 'bg-zinc-800 text-primary'
+              : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200'
+          }`}
+        >
+          <PanelRightOpen className="h-3.5 w-3.5" />
+        </button>
         <button
           type="button"
           onClick={(e) => {

@@ -44,6 +44,7 @@ export interface AppSettings {
   language?: 'de' | 'en' | 'fr' | 'es'
   filenameTemplate?: 'default' | 'custom'
   rekordboxXmlPath?: string
+  historyLimit?: number
 }
 
 interface DatabaseSchema {
@@ -65,7 +66,8 @@ let dbData: DatabaseSchema = {
     sidebarWidth: 256,
     maxWorkers: 1,
     language: 'de',
-    filenameTemplate: 'default'
+    filenameTemplate: 'default',
+    historyLimit: 50
   }
 }
 
@@ -91,7 +93,8 @@ export function initDb(): void {
       sidebarWidth: 256,
       maxWorkers: 3,
       language: 'de',
-      rekordboxXmlPath: ''
+      rekordboxXmlPath: '',
+      historyLimit: 50
     }
     saveDb()
   } else {
@@ -599,7 +602,8 @@ export function getSettings(): AppSettings {
       downloadPath: defaultDownloadsDir,
       sidebarWidth: 256,
       maxWorkers: 3,
-      language: 'de'
+      language: 'de',
+      historyLimit: 50
     }
   )
 }

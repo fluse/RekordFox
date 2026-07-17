@@ -37,6 +37,9 @@ export const es = {
 
   // Settings Modal
   'settings.title': 'Ajustes',
+  'settings.categoryGeneral': 'General',
+  'settings.categoryLibrary': 'Biblioteca',
+  'settings.categoryDownloads': 'Descargas y sincronización',
   'settings.theme': 'Esquema de colores',
   'settings.themeDark': 'Oscuro',
   'settings.themeLight': 'Claro',
@@ -80,6 +83,11 @@ export const es = {
   'settings.rekordboxXmlExportNowTooltip': 'Exportar manualmente toda la colección a XML ahora',
   'settings.rekordboxXmlSuccess': '¡XML de Rekordbox exportado con éxito!',
   'settings.rekordboxXmlError': 'Fallo al exportar XML: {{error}}',
+  'settings.historyLimitLabel': 'Tamaño del historial',
+  'settings.historyLimitCount': '{{count}} pistas',
+  'settings.historyLimitHelp':
+    'Establece cuántas pistas reproducidas recientemente se guardan en el historial (10 a 200).',
+  'settings.errorChangeHistoryLimit': 'Error al cambiar el tamaño del historial.',
 
   // Deck
   'deck.loadingWaveform': 'Decodificando forma de onda...',
@@ -160,6 +168,8 @@ export const es = {
   'preview.close': 'Cerrar',
   'preview.controls.previous': 'Anterior',
   'preview.controls.next': 'Siguiente',
+  'preview.dock.toSidebar': 'Anclar como barra lateral',
+  'preview.dock.toFloating': 'Convertir en ventana flotante',
   'preview.queue.toggle': 'Cola',
   'preview.queue.nextUp': 'A continuación',
   'preview.queue.fallback': 'Después',
@@ -174,6 +184,6 @@ export const es = {
   // History
   'sidebar.history': 'Reproducidos recientemente',
   'history.title': 'Reproducidos recientemente',
-  'history.subtitle': 'Las últimas 50 pistas reproducidas',
+  'history.subtitle': 'Las últimas {{count}} pistas reproducidas',
   'history.empty': 'Aún no se ha reproducido ninguna pista.'
 }

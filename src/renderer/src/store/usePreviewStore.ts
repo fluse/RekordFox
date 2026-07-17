@@ -17,11 +17,13 @@ interface OriginContext {
   lastPlayedIndex: number
 }
 
-const HISTORY_LIMIT = 50
+const DEFAULT_HISTORY_LIMIT = 50
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
+
+export type PreviewDockMode = 'floating' | 'sidebar'
 
 interface PreviewState {
   previewTrack: Track | null
@@ -29,8 +31,11 @@ interface PreviewState {
   manualQueue: QueueEntry[]
   originContext: OriginContext | null
   history: HistoryEntry[]
+  historyLimit: number
   isQueuePanelOpen: boolean
+  dockMode: PreviewDockMode
 
+  setHistoryLimit: (limit: number) => void
   playTrack: (track: Track) => void
   playNow: (track: Track, contextTracks?: Track[]) => void
   stopTrack: () => void
@@ -43,6 +48,7 @@ interface PreviewState {
   advance: () => void
   previous: () => void
   removeUpcomingTrack: (trackId: string) => void
+  toggleDockMode: () => void
 }
 
 export const usePreviewStore = create<PreviewState>()(
@@ -51,7 +57,7 @@ export const usePreviewStore = create<PreviewState>()(
       const setNowPlaying = (track: Track): Partial<PreviewState> => {
         const history = [{ historyId: generateId(), track }, ...get().history].slice(
           0,
-          HISTORY_LIMIT
+          get().historyLimit
         )
         return { previewTrack: track, isPlaying: true, history }
       }
@@ -62,7 +68,15 @@ export const usePreviewStore = create<PreviewState>()(
         manualQueue: [],
         originContext: null,
         history: [],
+        historyLimit: DEFAULT_HISTORY_LIMIT,
         isQueuePanelOpen: false,
+        dockMode: 'floating',
+
+        setHistoryLimit: (limit) =>
+          set((state) => ({
+            historyLimit: limit,
+            history: state.history.slice(0, limit)
+          })),
 
         // Kept for backwards compatibility with existing callers; behaves like playNow without a context.
         playTrack: (track) => get().playNow(track),
@@ -163,12 +177,17 @@ export const usePreviewStore = create<PreviewState>()(
           const tracks = [...originContext.tracks]
           tracks.splice(removeIndex, 1)
           set({ originContext: { ...originContext, tracks } })
-        }
+        },
+
+        toggleDockMode: () =>
+          set((state) => ({
+            dockMode: state.dockMode === 'floating' ? 'sidebar' : 'floating'
+          }))
       }
     },
     {
       name: 'rekordfox-history-storage',
-      partialize: (state) => ({ history: state.history })
+      partialize: (state) => ({ history: state.history, dockMode: state.dockMode })
     }
   )
 )

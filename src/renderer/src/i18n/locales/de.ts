@@ -37,6 +37,9 @@ export const de = {
 
   // Settings Modal
   'settings.title': 'Einstellungen',
+  'settings.categoryGeneral': 'Allgemein',
+  'settings.categoryLibrary': 'Bibliothek',
+  'settings.categoryDownloads': 'Downloads & Sync',
   'settings.theme': 'Farbschema',
   'settings.themeDark': 'Dunkel',
   'settings.themeLight': 'Hell',
@@ -80,6 +83,11 @@ export const de = {
   'settings.rekordboxXmlExportNowTooltip': 'Gesamte Kollektion jetzt manuell als XML exportieren',
   'settings.rekordboxXmlSuccess': 'Rekordbox XML erfolgreich exportiert!',
   'settings.rekordboxXmlError': 'Fehler beim XML-Export: {{error}}',
+  'settings.historyLimitLabel': 'Verlaufsgröße',
+  'settings.historyLimitCount': '{{count}} Tracks',
+  'settings.historyLimitHelp':
+    'Legt fest, wie viele zuletzt abgespielte Tracks im Verlauf behalten werden (10 bis 200).',
+  'settings.errorChangeHistoryLimit': 'Fehler beim Ändern der Verlaufsgröße.',
 
   // Deck
   'deck.loadingWaveform': 'Dekodiere Welle...',
@@ -158,6 +166,8 @@ export const de = {
   'preview.close': 'Schließen',
   'preview.controls.previous': 'Vorheriger Titel',
   'preview.controls.next': 'Nächster Titel',
+  'preview.dock.toSidebar': 'Als Seitenleiste anheften',
+  'preview.dock.toFloating': 'Als schwebendes Fenster lösen',
   'preview.queue.toggle': 'Warteschlange',
   'preview.queue.nextUp': 'Als Nächstes',
   'preview.queue.fallback': 'Danach',
@@ -172,6 +182,6 @@ export const de = {
   // History
   'sidebar.history': 'Zuletzt abgespielt',
   'history.title': 'Zuletzt abgespielt',
-  'history.subtitle': 'Die letzten 50 abgespielten Tracks',
+  'history.subtitle': 'Die letzten {{count}} abgespielten Tracks',
   'history.empty': 'Noch keine Tracks abgespielt.'
 }
