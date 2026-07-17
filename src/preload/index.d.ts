@@ -70,6 +70,9 @@ declare global {
       onKeyAnalyzed: (
         callback: (trackId: string, playlistId: string, key: string) => void
       ) => () => void
+      onTrackFilepathChanged: (
+        callback: (changes: { id: string; filepath: string }[]) => void
+      ) => () => void
       analyzeTrackBpm: (
         trackId: string,
         playlistId: string,

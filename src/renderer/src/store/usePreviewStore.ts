@@ -49,6 +49,7 @@ interface PreviewState {
   previous: () => void
   removeUpcomingTrack: (trackId: string) => void
   toggleDockMode: () => void
+  syncFilepaths: (changes: { id: string; filepath: string }[]) => void
 }
 
 export const usePreviewStore = create<PreviewState>()(
@@ -182,7 +183,31 @@ export const usePreviewStore = create<PreviewState>()(
         toggleDockMode: () =>
           set((state) => ({
             dockMode: state.dockMode === 'floating' ? 'sidebar' : 'floating'
+          })),
+
+        // Patches stale filepaths in every cached Track snapshot after the main
+        // process renames a file on disk (e.g. reorder or BPM-driven rename),
+        // so previously loaded tracks stay resolvable in the preview player.
+        syncFilepaths: (changes) => {
+          if (changes.length === 0) return
+          const filepathById = new Map(changes.map((c) => [c.id, c.filepath]))
+          const patchTrack = (track: Track): Track => {
+            const filepath = filepathById.get(track.id)
+            return filepath && filepath !== track.filepath ? { ...track, filepath } : track
+          }
+
+          set((state) => ({
+            previewTrack: state.previewTrack ? patchTrack(state.previewTrack) : state.previewTrack,
+            manualQueue: state.manualQueue.map((entry) => ({
+              ...entry,
+              track: patchTrack(entry.track)
+            })),
+            originContext: state.originContext
+              ? { ...state.originContext, tracks: state.originContext.tracks.map(patchTrack) }
+              : state.originContext,
+            history: state.history.map((entry) => ({ ...entry, track: patchTrack(entry.track) }))
           }))
+        }
       }
     },
     {

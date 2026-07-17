@@ -95,6 +95,17 @@ const api = {
     }
   },
 
+  // Filepath changed event: fires when the main process renames one or more track
+  // files on disk (e.g. after reordering or a BPM update that changes the filename)
+  onTrackFilepathChanged: (callback: (changes: { id: string; filepath: string }[]) => void) => {
+    const subscription = (_event: any, changes: { id: string; filepath: string }[]) =>
+      callback(changes)
+    ipcRenderer.on('tracks-filepath-changed', subscription)
+    return () => {
+      ipcRenderer.removeListener('tracks-filepath-changed', subscription)
+    }
+  },
+
   // Trigger on-demand BPM re-analysis for a single track
   analyzeTrackBpm: (trackId: string, playlistId: string, filepath: string) =>
     ipcRenderer.invoke('tracks:analyze-bpm', trackId, playlistId, filepath),

@@ -306,9 +306,12 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
           analyzeBpm(filepath)
             .then((bpm) => {
               if (bpm > 0) {
-                updateTrackBpm(ytTrack.id, playlist.id, bpm)
+                const change = updateTrackBpm(ytTrack.id, playlist.id, bpm)
                 if (!win.isDestroyed()) {
                   win.webContents.send('bpm-analyzed', ytTrack.id, playlist.id, bpm)
+                  if (change) {
+                    win.webContents.send('tracks-filepath-changed', [change])
+                  }
                 }
               }
             })

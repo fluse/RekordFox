@@ -421,11 +421,17 @@ export function addTrack(track: Track): void {
   saveDb()
 }
 
-export function updateTrackPositions(playlistId: string, trackIds: string[]): void {
+export interface FilepathChange {
+  id: string
+  filepath: string
+}
+
+export function updateTrackPositions(playlistId: string, trackIds: string[]): FilepathChange[] {
   const settings = getSettings()
   const playlistTracks = dbData.tracks.filter((t) => t.playlistId === playlistId)
   const fs = require('fs')
   const path = require('path')
+  const changes: FilepathChange[] = []
 
   for (const track of playlistTracks) {
     const oldPosition = track.position
@@ -461,6 +467,7 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): vo
           if (oldFilepath !== newFilepath) {
             fs.renameSync(oldFilepath, newFilepath)
             track.filepath = newFilepath
+            changes.push({ id: track.id, filepath: newFilepath })
           }
         } catch (err) {
           console.error(`Failed to rename file on position change for track ${track.id}:`, err)
@@ -469,6 +476,7 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): vo
     }
   }
   saveDb()
+  return changes
 }
 
 export function deleteTrack(trackId: string, playlistId: string): void {
@@ -476,7 +484,11 @@ export function deleteTrack(trackId: string, playlistId: string): void {
   saveDb()
 }
 
-export function updateTrackBpm(trackId: string, playlistId: string, bpm: number): void {
+export function updateTrackBpm(
+  trackId: string,
+  playlistId: string,
+  bpm: number
+): FilepathChange | null {
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
     const oldFilepath = track.filepath
@@ -525,6 +537,7 @@ export function updateTrackBpm(trackId: string, playlistId: string, bpm: number)
             fs.renameSync(oldFilepath, newFilepath)
             track.filepath = newFilepath
             saveDb()
+            return { id: track.id, filepath: newFilepath }
           }
         }
       } catch (err) {
@@ -532,6 +545,7 @@ export function updateTrackBpm(trackId: string, playlistId: string, bpm: number)
       }
     }
   }
+  return null
 }
 
 export function updateTrackKey(

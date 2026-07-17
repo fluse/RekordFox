@@ -180,7 +180,10 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('tracks:update-bpm', (_, trackId: string, playlistId: string, bpm: number) => {
     try {
-      updateTrackBpm(trackId, playlistId, bpm)
+      const change = updateTrackBpm(trackId, playlistId, bpm)
+      if (change && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tracks-filepath-changed', [change])
+      }
       return { success: true }
     } catch (e: any) {
       return { success: false, error: e.message }
@@ -194,9 +197,12 @@ app.whenReady().then(async () => {
       try {
         const bpm = await analyzeBpm(filepath)
         if (bpm > 0) {
-          updateTrackBpm(trackId, playlistId, bpm)
+          const change = updateTrackBpm(trackId, playlistId, bpm)
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('bpm-analyzed', trackId, playlistId, bpm)
+            if (change) {
+              mainWindow.webContents.send('tracks-filepath-changed', [change])
+            }
           }
         }
         return { success: true, bpm }
@@ -251,7 +257,10 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('tracks:reorder', (_, playlistId: string, trackIds: string[]) => {
     try {
-      updateTrackPositions(playlistId, trackIds)
+      const changes = updateTrackPositions(playlistId, trackIds)
+      if (changes.length > 0 && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('tracks-filepath-changed', changes)
+      }
       return { success: true }
     } catch (e: any) {
       return { success: false, error: e.message }
@@ -473,9 +482,12 @@ app.whenReady().then(async () => {
       try {
         const bpm = await analyzeBpm(track.filepath)
         if (bpm > 0) {
-          updateTrackBpm(track.id, track.playlistId, bpm)
+          const change = updateTrackBpm(track.id, track.playlistId, bpm)
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send('bpm-analyzed', track.id, track.playlistId, bpm)
+            if (change) {
+              mainWindow.webContents.send('tracks-filepath-changed', [change])
+            }
           }
         }
       } catch (err) {

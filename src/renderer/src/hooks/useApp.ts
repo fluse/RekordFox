@@ -124,6 +124,26 @@ export function useApp(): UseAppReturn {
     setLoadedTrackB((prev) => (prev && prev.id === trackId ? { ...prev, rating } : prev))
   }, [])
 
+  // Called when the main process renames track file(s) on disk (reorder, BPM
+  // rename). Keeps every cached Track snapshot's filepath in sync so already
+  // loaded/queued tracks don't point at a file that no longer exists.
+  const handleUpdateFilepathsInState = useCallback(
+    (changes: { id: string; filepath: string }[]): void => {
+      const filepathById = new Map(changes.map((c) => [c.id, c.filepath]))
+      setTracks((prev) =>
+        prev.map((t) => (filepathById.has(t.id) ? { ...t, filepath: filepathById.get(t.id)! } : t))
+      )
+      setLoadedTrackA((prev) =>
+        prev && filepathById.has(prev.id) ? { ...prev, filepath: filepathById.get(prev.id)! } : prev
+      )
+      setLoadedTrackB((prev) =>
+        prev && filepathById.has(prev.id) ? { ...prev, filepath: filepathById.get(prev.id)! } : prev
+      )
+      usePreviewStore.getState().syncFilepaths(changes)
+    },
+    []
+  )
+
   const handleReorderTracks = useCallback(
     async (playlistId: string, trackIds: string[]): Promise<void> => {
       // Optimistic update
@@ -493,6 +513,12 @@ export function useApp(): UseAppReturn {
       setRenamingStatus(data)
     })
 
+    // Listen for individual file renames (reorder, BPM rename) to keep all
+    // cached Track filepaths in sync without needing a full refetch
+    const cleanupFilepathChanged = window.api.onTrackFilepathChanged((changes) => {
+      handleUpdateFilepathsInState(changes)
+    })
+
     // Listen for tracks updated event to refresh currently displayed tracks
     const cleanupTracksUpdated = window.api.onTracksUpdated(() => {
       if (selectedPlaylistId) {
@@ -506,9 +532,15 @@ export function useApp(): UseAppReturn {
       cleanupBpmAnalyzed()
       cleanupKeyAnalyzed()
       cleanupRenamingStatus()
+      cleanupFilepathChanged()
       cleanupTracksUpdated()
     }
-  }, [selectedPlaylistId, handleUpdateBpmInState, handleUpdateKeyInState])
+  }, [
+    selectedPlaylistId,
+    handleUpdateBpmInState,
+    handleUpdateKeyInState,
+    handleUpdateFilepathsInState
+  ])
 
   return {
     playlists,

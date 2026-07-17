@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Track } from '@main/db'
+import { getMediaUrl } from '@renderer/utils/audio'
 
 const VOLUME_STORAGE_KEY = 'rekordfox_preview_volume'
 
 interface UseAudioPlayerResult {
   audioRef: React.RefObject<HTMLAudioElement | null>
+  mediaSrc: string
   currentTime: number
   duration: number
   volume: number
@@ -27,6 +29,12 @@ export function useAudioPlayer(
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const lastTrackId = useRef<string | null>(null)
 
+  // Pinned to the track's filepath at the moment it became the active track.
+  // A later filepath correction on the same track (e.g. a background rename)
+  // must not change this while it's loaded/playing — reassigning <audio src>
+  // makes the browser abort playback and restart from 0.
+  const [mediaSrc, setMediaSrc] = useState('')
+
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState<number>(() => {
@@ -46,6 +54,11 @@ export function useAudioPlayer(
       // values from the previous track while metadata for the new one loads.
       setCurrentTime(0)
       setDuration(0)
+      const newSrc = getMediaUrl(previewTrack.filepath)
+      // Set the DOM property directly — React hasn't committed the mediaSrc
+      // state update yet, so the src attribute still reflects the old track.
+      audioRef.current.src = newSrc
+      setMediaSrc(newSrc)
       audioRef.current.load()
     }
 
@@ -111,6 +124,7 @@ export function useAudioPlayer(
 
   return {
     audioRef,
+    mediaSrc,
     currentTime,
     duration,
     volume,
