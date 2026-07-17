@@ -147,5 +147,23 @@ export const en = {
   // Preview Player
   'preview.title': 'Preview Player',
   'preview.volume': 'Volume',
-  'preview.close': 'Close'
+  'preview.close': 'Close',
+  'preview.controls.previous': 'Previous',
+  'preview.controls.next': 'Next',
+  'preview.queue.toggle': 'Queue',
+  'preview.queue.nextUp': 'Next Up',
+  'preview.queue.fallback': 'Then',
+  'preview.queue.fallbackHint': 'auto-generated',
+  'preview.queue.empty': 'Queue is empty. Drag tracks here.',
+
+  // Context Menu
+  'contextMenu.playNow': 'Play Now',
+  'contextMenu.addToQueue': 'Add to Queue',
+  'contextMenu.removeFromQueue': 'Remove from Queue',
+
+  // History
+  'sidebar.history': 'Recently Played',
+  'history.title': 'Recently Played',
+  'history.subtitle': 'The last 50 played tracks',
+  'history.empty': 'No tracks played yet.'
 }

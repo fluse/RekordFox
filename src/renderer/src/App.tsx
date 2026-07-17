@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
 import { Sidebar, SplashScreen } from '@renderer/components/Layout'
-import { Tracklist, AddPlaylistModal, PreviewPlayer } from '@renderer/components/Library'
+import {
+  Tracklist,
+  AddPlaylistModal,
+  PreviewPlayer,
+  HistoryView
+} from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
 import SettingsModal from '@renderer/components/Settings'
 import { ChevronDown } from 'lucide-react'
@@ -15,6 +20,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
+  const [viewMode, setViewMode] = useState<'library' | 'history'>('library')
 
   const {
     playlists,
@@ -76,7 +82,12 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         <Sidebar
           playlists={playlists}
           selectedPlaylistId={selectedPlaylistId}
-          onSelectPlaylist={setSelectedPlaylistId}
+          onSelectPlaylist={(id) => {
+            setViewMode('library')
+            setSelectedPlaylistId(id)
+          }}
+          isHistorySelected={viewMode === 'history'}
+          onSelectHistory={() => setViewMode('history')}
           onDeletePlaylist={handleDeletePlaylist}
           onSyncPlaylist={handleSyncPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
@@ -97,7 +108,9 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           <div className="absolute inset-y-0 -left-2 -right-2" />
         </div>
 
-        {selectedPlaylistId && selectedPlaylist ? (
+        {viewMode === 'history' ? (
+          <HistoryView />
+        ) : selectedPlaylistId && selectedPlaylist ? (
           <Tracklist
             playlistId={selectedPlaylistId}
             playlistTitle={selectedPlaylist.title}

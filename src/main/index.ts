@@ -1,6 +1,5 @@
-import { app, shell, BrowserWindow, ipcMain, protocol, net, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
 import { join } from 'path'
-import { pathToFileURL } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -31,6 +30,7 @@ import { analyzeKey } from './key'
 import { detectUsbDrives } from './usb'
 import { exportPlaylistToUsb } from './export/m3u8/m3u8Exporter'
 import { ExportQueueManager } from './export/pioneer/ExportQueueManager'
+import { handleMediaRequest } from './media'
 
 const exportQueueManager = new ExportQueueManager()
 
@@ -91,40 +91,8 @@ app.whenReady().then(async () => {
     console.error('Failed to ensure yt-dlp at startup:', err)
   }
 
-  // Register custom media protocol
-  protocol.handle('media', (request) => {
-    try {
-      console.log('[Media Protocol] Raw request.url:', request.url)
-      let filePath = request.url
-      const prefix = 'media://'
-      if (filePath.toLowerCase().startsWith(prefix)) {
-        filePath = filePath.slice(prefix.length)
-      }
-      if (filePath.startsWith('local/')) {
-        filePath = filePath.slice('local/'.length)
-      }
-
-      if (process.platform !== 'win32' && !filePath.startsWith('/')) {
-        filePath = '/' + filePath
-      }
-      if (process.platform === 'win32' && filePath.startsWith('/')) {
-        filePath = filePath.slice(1)
-      }
-
-      filePath = decodeURIComponent(filePath)
-      console.log('[Media Protocol] Decoded path:', filePath)
-      const finalUrl = pathToFileURL(filePath).toString()
-      console.log('[Media Protocol] Final file URL:', finalUrl)
-      return net.fetch(finalUrl, {
-        method: request.method,
-        headers: request.headers,
-        referrer: request.referrer
-      })
-    } catch (err) {
-      console.error('[Media Protocol] Failed to handle request:', err)
-      return new Response('File not found', { status: 404 })
-    }
-  })
+  // Register custom media protocol (serves local files with byte-range support for seeking)
+  protocol.handle('media', handleMediaRequest)
 
   electronApp.setAppUserModelId('com.electron')
 

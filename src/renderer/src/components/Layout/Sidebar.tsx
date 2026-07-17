@@ -7,7 +7,8 @@ import {
   AlertCircle,
   Loader2,
   Settings,
-  Pencil
+  Pencil,
+  History
 } from 'lucide-react'
 import type { Playlist } from '@main/db'
 import logo from '@renderer/assets/logo-rekordfox.svg'
@@ -18,6 +19,8 @@ interface SidebarProps {
   playlists: Playlist[]
   selectedPlaylistId: string | null
   onSelectPlaylist: (id: string) => void
+  isHistorySelected: boolean
+  onSelectHistory: () => void
   onDeletePlaylist: (id: string) => void
   onSyncPlaylist: (id: string) => void
   onRenamePlaylist: (id: string, newTitle: string) => void
@@ -45,6 +48,8 @@ export default function Sidebar({
   playlists,
   selectedPlaylistId,
   onSelectPlaylist,
+  isHistorySelected,
+  onSelectHistory,
   onDeletePlaylist,
   onSyncPlaylist,
   onRenamePlaylist,
@@ -92,6 +97,18 @@ export default function Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <button
+          onClick={onSelectHistory}
+          className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition cursor-pointer ${
+            isHistorySelected
+              ? 'bg-zinc-900 text-zinc-100'
+              : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
+          }`}
+        >
+          <History className="h-4 w-4" />
+          <span>{t('sidebar.history')}</span>
+        </button>
+
         <div className="flex items-center justify-between px-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             {t('sidebar.playlists')}
@@ -107,7 +124,7 @@ export default function Sidebar({
         <div className="space-y-1">
           {playlists.map((playlist) => {
             const syncState = activeSyncs[playlist.id] || { status: playlist.syncStatus }
-            const isSelected = selectedPlaylistId === playlist.id
+            const isSelected = !isHistorySelected && selectedPlaylistId === playlist.id
 
             return (
               <div

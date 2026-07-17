@@ -152,5 +152,23 @@ export const fr = {
   // Preview Player
   'preview.title': 'Lecteur de préécoute',
   'preview.volume': 'Volume',
-  'preview.close': 'Fermer'
+  'preview.close': 'Fermer',
+  'preview.controls.previous': 'Précédent',
+  'preview.controls.next': 'Suivant',
+  'preview.queue.toggle': "File d'attente",
+  'preview.queue.nextUp': 'À suivre',
+  'preview.queue.fallback': 'Ensuite',
+  'preview.queue.fallbackHint': 'généré automatiquement',
+  'preview.queue.empty': "La file d'attente est vide. Glissez des titres ici.",
+
+  // Context Menu
+  'contextMenu.playNow': 'Lire maintenant',
+  'contextMenu.addToQueue': "Ajouter à la file d'attente",
+  'contextMenu.removeFromQueue': "Retirer de la file d'attente",
+
+  // History
+  'sidebar.history': 'Écoutés récemment',
+  'history.title': 'Écoutés récemment',
+  'history.subtitle': 'Les 50 derniers titres écoutés',
+  'history.empty': 'Aucun titre écouté pour le moment.'
 }

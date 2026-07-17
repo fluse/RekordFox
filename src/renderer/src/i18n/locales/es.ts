@@ -151,5 +151,23 @@ export const es = {
   // Preview Player
   'preview.title': 'Reproductor de vista previa',
   'preview.volume': 'Volumen',
-  'preview.close': 'Cerrar'
+  'preview.close': 'Cerrar',
+  'preview.controls.previous': 'Anterior',
+  'preview.controls.next': 'Siguiente',
+  'preview.queue.toggle': 'Cola',
+  'preview.queue.nextUp': 'A continuación',
+  'preview.queue.fallback': 'Después',
+  'preview.queue.fallbackHint': 'generado automáticamente',
+  'preview.queue.empty': 'La cola está vacía. Arrastra pistas aquí.',
+
+  // Context Menu
+  'contextMenu.playNow': 'Reproducir ahora',
+  'contextMenu.addToQueue': 'Añadir a la cola',
+  'contextMenu.removeFromQueue': 'Quitar de la cola',
+
+  // History
+  'sidebar.history': 'Reproducidos recientemente',
+  'history.title': 'Reproducidos recientemente',
+  'history.subtitle': 'Las últimas 50 pistas reproducidas',
+  'history.empty': 'Aún no se ha reproducido ninguna pista.'
 }

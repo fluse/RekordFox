@@ -149,5 +149,23 @@ export const de = {
   // Preview Player
   'preview.title': 'Vorschau-Player',
   'preview.volume': 'Lautstärke',
-  'preview.close': 'Schließen'
+  'preview.close': 'Schließen',
+  'preview.controls.previous': 'Vorheriger Titel',
+  'preview.controls.next': 'Nächster Titel',
+  'preview.queue.toggle': 'Warteschlange',
+  'preview.queue.nextUp': 'Als Nächstes',
+  'preview.queue.fallback': 'Danach',
+  'preview.queue.fallbackHint': 'automatisch erstellt',
+  'preview.queue.empty': 'Warteschlange ist leer. Ziehe Tracks hierher.',
+
+  // Context Menu
+  'contextMenu.playNow': 'Track abspielen',
+  'contextMenu.addToQueue': 'Zur Warteschlange hinzufügen',
+  'contextMenu.removeFromQueue': 'Aus Warteschlange entfernen',
+
+  // History
+  'sidebar.history': 'Zuletzt abgespielt',
+  'history.title': 'Zuletzt abgespielt',
+  'history.subtitle': 'Die letzten 50 abgespielten Tracks',
+  'history.empty': 'Noch keine Tracks abgespielt.'
 }
