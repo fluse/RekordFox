@@ -55,6 +55,14 @@ export const es = {
   'settings.errorChangeTheme': 'Error al cambiar el tema.',
   'settings.errorChangeWorkers': 'Error al cambiar la cantidad de workers.',
   'settings.errorChangeLanguage': 'Error al cambiar el idioma.',
+  'settings.filenameTemplateLabel': 'Formato del nombre del archivo',
+  'settings.filenameTemplateDefault': 'Estándar (ID/Criptográfico)',
+  'settings.filenameTemplateCustom': 'Legible (Posición-Artista-Pista-BPM-Hash)',
+  'settings.filenameTemplateHelp':
+    'Determina cómo se nombran los archivos MP3 descargados en tu carpeta de almacenamiento.',
+  'settings.errorChangeFilenameTemplate': 'Error al cambiar el formato del nombre de archivo.',
+  'settings.renamingIndicator': 'Renombrando... ({{current}}/{{total}})',
+  'settings.renamingIndicatorText': 'Renombrando archivos...',
 
   // Deck
   'deck.loadingWaveform': 'Decodificando forma de onda...',

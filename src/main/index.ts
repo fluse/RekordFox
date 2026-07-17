@@ -16,6 +16,7 @@ import {
   updateTrackRating,
   getSettings,
   updateSettings,
+  renameAllTracksFilenameAsync,
   migrateDownloadsFolder,
   renamePlaylist,
   updateTrackPositions,
@@ -23,7 +24,7 @@ import {
   AppSettings
 } from './db'
 import { getPlaylistInfo, ensureYtdlp } from './downloader'
-import { syncPlaylist, startBackgroundSync, stopBackgroundSync } from './sync'
+import { syncPlaylist, startBackgroundSync, stopBackgroundSync, isAnyPlaylistSyncing } from './sync'
 import { analyzeBpm } from './bpm'
 import { analyzeKey } from './key'
 import { detectUsbDrives } from './usb'
@@ -176,8 +177,11 @@ app.whenReady().then(async () => {
     return { success: false, error: 'Playlist not found' }
   })
 
-  ipcMain.handle('tracks:get', (_, playlistId: string) => {
-    return getTracksForPlaylist(playlistId)
+  ipcMain.handle('tracks:get', (_, playlistId?: string) => {
+    if (playlistId) {
+      return getTracksForPlaylist(playlistId)
+    }
+    return getTracks()
   })
 
   ipcMain.handle('tracks:update-bpm', (_, trackId: string, playlistId: string, bpm: number) => {
@@ -252,9 +256,60 @@ app.whenReady().then(async () => {
     return getSettings()
   })
 
-  ipcMain.handle('settings:update', (_, settings: Partial<AppSettings>) => {
+  ipcMain.handle('settings:update', async (_, settings: Partial<AppSettings>) => {
     try {
+      const oldSettings = getSettings()
+      const oldTemplate = oldSettings.filenameTemplate || 'default'
+      const newTemplate = settings.filenameTemplate
+
+      if (newTemplate && newTemplate !== oldTemplate && isAnyPlaylistSyncing()) {
+        const lang = oldSettings.language || 'de'
+        const errMsg =
+          lang === 'de'
+            ? 'Dateiformat kann nicht geändert werden, während eine Synchronisation läuft.'
+            : lang === 'fr'
+              ? 'Impossible de modifier le format du nom de fichier pendant une synchronisation active.'
+              : lang === 'es'
+                ? 'No se puede cambiar el formato del nombre de archivo mientras una sincronización está activa.'
+                : 'Cannot change filename format while a synchronization is active.'
+        return { success: false, error: errMsg }
+      }
+
       updateSettings(settings)
+
+      if (newTemplate && newTemplate !== oldTemplate) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('renaming-status', { active: true, current: 0, total: 0 })
+        }
+
+        // Run async renaming task
+        renameAllTracksFilenameAsync(newTemplate, (current, total) => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('renaming-status', { active: true, current, total })
+          }
+        })
+          .then(() => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('renaming-status', {
+                active: false,
+                current: 0,
+                total: 0
+              })
+              mainWindow.webContents.send('tracks-updated')
+            }
+          })
+          .catch((err) => {
+            console.error('Async renaming failed:', err)
+            if (mainWindow && !mainWindow.isDestroyed()) {
+              mainWindow.webContents.send('renaming-status', {
+                active: false,
+                current: 0,
+                total: 0
+              })
+            }
+          })
+      }
+
       return { success: true }
     } catch (e: any) {
       return { success: false, error: e.message }

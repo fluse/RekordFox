@@ -9,7 +9,7 @@ const api = {
   renamePlaylist: (id: string, newTitle: string) =>
     ipcRenderer.invoke('playlists:rename', id, newTitle),
 
-  getTracks: (playlistId: string) => ipcRenderer.invoke('tracks:get', playlistId),
+  getTracks: (playlistId?: string) => ipcRenderer.invoke('tracks:get', playlistId),
   updateTrackBpm: (trackId: string, playlistId: string, bpm: number) =>
     ipcRenderer.invoke('tracks:update-bpm', trackId, playlistId, bpm),
   updateTrackRating: (trackId: string, playlistId: string, rating: number) =>
@@ -23,6 +23,24 @@ const api = {
   selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
   confirmMigration: () => ipcRenderer.invoke('dialog:confirm-migration'),
   openPath: (path: string) => ipcRenderer.invoke('settings:open-path', path),
+
+  onRenamingStatus: (
+    callback: (data: { active: boolean; current: number; total: number }) => void
+  ) => {
+    const subscription = (_event: any, data: any) => callback(data)
+    ipcRenderer.on('renaming-status', subscription)
+    return () => {
+      ipcRenderer.removeListener('renaming-status', subscription)
+    }
+  },
+
+  onTracksUpdated: (callback: () => void) => {
+    const subscription = () => callback()
+    ipcRenderer.on('tracks-updated', subscription)
+    return () => {
+      ipcRenderer.removeListener('tracks-updated', subscription)
+    }
+  },
 
   // Sync / Download events listeners
   onSyncStatusChanged: (

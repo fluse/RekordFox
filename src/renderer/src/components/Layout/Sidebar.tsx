@@ -34,6 +34,11 @@ interface SidebarProps {
   >
   width?: number
   theme?: 'dark' | 'light'
+  renamingStatus?: {
+    active: boolean
+    current: number
+    total: number
+  }
 }
 
 export default function Sidebar({
@@ -47,7 +52,8 @@ export default function Sidebar({
   onOpenSettings,
   activeSyncs,
   width,
-  theme = 'dark'
+  theme = 'dark',
+  renamingStatus
 }: SidebarProps): React.JSX.Element {
   const { t } = useLanguage()
   const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null)
@@ -92,7 +98,7 @@ export default function Sidebar({
           </span>
           <button
             onClick={onOpenAddModal}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+            className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -293,7 +299,7 @@ export default function Sidebar({
       </div>
 
       {/* Bottom Actions / Settings */}
-      <div className="border-t border-zinc-900 p-4 bg-zinc-950/20">
+      <div className="border-t border-zinc-900 p-4 bg-zinc-950/20 space-y-2">
         <button
           onClick={onOpenSettings}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 transition-colors cursor-pointer"
@@ -301,6 +307,18 @@ export default function Sidebar({
           <Settings className="h-4 w-4" />
           <span>{t('sidebar.settings')}</span>
         </button>
+
+        {renamingStatus?.active && (
+          <div className="flex items-center gap-2 px-3 py-1 text-[10px] text-zinc-500 font-semibold animate-pulse">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+            <span className="truncate">
+              {t('settings.renamingIndicator', {
+                current: renamingStatus.current.toString(),
+                total: renamingStatus.total.toString()
+              })}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

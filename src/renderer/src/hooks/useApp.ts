@@ -39,6 +39,11 @@ export interface UseAppReturn {
   handleUpdateSettings: (newSettings: Partial<AppSettings>) => Promise<void>
   handleMigrate: (newPath: string, moveFiles: boolean) => Promise<void>
   handleMouseDownSplitter: (e: React.MouseEvent) => void
+  renamingStatus: {
+    active: boolean
+    current: number
+    total: number
+  }
 }
 
 export function useApp(): UseAppReturn {
@@ -83,6 +88,16 @@ export function useApp(): UseAppReturn {
 
   // Real-time synchronization state map
   const [activeSyncs, setActiveSyncs] = useState<ActiveSyncsMap>({})
+
+  const [renamingStatus, setRenamingStatus] = useState<{
+    active: boolean
+    current: number
+    total: number
+  }>({
+    active: false,
+    current: 0,
+    total: 0
+  })
 
   // Called when a track's BPM is calculated in the background
   const handleUpdateBpmInState = useCallback((trackId: string, bpm: number): void => {
@@ -141,8 +156,10 @@ export function useApp(): UseAppReturn {
   const handleLoadTrack = useCallback((track: Track, deck: 'A' | 'B'): void => {
     if (deck === 'A') {
       setLoadedTrackA(track)
+      localStorage.setItem('loadedTrackAId', track.id)
     } else {
       setLoadedTrackB(track)
+      localStorage.setItem('loadedTrackBId', track.id)
     }
   }, [])
 
@@ -168,8 +185,20 @@ export function useApp(): UseAppReturn {
         setSelectedPlaylistId((prevSelected) => (prevSelected === id ? null : prevSelected))
 
         // Unload deleted tracks from DJ decks if active
-        setLoadedTrackA((prev) => (prev?.playlistId === id ? null : prev))
-        setLoadedTrackB((prev) => (prev?.playlistId === id ? null : prev))
+        setLoadedTrackA((prev) => {
+          if (prev?.playlistId === id) {
+            localStorage.removeItem('loadedTrackAId')
+            return null
+          }
+          return prev
+        })
+        setLoadedTrackB((prev) => {
+          if (prev?.playlistId === id) {
+            localStorage.removeItem('loadedTrackBId')
+            return null
+          }
+          return prev
+        })
       } else {
         alert(t('actions.errorDeletePlaylist', { error: res.error || '' }))
       }
@@ -207,10 +236,11 @@ export function useApp(): UseAppReturn {
           setSettings((prev) => ({ ...prev, ...newSettings }))
         } else {
           alert(t('actions.errorUpdateSettings', { error: res.error || '' }))
+          throw new Error(res.error || '')
         }
       } catch (err) {
         console.error(err)
-        alert(t('actions.errorUpdateSettingsGeneral'))
+        throw err
       }
     },
     [t]
@@ -291,8 +321,28 @@ export function useApp(): UseAppReturn {
         console.error('Failed to load settings:', e)
       }
     }
+    const loadLastTracks = async (): Promise<void> => {
+      try {
+        const trackAId = localStorage.getItem('loadedTrackAId')
+        const trackBId = localStorage.getItem('loadedTrackBId')
+        if (trackAId || trackBId) {
+          const allTracks = await window.api.getTracks()
+          if (trackAId) {
+            const trackA = allTracks.find((t) => t.id === trackAId)
+            if (trackA) setLoadedTrackA(trackA)
+          }
+          if (trackBId) {
+            const trackB = allTracks.find((t) => t.id === trackBId)
+            if (trackB) setLoadedTrackB(trackB)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load last tracks:', e)
+      }
+    }
     fetchPlaylists()
     loadSettings()
+    loadLastTracks()
   }, [])
 
   // 2. Inject theme class into HTML document root
@@ -418,11 +468,25 @@ export function useApp(): UseAppReturn {
       handleUpdateKeyInState(trackId, key)
     })
 
+    // Listen for filename renaming status
+    const cleanupRenamingStatus = window.api.onRenamingStatus((data) => {
+      setRenamingStatus(data)
+    })
+
+    // Listen for tracks updated event to refresh currently displayed tracks
+    const cleanupTracksUpdated = window.api.onTracksUpdated(() => {
+      if (selectedPlaylistId) {
+        window.api.getTracks(selectedPlaylistId).then(setTracks).catch(console.error)
+      }
+    })
+
     return (): void => {
       cleanupSyncStatus()
       cleanupDownloadProgress()
       cleanupBpmAnalyzed()
       cleanupKeyAnalyzed()
+      cleanupRenamingStatus()
+      cleanupTracksUpdated()
     }
   }, [selectedPlaylistId, handleUpdateBpmInState, handleUpdateKeyInState])
 
@@ -447,6 +511,7 @@ export function useApp(): UseAppReturn {
     handleReorderTracks,
     handleUpdateSettings,
     handleMigrate,
-    handleMouseDownSplitter
+    handleMouseDownSplitter,
+    renamingStatus
   }
 }

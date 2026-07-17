@@ -53,6 +53,14 @@ export const en = {
   'settings.errorChangeTheme': 'Error changing theme.',
   'settings.errorChangeWorkers': 'Error changing worker count.',
   'settings.errorChangeLanguage': 'Error changing language.',
+  'settings.filenameTemplateLabel': 'Filename Format',
+  'settings.filenameTemplateDefault': 'Standard (ID/Cryptic)',
+  'settings.filenameTemplateCustom': 'Readable (Position-Artist-Track-BPM-Hash)',
+  'settings.filenameTemplateHelp':
+    'Determines how downloaded MP3 files are named in your storage folder.',
+  'settings.errorChangeFilenameTemplate': 'Error changing filename format.',
+  'settings.renamingIndicator': 'Renaming... ({{current}}/{{total}})',
+  'settings.renamingIndicatorText': 'Renaming files...',
 
   // Deck
   'deck.loadingWaveform': 'Decoding waveform...',

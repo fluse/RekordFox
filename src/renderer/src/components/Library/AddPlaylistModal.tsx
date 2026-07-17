@@ -50,7 +50,7 @@ export default function AddPlaylistModal({
       <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200"
+          className="absolute cursor-pointer top-4 right-4 text-zinc-400 hover:text-zinc-200"
         >
           <X className="h-5 w-5" />
         </button>

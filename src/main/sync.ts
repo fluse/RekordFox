@@ -13,7 +13,9 @@ import {
   updateTrackBpm,
   updateTrackKey,
   getSettings,
-  getPlaylists
+  getPlaylists,
+  getTrackFilename,
+  getPlaylistFolderName
 } from './db'
 import { getPlaylistInfo, downloadTrack } from './downloader'
 import { analyzeBpm } from './bpm'
@@ -22,6 +24,13 @@ import nodeId3 from 'node-id3'
 
 // Map of active synchronization tasks
 const activeSyncs = new Map<string, boolean>()
+
+export function isAnyPlaylistSyncing(): boolean {
+  for (const val of activeSyncs.values()) {
+    if (val) return true
+  }
+  return false
+}
 
 // Parse YouTube video title to extract Artist and Title
 export function parseTitleAndArtist(
@@ -178,9 +187,35 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
         const ytTrack = queue.shift()
         if (!ytTrack) break
 
-        const sanitizedFilename = `${playlist.id}_${ytTrack.id}.mp3`
+        // Determine position in the playlist
+        const existingTrack = currentLocalTracks.find((t) => t.id === ytTrack.id)
+        let trackPos = existingTrack?.position
+        if (trackPos === undefined) {
+          const trackIndex = ytPlaylist.entries.findIndex((e) => e.id === ytTrack.id)
+          trackPos = trackIndex !== -1 ? trackIndex + 1 : 1
+        }
+
+        const { title, artist } = parseTitleAndArtist(ytTrack.title, ytTrack.uploader)
+        const bpm = existingTrack?.bpm || 0
+
+        const filename = getTrackFilename(
+          playlist.id,
+          ytTrack.id,
+          artist,
+          title,
+          trackPos,
+          bpm,
+          settings.filenameTemplate || 'default'
+        )
+
+        const playlistFolder = getPlaylistFolderName(playlist)
+        const targetDir = join(downloadsDir, playlistFolder)
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true })
+        }
+
         const sanitizedCoverName = `${playlist.id}_${ytTrack.id}.jpg`
-        const filepath = join(downloadsDir, sanitizedFilename)
+        const filepath = join(targetDir, filename)
         const coverPath = join(coversDir, sanitizedCoverName)
 
         const currentDownloadIndex = ++downloadedCount

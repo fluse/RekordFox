@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, chmodSync, writeFileSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, chmodSync, writeFileSync, unlinkSync, statSync } from 'fs'
 import { execFile, spawn } from 'child_process'
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
 
@@ -22,24 +22,52 @@ export function getYtdlpPath(): string {
 // Ensure yt-dlp is downloaded and executable
 export async function ensureYtdlp(onProgress?: (msg: string) => void): Promise<string> {
   const ytdlpPath = getYtdlpPath()
-  if (existsSync(ytdlpPath)) {
-    return ytdlpPath
+  const exists = existsSync(ytdlpPath)
+
+  if (exists) {
+    try {
+      const stats = statSync(ytdlpPath)
+      const ageInMs = Date.now() - stats.mtime.getTime()
+      const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000
+      if (ageInMs < thirtyDaysInMs) {
+        return ytdlpPath
+      }
+    } catch (err) {
+      console.error('Failed to check yt-dlp file age:', err)
+      return ytdlpPath
+    }
   }
 
-  if (onProgress) onProgress('yt-dlp wird heruntergeladen...')
+  if (onProgress) {
+    onProgress(exists ? 'yt-dlp wird aktualisiert...' : 'yt-dlp wird heruntergeladen...')
+  }
 
   const url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos'
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to download yt-dlp: ${response.statusText}`)
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to download yt-dlp: ${response.statusText}`)
+    }
+
+    const arrayBuffer = await response.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    writeFileSync(ytdlpPath, buffer)
+    chmodSync(ytdlpPath, 0o755) // Make executable
+
+    if (onProgress) {
+      onProgress(exists ? 'yt-dlp erfolgreich aktualisiert.' : 'yt-dlp erfolgreich eingerichtet.')
+    }
+  } catch (err) {
+    if (exists) {
+      console.warn('Failed to update yt-dlp, using existing cached version:', err)
+      if (onProgress) {
+        onProgress('Aktualisierung fehlgeschlagen, verwende vorhandene Version.')
+      }
+    } else {
+      throw err
+    }
   }
 
-  const arrayBuffer = await response.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer)
-  writeFileSync(ytdlpPath, buffer)
-  chmodSync(ytdlpPath, 0o755) // Make executable
-
-  if (onProgress) onProgress('yt-dlp erfolgreich eingerichtet.')
   return ytdlpPath
 }
 
@@ -61,7 +89,13 @@ export function getPlaylistInfo(playlistUrl: string): Promise<YtPlaylist> {
   return new Promise(async (resolve, reject) => {
     try {
       const ytdlpPath = await ensureYtdlp()
-      const args = ['--dump-single-json', '--flat-playlist', '--no-warnings', playlistUrl]
+      const args = [
+        '--dump-single-json',
+        '--flat-playlist',
+        '--no-warnings',
+        '--no-update',
+        playlistUrl
+      ]
 
       execFile(ytdlpPath, args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
         if (error) {
@@ -124,6 +158,7 @@ export function downloadTrack(
       const finalTempOutput = outputPath.replace(/\.mp3$/, '.temp.mp3')
 
       const args = [
+        '--no-update',
         '-x',
         '--audio-format',
         'mp3',

@@ -55,6 +55,14 @@ export const fr = {
   'settings.errorChangeTheme': 'Erreur lors du changement de thème.',
   'settings.errorChangeWorkers': 'Erreur lors du changement du nombre de workers.',
   'settings.errorChangeLanguage': 'Erreur lors du changement de langue.',
+  'settings.filenameTemplateLabel': 'Format de nom de fichier',
+  'settings.filenameTemplateDefault': 'Standard (ID/Cryptique)',
+  'settings.filenameTemplateCustom': 'Lisible (Position-Artiste-Piste-BPM-Hash)',
+  'settings.filenameTemplateHelp':
+    'Détermine comment les fichiers MP3 téléchargés sont nommés dans votre dossier de stockage.',
+  'settings.errorChangeFilenameTemplate': 'Erreur lors du changement de format de nom de fichier.',
+  'settings.renamingIndicator': 'Renommer... ({{current}}/{{total}})',
+  'settings.renamingIndicatorText': 'Renommer les fichiers...',
 
   // Deck
   'deck.loadingWaveform': "Décodage de la forme d'onde...",

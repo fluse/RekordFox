@@ -10,6 +10,11 @@ interface SettingsModalProps {
   onUpdateSettings: (settings: Partial<AppSettings>) => Promise<void>
   onMigrate: (newPath: string, moveFiles: boolean) => Promise<void>
   isSyncing: boolean
+  renamingStatus?: {
+    active: boolean
+    current: number
+    total: number
+  }
 }
 
 export default function SettingsModal({
@@ -18,7 +23,8 @@ export default function SettingsModal({
   settings,
   onUpdateSettings,
   onMigrate,
-  isSyncing
+  isSyncing,
+  renamingStatus
 }: SettingsModalProps): React.JSX.Element | null {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -78,22 +84,34 @@ export default function SettingsModal({
     }
   }
 
+  const handleUpdateFilenameTemplate = async (
+    filenameTemplate: 'default' | 'custom'
+  ): Promise<void> => {
+    if (filenameTemplate === settings.filenameTemplate) return
+    try {
+      await onUpdateSettings({ filenameTemplate })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg || t('settings.errorChangeFilenameTemplate'))
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl flex flex-col max-h-[90vh]">
         <button
           onClick={onClose}
           disabled={loading}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200 disabled:opacity-50"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200 disabled:opacity-50 z-10"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="mb-6 text-xl font-bold text-zinc-100 border-b border-zinc-900 pb-3">
+        <h2 className="text-xl font-bold text-zinc-100 border-b border-zinc-900 p-6 pb-3">
           {t('settings.title')}
         </h2>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Theme Selector */}
           <div>
             <label className="mb-2 block text-sm font-medium text-zinc-400">
@@ -251,22 +269,84 @@ export default function SettingsModal({
             </p>
           </div>
 
+          {/* Filename Format Selector */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
+              {t('settings.filenameTemplateLabel')}
+            </label>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => handleUpdateFilenameTemplate('default')}
+                disabled={loading || renamingStatus?.active}
+                className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold border transition cursor-pointer ${
+                  (settings.filenameTemplate || 'default') === 'default'
+                    ? settings.theme === 'light'
+                      ? 'bg-amber-600 border-amber-600 text-white shadow shadow-amber-600/20'
+                      : 'bg-primary border-primary text-white shadow shadow-primary/20'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                }`}
+              >
+                {t('settings.filenameTemplateDefault')}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUpdateFilenameTemplate('custom')}
+                disabled={loading || renamingStatus?.active}
+                className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold border transition cursor-pointer ${
+                  settings.filenameTemplate === 'custom'
+                    ? settings.theme === 'light'
+                      ? 'bg-amber-600 border-amber-600 text-white shadow shadow-amber-600/20'
+                      : 'bg-primary border-primary text-white shadow shadow-primary/20'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                }`}
+              >
+                {t('settings.filenameTemplateCustom')}
+              </button>
+            </div>
+            <p className="mt-2 text-[10px] text-zinc-500">{t('settings.filenameTemplateHelp')}</p>
+
+            {renamingStatus?.active && (
+              <div className="mt-3 flex items-center gap-3 rounded bg-zinc-900 border border-zinc-800 p-2.5">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <div className="flex-1">
+                  <div className="flex justify-between text-[10px] font-semibold text-zinc-400">
+                    <span>{t('settings.renamingIndicatorText')}</span>
+                    <span>
+                      {renamingStatus.current} / {renamingStatus.total}
+                    </span>
+                  </div>
+                  {renamingStatus.total > 0 && (
+                    <div className="mt-1.5 h-1 w-full bg-zinc-950 rounded overflow-hidden">
+                      <div
+                        className="h-full bg-primary transition-all duration-300"
+                        style={{
+                          width: `${(renamingStatus.current / renamingStatus.total) * 100}%`
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {error && (
             <p className="text-xs font-medium text-red-500 bg-red-500/10 border border-red-500/20 rounded p-2">
               {error}
             </p>
           )}
+        </div>
 
-          <div className="flex justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="rounded-lg bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-50 cursor-pointer"
-            >
-              {t('settings.close')}
-            </button>
-          </div>
+        <div className="flex justify-end p-6 pt-3 border-t border-zinc-900">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-lg bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-50 cursor-pointer"
+          >
+            {t('settings.close')}
+          </button>
         </div>
       </div>
     </div>

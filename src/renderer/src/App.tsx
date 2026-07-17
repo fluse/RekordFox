@@ -14,7 +14,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const [showSplash, setShowSplash] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isMixerCollapsed, setIsMixerCollapsed] = useState(false)
+  const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
 
   const {
     playlists,
@@ -37,7 +37,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
     handleReorderTracks,
     handleUpdateSettings,
     handleMigrate,
-    handleMouseDownSplitter
+    handleMouseDownSplitter,
+    renamingStatus
   } = appState
 
   const selectedPlaylist = playlists.find((p) => p.id === selectedPlaylistId)
@@ -84,6 +85,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           activeSyncs={activeSyncs}
           width={sidebarWidth}
           theme={settings.theme}
+          renamingStatus={renamingStatus}
         />
 
         {/* Resizer Splitter */}
@@ -130,6 +132,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         onUpdateSettings={handleUpdateSettings}
         onMigrate={handleMigrate}
         isSyncing={Object.keys(activeSyncs).length > 0}
+        renamingStatus={renamingStatus}
       />
     </div>
   )

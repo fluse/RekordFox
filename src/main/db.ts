@@ -27,12 +27,20 @@ export interface Track {
   position?: number
 }
 
+export function getPlaylistFolderName(playlist: Playlist): string {
+  const cleanTitle = playlist.title.replace(/[\\/:*?"<>|]/g, '').trim() || 'Unknown Playlist'
+  const lowercaseUrl = (playlist.url || '').toLowerCase()
+  const provider = lowercaseUrl.includes('soundcloud.com') ? 'soundcloud' : 'youtube'
+  return `${cleanTitle}-${provider}-${playlist.id}`
+}
+
 export interface AppSettings {
   theme: 'dark' | 'light'
   downloadPath: string
   sidebarWidth: number
   maxWorkers: number
   language?: 'de' | 'en' | 'fr' | 'es'
+  filenameTemplate?: 'default' | 'custom'
 }
 
 interface DatabaseSchema {
@@ -53,7 +61,8 @@ let dbData: DatabaseSchema = {
     downloadPath: '',
     sidebarWidth: 256,
     maxWorkers: 1,
-    language: 'de'
+    language: 'de',
+    filenameTemplate: 'default'
   }
 }
 
@@ -96,7 +105,8 @@ export function initDb(): void {
           downloadPath: defaultDownloadsDir,
           sidebarWidth: 256,
           maxWorkers: 3,
-          language: 'de'
+          language: 'de',
+          filenameTemplate: 'default'
         }
       } else {
         if (!dbData.settings.theme) dbData.settings.theme = 'dark'
@@ -104,6 +114,7 @@ export function initDb(): void {
         if (!dbData.settings.sidebarWidth) dbData.settings.sidebarWidth = 256
         if (!dbData.settings.maxWorkers) dbData.settings.maxWorkers = 3
         if (!dbData.settings.language) dbData.settings.language = 'de'
+        if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'default'
       }
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
@@ -129,6 +140,36 @@ export function initDb(): void {
               dbUpdated = true
             }
             posCounter++
+          }
+        }
+      }
+
+      // Self-healing subfolders migration: move files from root downloads dir (or anywhere incorrect) into correct playlist subfolders
+      if (dbData.tracks && Array.isArray(dbData.tracks)) {
+        for (const track of dbData.tracks) {
+          if (track.filepath && fs.existsSync(track.filepath)) {
+            const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
+            if (playlist) {
+              const expectedDir = join(getDownloadsDir(), getPlaylistFolderName(playlist))
+              const actualDir = require('path').dirname(track.filepath)
+
+              if (actualDir !== expectedDir) {
+                try {
+                  if (!fs.existsSync(expectedDir)) {
+                    fs.mkdirSync(expectedDir, { recursive: true })
+                  }
+                  const targetPath = join(expectedDir, basename(track.filepath))
+                  fs.renameSync(track.filepath, targetPath)
+                  track.filepath = targetPath
+                  dbUpdated = true
+                } catch (e) {
+                  console.error(
+                    `Failed to self-heal/move track file ${track.id} to playlist subdirectory:`,
+                    e
+                  )
+                }
+              }
+            }
           }
         }
       }
@@ -341,13 +382,50 @@ export function addTrack(track: Track): void {
 }
 
 export function updateTrackPositions(playlistId: string, trackIds: string[]): void {
+  const settings = getSettings()
   const playlistTracks = dbData.tracks.filter((t) => t.playlistId === playlistId)
+  const fs = require('fs')
+  const path = require('path')
+
   for (const track of playlistTracks) {
+    const oldPosition = track.position
     const newIdx = trackIds.indexOf(track.id)
-    if (newIdx !== -1) {
-      track.position = newIdx + 1
-    } else {
-      track.position = trackIds.length + 1
+    const newPosition = newIdx !== -1 ? newIdx + 1 : trackIds.length + 1
+
+    if (oldPosition !== newPosition) {
+      const oldFilepath = track.filepath
+      track.position = newPosition
+
+      if (settings.filenameTemplate === 'custom' && oldFilepath && fs.existsSync(oldFilepath)) {
+        try {
+          const playlist = dbData.playlists.find((p) => p.id === playlistId)
+          const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
+          const targetDir = playlistFolder
+            ? path.join(getDownloadsDir(), playlistFolder)
+            : path.dirname(oldFilepath)
+
+          if (playlistFolder && !fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true })
+          }
+
+          const newFilename = getTrackFilename(
+            playlistId,
+            track.id,
+            track.artist,
+            track.title,
+            newPosition,
+            track.bpm || 0,
+            'custom'
+          )
+          const newFilepath = path.join(targetDir, newFilename)
+          if (oldFilepath !== newFilepath) {
+            fs.renameSync(oldFilepath, newFilepath)
+            track.filepath = newFilepath
+          }
+        } catch (err) {
+          console.error(`Failed to rename file on position change for track ${track.id}:`, err)
+        }
+      }
     }
   }
   saveDb()
@@ -361,6 +439,7 @@ export function deleteTrack(trackId: string, playlistId: string): void {
 export function updateTrackBpm(trackId: string, playlistId: string, bpm: number): void {
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
+    const oldFilepath = track.filepath
     track.bpm = bpm
     saveDb()
 
@@ -370,9 +449,47 @@ export function updateTrackBpm(trackId: string, playlistId: string, bpm: number)
       const tags = {
         bpm: bpm.toString()
       }
-      nodeId3.update(tags, track.filepath)
+      nodeId3.update(tags, oldFilepath)
     } catch (e) {
       console.error(`Failed to update BPM ID3 tag for track ${trackId}:`, e)
+    }
+
+    // Rename file if custom naming template is enabled and path exists
+    const settings = getSettings()
+    if (settings.filenameTemplate === 'custom' && oldFilepath) {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        if (fs.existsSync(oldFilepath)) {
+          const playlist = dbData.playlists.find((p) => p.id === playlistId)
+          const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
+          const targetDir = playlistFolder
+            ? path.join(getDownloadsDir(), playlistFolder)
+            : path.dirname(oldFilepath)
+
+          if (playlistFolder && !fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true })
+          }
+
+          const newFilename = getTrackFilename(
+            playlistId,
+            trackId,
+            track.artist,
+            track.title,
+            track.position || 0,
+            bpm,
+            'custom'
+          )
+          const newFilepath = path.join(targetDir, newFilename)
+          if (oldFilepath !== newFilepath) {
+            fs.renameSync(oldFilepath, newFilepath)
+            track.filepath = newFilepath
+            saveDb()
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to rename file to update BPM in filename for track ${trackId}:`, err)
+      }
     }
   }
 }
@@ -442,11 +559,92 @@ export function getSettings(): AppSettings {
   )
 }
 
+function sanitizeForFilename(str: string): string {
+  return str
+    .replace(/[\\/:*?"<>|]/g, '') // remove invalid filename chars
+    .trim()
+}
+
+export function getTrackFilename(
+  playlistId: string,
+  trackId: string,
+  artist: string,
+  title: string,
+  position: number,
+  bpm: number,
+  template: 'default' | 'custom'
+): string {
+  if (template === 'custom') {
+    const cleanArtist = sanitizeForFilename(artist) || 'Unknown Artist'
+    const cleanTitle = sanitizeForFilename(title) || 'Unknown Title'
+    const trackPos = position.toString().padStart(2, '0')
+    return `${trackPos}-${cleanArtist}-${cleanTitle}-${bpm}bpm-${trackId}.mp3`
+  }
+  return `${playlistId}_${trackId}.mp3`
+}
+
 export function updateSettings(settings: Partial<AppSettings>): void {
   if (dbData.settings) {
     dbData.settings = { ...dbData.settings, ...settings }
     saveDb()
   }
+}
+
+export async function renameAllTracksFilenameAsync(
+  newTemplate: 'default' | 'custom',
+  onProgress: (current: number, total: number) => void
+): Promise<void> {
+  const fs = require('fs')
+  const path = require('path')
+  const tracksToRename = dbData.tracks.filter((t) => t.filepath && fs.existsSync(t.filepath))
+  const total = tracksToRename.length
+
+  if (total === 0) {
+    onProgress(0, 0)
+    return
+  }
+
+  let current = 0
+  for (const track of tracksToRename) {
+    try {
+      const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
+      const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
+      const targetDir = playlistFolder
+        ? path.join(getDownloadsDir(), playlistFolder)
+        : path.dirname(track.filepath)
+
+      if (playlistFolder && !fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true })
+      }
+
+      const newFilename = getTrackFilename(
+        track.playlistId,
+        track.id,
+        track.artist,
+        track.title,
+        track.position || 0,
+        track.bpm || 0,
+        newTemplate
+      )
+      const newFilepath = path.join(targetDir, newFilename)
+      if (track.filepath !== newFilepath) {
+        fs.renameSync(track.filepath, newFilepath)
+        track.filepath = newFilepath
+      }
+    } catch (err) {
+      console.error(`Failed to rename track ${track.id} on settings template change:`, err)
+    }
+
+    current++
+    onProgress(current, total)
+
+    // Yield execution to the event loop every 10 tracks to keep event loop responsive
+    if (current % 10 === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    }
+  }
+
+  saveDb()
 }
 
 // Folder migration logic
@@ -457,9 +655,17 @@ export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean
 
   if (moveFiles) {
     for (const track of dbData.tracks) {
+      const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
+      const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
+      const targetDir = playlistFolder ? join(newPath, playlistFolder) : newPath
+
+      if (playlistFolder && !existsSync(targetDir)) {
+        mkdirSync(targetDir, { recursive: true })
+      }
+
       if (existsSync(track.filepath)) {
         const file = basename(track.filepath)
-        const targetPath = join(newPath, file)
+        const targetPath = join(targetDir, file)
 
         try {
           copyFileSync(track.filepath, targetPath)
@@ -470,13 +676,16 @@ export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean
         }
       } else {
         // Just update path mapping anyway
-        track.filepath = join(newPath, basename(track.filepath))
+        track.filepath = join(targetDir, basename(track.filepath))
       }
     }
   } else {
     // Just update db path mappings without moving
     for (const track of dbData.tracks) {
-      track.filepath = join(newPath, basename(track.filepath))
+      const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
+      const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
+      const targetDir = playlistFolder ? join(newPath, playlistFolder) : newPath
+      track.filepath = join(targetDir, basename(track.filepath))
     }
   }
 

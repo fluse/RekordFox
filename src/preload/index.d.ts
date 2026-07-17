@@ -14,7 +14,7 @@ declare global {
         id: string,
         newTitle: string
       ) => Promise<{ success: boolean; error?: string }>
-      getTracks: (playlistId: string) => Promise<Track[]>
+      getTracks: (playlistId?: string) => Promise<Track[]>
       updateTrackBpm: (
         trackId: string,
         playlistId: string,
@@ -40,6 +40,10 @@ declare global {
       selectDirectory: () => Promise<string | null>
       confirmMigration: () => Promise<'move' | 'change' | 'cancel'>
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
+      onRenamingStatus: (
+        callback: (data: { active: boolean; current: number; total: number }) => void
+      ) => () => void
+      onTracksUpdated: (callback: () => void) => () => void
       onSyncStatusChanged: (
         callback: (playlistId: string, status: string, lastSync?: string) => void
       ) => () => void
