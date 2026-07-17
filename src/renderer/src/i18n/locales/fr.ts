@@ -71,7 +71,8 @@ export const fr = {
   'settings.rekordboxXmlClear': 'Effacer',
   'settings.rekordboxXmlClearTooltip': "Supprimer le chemin d'exportation XML",
   'settings.rekordboxXmlExportNow': 'Exporter maintenant',
-  'settings.rekordboxXmlExportNowTooltip': 'Exporter manuellement toute la collection en XML maintenant',
+  'settings.rekordboxXmlExportNowTooltip':
+    'Exporter manuellement toute la collection en XML maintenant',
   'settings.rekordboxXmlSuccess': 'XML Rekordbox exporté avec succès !',
   'settings.rekordboxXmlError': "Échec de l'exportation XML : {{error}}",
 
@@ -146,5 +147,10 @@ export const fr = {
   'actions.successMigrate':
     'Emplacement de stockage modifié avec succès et fichiers déplacés si nécessaire !',
   'actions.errorMigrate': 'Erreur lors de la migration: {{error}}',
-  'actions.errorMigrateGeneral': 'Erreur lors de la migration.'
+  'actions.errorMigrateGeneral': 'Erreur lors de la migration.',
+
+  // Preview Player
+  'preview.title': 'Lecteur de préécoute',
+  'preview.volume': 'Volume',
+  'preview.close': 'Fermer'
 }

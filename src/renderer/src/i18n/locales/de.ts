@@ -144,5 +144,10 @@ export const de = {
   'actions.errorUpdateSettingsGeneral': 'Fehler beim Aktualisieren der Einstellungen.',
   'actions.successMigrate': 'Speicherort erfolgreich geändert und Dateien ggf. verschoben!',
   'actions.errorMigrate': 'Fehler bei der Migration: {{error}}',
-  'actions.errorMigrateGeneral': 'Fehler bei der Migration.'
+  'actions.errorMigrateGeneral': 'Fehler bei der Migration.',
+
+  // Preview Player
+  'preview.title': 'Vorschau-Player',
+  'preview.volume': 'Lautstärke',
+  'preview.close': 'Schließen'
 }

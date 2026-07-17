@@ -1,8 +1,9 @@
 import React from 'react'
-import { Loader2, Music, Star } from 'lucide-react'
+import { Loader2, Music, Star, Play, Pause } from 'lucide-react'
 import type { Track } from '@main/db'
 import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
+import { usePreviewStore } from '@renderer/store/usePreviewStore'
 
 // Camelot wheel color – maps the number (1–12) to a hue on the color wheel
 function formatDate(dateStr?: string): string {
@@ -10,7 +11,7 @@ function formatDate(dateStr?: string): string {
   try {
     const d = new Date(dateStr)
     if (isNaN(d.getTime())) return '---'
-    const pad = (n: number) => String(n).padStart(2, '0')
+    const pad = (n: number): string => String(n).padStart(2, '0')
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
   } catch {
     return '---'
@@ -64,6 +65,9 @@ export default function TrackRow({
   visibleColumns
 }: TrackRowProps): React.JSX.Element {
   const { t } = useLanguage()
+  const { previewTrack, isPlaying, playTrack, stopTrack } = usePreviewStore()
+  const isPreviewingThis = previewTrack?.id === track.id
+  const isCurrentlyPlaying = isPreviewingThis && isPlaying
   const coverUrl = track.coverPath ? getMediaUrl(track.coverPath) : ''
   const sizeInMB = track.filesize ? `${(track.filesize / (1024 * 1024)).toFixed(1)} MB` : '---'
   const isPlaceholder = !track.filepath
@@ -187,21 +191,44 @@ export default function TrackRow({
             return (
               <td key={colId} className="py-2.5">
                 <div className="flex justify-center">
-                  {coverUrl ? (
-                    <img
-                      src={coverUrl}
-                      alt="cover"
-                      className="h-10 w-10 rounded object-cover border border-zinc-800"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded border border-zinc-800 bg-zinc-950 text-zinc-600">
-                      {isPlaceholder && activeDownload ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      ) : (
-                        <Music className="h-4 w-4" />
-                      )}
-                    </div>
-                  )}
+                  <div className="relative group/cover h-10 w-10 overflow-hidden rounded border border-zinc-800 bg-zinc-950">
+                    {coverUrl ? (
+                      <img src={coverUrl} alt="cover" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-zinc-600">
+                        {isPlaceholder && activeDownload ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        ) : (
+                          <Music className="h-4 w-4" />
+                        )}
+                      </div>
+                    )}
+
+                    {!isPlaceholder && (
+                      <button
+                        type="button"
+                        onClick={(e): void => {
+                          e.stopPropagation()
+                          if (isCurrentlyPlaying) {
+                            stopTrack()
+                          } else {
+                            playTrack(track)
+                          }
+                        }}
+                        className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer ${
+                          isCurrentlyPlaying
+                            ? 'opacity-100 text-primary'
+                            : 'opacity-0 group-hover:opacity-100 text-zinc-100 hover:text-primary hover:scale-105'
+                        }`}
+                      >
+                        {isCurrentlyPlaying ? (
+                          <Pause className="h-5 w-5 fill-primary text-primary" />
+                        ) : (
+                          <Play className="h-5 w-5 fill-current" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </td>
             )
@@ -209,9 +236,7 @@ export default function TrackRow({
             return (
               <td key={colId} className="py-2.5 px-3">
                 <div className="flex items-center gap-2 max-w-[280px]">
-                  <div className="font-semibold text-zinc-200 truncate">
-                    {track.title}
-                  </div>
+                  <div className="font-semibold text-zinc-200 truncate">{track.title}</div>
                   {!track.played && (
                     <span className="flex-shrink-0 inline-flex items-center rounded bg-primary/10 border border-primary/20 px-1 py-0.2 text-[9px] font-extrabold text-primary tracking-wider">
                       {t('track.newLabel')}

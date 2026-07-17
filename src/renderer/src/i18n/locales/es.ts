@@ -146,5 +146,10 @@ export const es = {
   'actions.successMigrate':
     '¡Lugar de almacenamiento cambiado con éxito y archivos movidos si correspondía!',
   'actions.errorMigrate': 'Error en la migración: {{error}}',
-  'actions.errorMigrateGeneral': 'Error en la migración.'
+  'actions.errorMigrateGeneral': 'Error en la migración.',
+
+  // Preview Player
+  'preview.title': 'Reproductor de vista previa',
+  'preview.volume': 'Volumen',
+  'preview.close': 'Cerrar'
 }

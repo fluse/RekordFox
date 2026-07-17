@@ -163,11 +163,14 @@ export function useApp(): UseAppReturn {
     }
 
     if (!track.played) {
-      window.api.updateTrackPlayed(track.id, track.playlistId, true)
+      window.api
+        .updateTrackPlayed(track.id, track.playlistId, true)
         .then((res) => {
           if (res.success) {
             setTracks((prev) =>
-              prev.map((t) => (t.id === track.id && t.playlistId === track.playlistId ? { ...t, played: true } : t))
+              prev.map((t) =>
+                t.id === track.id && t.playlistId === track.playlistId ? { ...t, played: true } : t
+              )
             )
           }
         })

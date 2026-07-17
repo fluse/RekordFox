@@ -142,5 +142,10 @@ export const en = {
   'actions.errorUpdateSettingsGeneral': 'Error updating settings.',
   'actions.successMigrate': 'Storage location successfully changed and files moved if applicable!',
   'actions.errorMigrate': 'Error migrating: {{error}}',
-  'actions.errorMigrateGeneral': 'Error migrating.'
+  'actions.errorMigrateGeneral': 'Error migrating.',
+
+  // Preview Player
+  'preview.title': 'Preview Player',
+  'preview.volume': 'Volume',
+  'preview.close': 'Close'
 }

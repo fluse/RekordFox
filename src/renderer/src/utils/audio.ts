@@ -3,8 +3,9 @@ import MusicTempo from 'music-tempo'
 // Convert a file path to the custom media URL
 export function getMediaUrl(filepath: string): string {
   const normalizedPath = filepath.replace(/\\/g, '/')
-  const encodedPath = normalizedPath.split('/').map(encodeURIComponent).join('/')
-  return `media://${encodedPath}`
+  const cleanPath = normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath
+  const encodedPath = cleanPath.split('/').map(encodeURIComponent).join('/')
+  return `media://local/${encodedPath}`
 }
 
 // Decode audio file and compute BPM using music-tempo

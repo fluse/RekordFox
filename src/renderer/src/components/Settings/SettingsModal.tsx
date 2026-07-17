@@ -28,7 +28,9 @@ export default function SettingsModal({
 }: SettingsModalProps): React.JSX.Element | null {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [xmlStatus, setXmlStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [xmlStatus, setXmlStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null
+  )
   const { t } = useLanguage()
 
   useEffect(() => {

@@ -39,6 +39,8 @@ protocol.registerSchemesAsPrivileged([
   {
     scheme: 'media',
     privileges: {
+      standard: true,
+      secure: true,
       bypassCSP: true,
       stream: true,
       corsEnabled: true,
@@ -93,19 +95,31 @@ app.whenReady().then(async () => {
   protocol.handle('media', (request) => {
     try {
       console.log('[Media Protocol] Raw request.url:', request.url)
-      const prefix = 'media://'
       let filePath = request.url
+      const prefix = 'media://'
       if (filePath.toLowerCase().startsWith(prefix)) {
         filePath = filePath.slice(prefix.length)
       }
-      filePath = decodeURIComponent(filePath)
-      console.log('[Media Protocol] Decoded path:', filePath)
+      if (filePath.startsWith('local/')) {
+        filePath = filePath.slice('local/'.length)
+      }
+
+      if (process.platform !== 'win32' && !filePath.startsWith('/')) {
+        filePath = '/' + filePath
+      }
       if (process.platform === 'win32' && filePath.startsWith('/')) {
         filePath = filePath.slice(1)
       }
+
+      filePath = decodeURIComponent(filePath)
+      console.log('[Media Protocol] Decoded path:', filePath)
       const finalUrl = pathToFileURL(filePath).toString()
       console.log('[Media Protocol] Final file URL:', finalUrl)
-      return net.fetch(finalUrl)
+      return net.fetch(finalUrl, {
+        method: request.method,
+        headers: request.headers,
+        referrer: request.referrer
+      })
     } catch (err) {
       console.error('[Media Protocol] Failed to handle request:', err)
       return new Response('File not found', { status: 404 })

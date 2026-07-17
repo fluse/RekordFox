@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Sidebar, SplashScreen } from '@renderer/components/Layout'
-import { Tracklist, AddPlaylistModal } from '@renderer/components/Library'
+import { Tracklist, AddPlaylistModal, PreviewPlayer } from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
 import SettingsModal from '@renderer/components/Settings'
 import { ChevronDown } from 'lucide-react'
@@ -134,6 +134,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         isSyncing={Object.keys(activeSyncs).length > 0}
         renamingStatus={renamingStatus}
       />
+
+      <PreviewPlayer />
     </div>
   )
 }
