@@ -88,7 +88,7 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
   // So instead of making the row draggable, each non-position <td> gets its own drag handlers
   // (via cloneElement, further down), and the browser's default drag snapshot of a lone cell
   // looks broken, so we swap in a small cover+title card as the drag image instead.
-  const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>): void => {
+  const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>): void => {
     e.dataTransfer.setData('text/plain', JSON.stringify(track))
     e.dataTransfer.effectAllowed = 'copy'
 
@@ -169,7 +169,9 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
       } ${isPlayingA || isPlayingB ? 'bg-primary/5 row-playing' : ''}`}
     >
       {visibleColumns.map((colId) => {
-        const cell = ((): React.ReactElement | null => {
+        const cell = ((): React.ReactElement<
+          React.TdHTMLAttributes<HTMLTableCellElement>
+        > | null => {
           switch (colId) {
             case 'position':
               return (
