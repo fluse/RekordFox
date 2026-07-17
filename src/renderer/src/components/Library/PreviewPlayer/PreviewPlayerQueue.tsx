@@ -118,11 +118,13 @@ function QueueRowShell({
 interface PreviewPlayerQueueProps {
   height: number
   onResizeStart: (e: React.MouseEvent) => void
+  fillHeight?: boolean
 }
 
 export default function PreviewPlayerQueue({
   height,
-  onResizeStart
+  onResizeStart,
+  fillHeight = false
 }: PreviewPlayerQueueProps): React.JSX.Element {
   const { t } = useLanguage()
   const manualQueue = usePreviewStore((s) => s.manualQueue)
@@ -193,10 +195,12 @@ export default function PreviewPlayerQueue({
   }
 
   return (
-    <div className="border-t border-zinc-900">
+    <div
+      className={`border-t border-zinc-900 ${fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+    >
       <div
-        style={{ maxHeight: `${height}px` }}
-        className="flex flex-col gap-3 px-4 py-3 overflow-y-auto"
+        style={fillHeight ? undefined : { maxHeight: `${height}px` }}
+        className={`flex flex-col gap-3 px-4 py-3 overflow-y-auto ${fillHeight ? 'min-h-0 flex-1' : ''}`}
       >
         <div>
           <h3 className="mb-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
@@ -339,12 +343,14 @@ export default function PreviewPlayerQueue({
             />
           ))}
       </div>
-      <div
-        onMouseDown={onResizeStart}
-        className="flex h-3 cursor-row-resize items-center justify-center group/resize"
-      >
-        <div className="h-1 w-8 rounded-full bg-zinc-800 group-hover/resize:bg-primary/70 transition-colors" />
-      </div>
+      {!fillHeight && (
+        <div
+          onMouseDown={onResizeStart}
+          className="flex h-3 cursor-row-resize items-center justify-center group/resize"
+        >
+          <div className="h-1 w-8 rounded-full bg-zinc-800 group-hover/resize:bg-primary/70 transition-colors" />
+        </div>
+      )}
     </div>
   )
 }

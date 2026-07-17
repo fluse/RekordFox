@@ -52,22 +52,24 @@ export const PreviewPlayerHeader: React.FC<PreviewPlayerHeaderProps> = ({
         >
           <PanelRightOpen className="h-3.5 w-3.5" />
         </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            onToggleQueue()
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          title={queueToggleLabel}
-          className={`rounded p-1 transition cursor-pointer ${
-            isQueueOpen
-              ? 'bg-zinc-800 text-primary'
-              : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200'
-          }`}
-        >
-          <ListMusic className="h-3.5 w-3.5" />
-        </button>
+        {!isDocked && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleQueue()
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            title={queueToggleLabel}
+            className={`rounded p-1 transition cursor-pointer ${
+              isQueueOpen
+                ? 'bg-zinc-800 text-primary'
+                : 'text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200'
+            }`}
+          >
+            <ListMusic className="h-3.5 w-3.5" />
+          </button>
+        )}
         <button
           type="button"
           onClick={onClose}

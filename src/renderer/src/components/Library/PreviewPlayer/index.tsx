@@ -34,6 +34,7 @@ export default function PreviewPlayer(): React.JSX.Element | null {
   const { height: queueHeight, handleResizeStart } = useResizableHeight()
   const {
     audioRef,
+    mediaSrc,
     currentTime,
     duration,
     volume,
@@ -94,7 +95,7 @@ export default function PreviewPlayer(): React.JSX.Element | null {
       {/* Audio element */}
       <audio
         ref={audioRef}
-        src={getMediaUrl(previewTrack.filepath)}
+        src={mediaSrc}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleAudioEnded}
@@ -135,8 +136,12 @@ export default function PreviewPlayer(): React.JSX.Element | null {
         />
       </div>
 
-      {isQueuePanelOpen && (
-        <PreviewPlayerQueue height={queueHeight} onResizeStart={handleResizeStart} />
+      {(isDocked || isQueuePanelOpen) && (
+        <PreviewPlayerQueue
+          height={queueHeight}
+          onResizeStart={handleResizeStart}
+          fillHeight={isDocked}
+        />
       )}
     </div>
   )
