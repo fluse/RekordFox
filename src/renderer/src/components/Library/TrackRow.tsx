@@ -5,6 +5,18 @@ import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
 
 // Camelot wheel color – maps the number (1–12) to a hue on the color wheel
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '---'
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return '---'
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  } catch {
+    return '---'
+  }
+}
+
 function camelotColor(camelot: string): string {
   const num = parseInt(camelot)
   if (isNaN(num)) return '#52525b'
@@ -152,7 +164,7 @@ export default function TrackRow({
           : isReorderEnabled
             ? 'cursor-row-resize'
             : 'cursor-grab active:cursor-grabbing'
-      } ${isPlayingA || isPlayingB ? 'bg-primary/5' : ''} ${
+      } ${isPlayingA || isPlayingB ? 'bg-primary/5 row-playing' : ''} ${
         isReorderEnabled && dragOverTrackId === track.id
           ? dragOverPosition === 'above'
             ? 'border-t-2 border-primary bg-primary/5'
@@ -166,7 +178,7 @@ export default function TrackRow({
             return (
               <td
                 key={colId}
-                className="py-2.5 text-center font-mono font-medium text-zinc-500 w-12 select-none"
+                className="py-2.5 text-center font-mono font-medium text-zinc-500 w-12 select-none sticky-position-cell"
               >
                 {track.position || '-'}
               </td>
@@ -196,8 +208,15 @@ export default function TrackRow({
           case 'title':
             return (
               <td key={colId} className="py-2.5 px-3">
-                <div className="font-semibold text-zinc-200 truncate max-w-[280px]">
-                  {track.title}
+                <div className="flex items-center gap-2 max-w-[280px]">
+                  <div className="font-semibold text-zinc-200 truncate">
+                    {track.title}
+                  </div>
+                  {!track.played && (
+                    <span className="flex-shrink-0 inline-flex items-center rounded bg-primary/10 border border-primary/20 px-1 py-0.2 text-[9px] font-extrabold text-primary tracking-wider">
+                      {t('track.newLabel')}
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-zinc-500 truncate max-w-[280px]">{track.artist}</div>
               </td>
@@ -293,6 +312,12 @@ export default function TrackRow({
                 )}
               </td>
             )
+          case 'dateAdded':
+            return (
+              <td key={colId} className="py-2.5 text-center font-mono text-xs text-zinc-500 px-3">
+                {formatDate(track.dateAdded)}
+              </td>
+            )
           case 'duration':
             return (
               <td key={colId} className="py-2.5 text-right font-mono text-zinc-500 px-3">
@@ -317,7 +342,7 @@ export default function TrackRow({
                           : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
                     }`}
                   >
-                    Deck A
+                    A
                   </button>
                   <button
                     type="button"
@@ -333,7 +358,7 @@ export default function TrackRow({
                           : 'bg-zinc-800 text-zinc-300 hover:bg-purple-600/20 hover:text-purple-400'
                     }`}
                   >
-                    Deck B
+                    B
                   </button>
                 </div>
               </td>

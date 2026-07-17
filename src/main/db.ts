@@ -25,6 +25,8 @@ export interface Track {
   rating: number // 0 to 5 stars
   bitrate?: number // bitrate in kbps
   position?: number
+  dateAdded?: string
+  played?: boolean
 }
 
 export function getPlaylistFolderName(playlist: Playlist): string {
@@ -41,6 +43,7 @@ export interface AppSettings {
   maxWorkers: number
   language?: 'de' | 'en' | 'fr' | 'es'
   filenameTemplate?: 'default' | 'custom'
+  rekordboxXmlPath?: string
 }
 
 interface DatabaseSchema {
@@ -87,7 +90,8 @@ export function initDb(): void {
       downloadPath: defaultDownloadsDir,
       sidebarWidth: 256,
       maxWorkers: 3,
-      language: 'de'
+      language: 'de',
+      rekordboxXmlPath: ''
     }
     saveDb()
   } else {
@@ -106,7 +110,8 @@ export function initDb(): void {
           sidebarWidth: 256,
           maxWorkers: 3,
           language: 'de',
-          filenameTemplate: 'default'
+          filenameTemplate: 'default',
+          rekordboxXmlPath: ''
         }
       } else {
         if (!dbData.settings.theme) dbData.settings.theme = 'dark'
@@ -115,6 +120,7 @@ export function initDb(): void {
         if (!dbData.settings.maxWorkers) dbData.settings.maxWorkers = 3
         if (!dbData.settings.language) dbData.settings.language = 'de'
         if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'default'
+        if (dbData.settings.rekordboxXmlPath === undefined) dbData.settings.rekordboxXmlPath = ''
       }
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
@@ -207,6 +213,23 @@ export function initDb(): void {
             }
             trackUpdated = true
           }
+          if (track.dateAdded === undefined) {
+            try {
+              if (track.filepath && fs.existsSync(track.filepath)) {
+                const stats = fs.statSync(track.filepath)
+                track.dateAdded = (stats.birthtime || stats.mtime || new Date()).toISOString()
+              } else {
+                track.dateAdded = new Date().toISOString()
+              }
+            } catch (e) {
+              track.dateAdded = new Date().toISOString()
+            }
+            trackUpdated = true
+          }
+          if (track.played === undefined) {
+            track.played = true // default existing tracks to played
+            trackUpdated = true
+          }
           if (trackUpdated) {
             dbUpdated = true
           }
@@ -279,6 +302,14 @@ export function initDb(): void {
 function saveDb(): void {
   try {
     writeFileSync(dbPath, JSON.stringify(dbData, null, 2), 'utf-8')
+    if (dbData.settings?.rekordboxXmlPath) {
+      try {
+        const { writeRekordboxXml } = require('./export/rekordbox/rekordboxXmlExporter')
+        writeRekordboxXml(dbData.settings.rekordboxXmlPath, dbData.playlists, dbData.tracks)
+      } catch (xmlErr) {
+        console.error('Failed to auto-export Rekordbox XML:', xmlErr)
+      }
+    }
   } catch (e) {
     console.error('Failed to write database file:', e)
   }
@@ -363,9 +394,13 @@ export function addTrack(track: Track): void {
   )
   if (index !== -1) {
     const existingPosition = dbData.tracks[index].position
+    const existingDateAdded = dbData.tracks[index].dateAdded
+    const existingPlayed = dbData.tracks[index].played
     dbData.tracks[index] = {
       ...track,
-      position: track.position !== undefined ? track.position : existingPosition
+      position: track.position !== undefined ? track.position : existingPosition,
+      dateAdded: track.dateAdded !== undefined ? track.dateAdded : existingDateAdded,
+      played: track.played !== undefined ? track.played : existingPlayed
     }
   } else {
     const playlistTracks = dbData.tracks.filter((t) => t.playlistId === track.playlistId)
@@ -375,7 +410,9 @@ export function addTrack(track: Track): void {
     )
     dbData.tracks.push({
       ...track,
-      position: track.position !== undefined ? track.position : maxPos + 1
+      position: track.position !== undefined ? track.position : maxPos + 1,
+      dateAdded: track.dateAdded || new Date().toISOString(),
+      played: track.played !== undefined ? track.played : false
     })
   }
   saveDb()
@@ -543,6 +580,14 @@ export function updateTrackRating(trackId: string, playlistId: string, rating: n
     } catch (e) {
       console.error(`Failed to update Rating ID3 tag for track ${trackId}:`, e)
     }
+  }
+}
+
+export function updateTrackPlayed(trackId: string, playlistId: string, played: boolean): void {
+  const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
+  if (track) {
+    track.played = played
+    saveDb()
   }
 }
 

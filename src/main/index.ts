@@ -14,6 +14,7 @@ import {
   updateTrackBpm,
   updateTrackKey,
   updateTrackRating,
+  updateTrackPlayed,
   getSettings,
   updateSettings,
   renameAllTracksFilenameAsync,
@@ -243,6 +244,18 @@ app.whenReady().then(async () => {
     }
   )
 
+  ipcMain.handle(
+    'tracks:update-played',
+    (_, trackId: string, playlistId: string, played: boolean) => {
+      try {
+        updateTrackPlayed(trackId, playlistId, played)
+        return { success: true }
+      } catch (e: any) {
+        return { success: false, error: e.message }
+      }
+    }
+  )
+
   ipcMain.handle('tracks:reorder', (_, playlistId: string, trackIds: string[]) => {
     try {
       updateTrackPositions(playlistId, trackIds)
@@ -360,6 +373,35 @@ app.whenReady().then(async () => {
     if (result.response === 0) return 'move'
     if (result.response === 1) return 'change'
     return 'cancel'
+  })
+
+  ipcMain.handle('dialog:select-xml-file', async () => {
+    if (!mainWindow) return null
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Rekordbox XML Speicherort wählen',
+      defaultPath: 'rekordbox.xml',
+      filters: [{ name: 'XML-Dateien', extensions: ['xml'] }]
+    })
+    if (result.canceled || !result.filePath) {
+      return null
+    }
+    return result.filePath
+  })
+
+  ipcMain.handle('rekordbox:export-xml', async () => {
+    try {
+      const settings = getSettings()
+      if (!settings.rekordboxXmlPath) {
+        return { success: false, error: 'Kein XML-Exportpfad konfiguriert' }
+      }
+      const { writeRekordboxXml } = require('./export/rekordbox/rekordboxXmlExporter')
+      const playlists = getPlaylists()
+      const tracks = getTracks()
+      writeRekordboxXml(settings.rekordboxXmlPath, playlists, tracks)
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Export fehlgeschlagen' }
+    }
   })
 
   ipcMain.handle('usb:get-drives', async () => {

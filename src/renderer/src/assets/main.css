@@ -268,3 +268,45 @@ p {
   grid-template-rows: 0fr;
   opacity: 0;
 }
+
+/* Sticky position column styling for horizontal scrolling */
+.sticky-position-cell {
+  position: sticky !important;
+  left: 0;
+  z-index: 10;
+  border-right: 1px solid hsl(var(--border) / 0.5);
+  background-color: hsl(var(--background)) !important;
+}
+
+.light .sticky-position-cell {
+  background-color: #ffffff !important;
+}
+
+/* Hover state */
+.group:hover .sticky-position-cell {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.light .group:hover .sticky-position-cell {
+  background-color: #f4f4f5 !important;
+}
+
+/* Playing state */
+.row-playing .sticky-position-cell {
+  background-color: color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--background))) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+.light .row-playing .sticky-position-cell {
+  background-color: color-mix(in srgb, hsl(var(--primary)) 8%, #ffffff) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+/* Playing + Hover state */
+.row-playing.group:hover .sticky-position-cell {
+  background-color: color-mix(in srgb, hsl(var(--primary)) 12%, hsl(var(--background))) !important;
+}
+
+.light .row-playing.group:hover .sticky-position-cell {
+  background-color: color-mix(in srgb, hsl(var(--primary)) 14%, #ffffff) !important;
+}

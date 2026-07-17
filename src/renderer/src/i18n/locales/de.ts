@@ -63,6 +63,17 @@ export const de = {
   'settings.errorChangeFilenameTemplate': 'Fehler beim Ändern des Dateinamen-Formats.',
   'settings.renamingIndicator': 'Umbenennen... ({{current}}/{{total}})',
   'settings.renamingIndicatorText': 'Dateien werden umbenannt...',
+  'settings.rekordboxXmlLabel': 'Rekordbox XML Auto-Export',
+  'settings.rekordboxXmlHelp':
+    'Wenn konfiguriert, exportiert RekordFox bei jeder Änderung automatisch eine rekordbox.xml, um deine Playlisten in Rekordbox synchron zu halten.',
+  'settings.rekordboxXmlSelect': 'Wählen',
+  'settings.rekordboxXmlSelectTooltip': 'XML-Datei für den Export auswählen',
+  'settings.rekordboxXmlClear': 'Löschen',
+  'settings.rekordboxXmlClearTooltip': 'XML-Exportpfad entfernen',
+  'settings.rekordboxXmlExportNow': 'Jetzt exportieren',
+  'settings.rekordboxXmlExportNowTooltip': 'Gesamte Kollektion jetzt manuell als XML exportieren',
+  'settings.rekordboxXmlSuccess': 'Rekordbox XML erfolgreich exportiert!',
+  'settings.rekordboxXmlError': 'Fehler beim XML-Export: {{error}}',
 
   // Deck
   'deck.loadingWaveform': 'Dekodiere Welle...',
@@ -74,6 +85,7 @@ export const de = {
   'track.waiting': 'Warte...',
   'track.downloading': 'Lade herunter ({{percent}}%)',
   'track.queued': 'In Warteschlange...',
+  'track.newLabel': 'NEU',
 
   // Tracklist
   'tracklist.usbExport': 'USB Export',
@@ -85,6 +97,7 @@ export const de = {
   'tracklist.colBpm': 'BPM',
   'tracklist.colKey': 'Key',
   'tracklist.colFormat': 'Format / Qualität',
+  'tracklist.colDateAdded': 'Hinzugefügt',
   'tracklist.colDuration': 'Dauer',
   'tracklist.colLoadDeck': 'In Deck laden',
   'tracklist.noTracksFound': 'Keine Tracks gefunden',

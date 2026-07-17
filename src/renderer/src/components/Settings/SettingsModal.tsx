@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { X, Folder, FolderOpen, Sun, Moon, Loader2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, Folder, FolderOpen, Sun, Moon, Loader2, FileCode, Trash2 } from 'lucide-react'
 import type { AppSettings } from '@main/db'
 import { useLanguage, type Language } from '@renderer/i18n'
 
@@ -28,9 +28,76 @@ export default function SettingsModal({
 }: SettingsModalProps): React.JSX.Element | null {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [xmlStatus, setXmlStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const { t } = useLanguage()
 
+  useEffect(() => {
+    if (!isOpen) {
+      setXmlStatus(null)
+      setError('')
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
+
+  const handleSelectXmlFile = async (): Promise<void> => {
+    setError('')
+    setXmlStatus(null)
+    try {
+      const selectedPath = await window.api.selectXmlFile()
+      if (!selectedPath) return
+      await onUpdateSettings({ rekordboxXmlPath: selectedPath })
+      // Auto-trigger export on path set
+      const res = await window.api.exportRekordboxXml()
+      if (res.success) {
+        setXmlStatus({ type: 'success', message: t('settings.rekordboxXmlSuccess') })
+      } else {
+        setXmlStatus({
+          type: 'error',
+          message: t('settings.rekordboxXmlError', { error: res.error || '' })
+        })
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg || t('settings.errorChangePath'))
+    }
+  }
+
+  const handleClearXmlFile = async (): Promise<void> => {
+    setError('')
+    setXmlStatus(null)
+    try {
+      await onUpdateSettings({ rekordboxXmlPath: '' })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg || t('settings.errorChangePath'))
+    }
+  }
+
+  const handleExportXmlNow = async (): Promise<void> => {
+    setError('')
+    setXmlStatus(null)
+    setLoading(true)
+    try {
+      const res = await window.api.exportRekordboxXml()
+      if (res.success) {
+        setXmlStatus({ type: 'success', message: t('settings.rekordboxXmlSuccess') })
+      } else {
+        setXmlStatus({
+          type: 'error',
+          message: t('settings.rekordboxXmlError', { error: res.error || '' })
+        })
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setXmlStatus({
+        type: 'error',
+        message: t('settings.rekordboxXmlError', { error: msg })
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSelectFolder = async (): Promise<void> => {
     setError('')
@@ -230,6 +297,74 @@ export default function SettingsModal({
                 </p>
               ) : (
                 <p className="text-[10px] text-zinc-500">{t('settings.downloadPathHelp')}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Rekordbox XML Auto-Export */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-zinc-400">
+              {t('settings.rekordboxXmlLabel')}
+            </label>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  placeholder="Nicht konfiguriert (z. B. rekordbox.xml)"
+                  value={settings.rekordboxXmlPath || ''}
+                  className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-zinc-300 placeholder-zinc-600 outline-none truncate"
+                  title={settings.rekordboxXmlPath || ''}
+                />
+                <button
+                  type="button"
+                  onClick={handleSelectXmlFile}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-50 cursor-pointer"
+                  title={t('settings.rekordboxXmlSelectTooltip')}
+                >
+                  <FileCode className="h-4 w-4 text-zinc-400" />
+                  {t('settings.rekordboxXmlSelect')}
+                </button>
+                {settings.rekordboxXmlPath && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleExportXmlNow}
+                      disabled={loading}
+                      className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white transition disabled:opacity-50 cursor-pointer"
+                      title={t('settings.rekordboxXmlExportNowTooltip')}
+                    >
+                      {loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      ) : (
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      )}
+                      {t('settings.rekordboxXmlExportNow')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearXmlFile}
+                      disabled={loading}
+                      className="flex items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 p-2 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-500 transition disabled:opacity-50 cursor-pointer"
+                      title={t('settings.rekordboxXmlClearTooltip')}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="text-[10px] text-zinc-500">{t('settings.rekordboxXmlHelp')}</p>
+              {xmlStatus && (
+                <p
+                  className={`text-[10px] font-semibold border rounded p-1.5 mt-0.5 ${
+                    xmlStatus.type === 'success'
+                      ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
+                      : 'text-red-500 bg-red-500/10 border-red-500/20'
+                  }`}
+                >
+                  {xmlStatus.message}
+                </p>
               )}
             </div>
           </div>

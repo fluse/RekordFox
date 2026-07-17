@@ -161,6 +161,18 @@ export function useApp(): UseAppReturn {
       setLoadedTrackB(track)
       localStorage.setItem('loadedTrackBId', track.id)
     }
+
+    if (!track.played) {
+      window.api.updateTrackPlayed(track.id, track.playlistId, true)
+        .then((res) => {
+          if (res.success) {
+            setTracks((prev) =>
+              prev.map((t) => (t.id === track.id && t.playlistId === track.playlistId ? { ...t, played: true } : t))
+            )
+          }
+        })
+        .catch((err) => console.error('Failed to update track played status:', err))
+    }
   }, [])
 
   const handleAddPlaylist = useCallback(async (url: string): Promise<void> => {

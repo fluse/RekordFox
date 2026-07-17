@@ -25,6 +25,11 @@ declare global {
         playlistId: string,
         rating: number
       ) => Promise<{ success: boolean; error?: string }>
+      updateTrackPlayed: (
+        trackId: string,
+        playlistId: string,
+        played: boolean
+      ) => Promise<{ success: boolean; error?: string }>
       reorderTracks: (
         playlistId: string,
         trackIds: string[]
@@ -39,6 +44,8 @@ declare global {
       ) => Promise<{ success: boolean; error?: string }>
       selectDirectory: () => Promise<string | null>
       confirmMigration: () => Promise<'move' | 'change' | 'cancel'>
+      selectXmlFile: () => Promise<string | null>
+      exportRekordboxXml: () => Promise<{ success: boolean; error?: string }>
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
       onRenamingStatus: (
         callback: (data: { active: boolean; current: number; total: number }) => void

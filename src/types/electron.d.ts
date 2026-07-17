@@ -45,6 +45,11 @@ export interface IRekordFoxAPI {
     callback: (data: { trackId: string; filepath: string }) => void
   ) => () => void
   sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }) => void
+  updateTrackPlayed?: (
+    trackId: string,
+    playlistId: string,
+    played: boolean
+  ) => Promise<{ success: boolean; error?: string }>
 }
 
 // Mache die API global für das Window-Objekt verfügbar

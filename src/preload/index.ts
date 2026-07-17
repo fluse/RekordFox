@@ -14,6 +14,8 @@ const api = {
     ipcRenderer.invoke('tracks:update-bpm', trackId, playlistId, bpm),
   updateTrackRating: (trackId: string, playlistId: string, rating: number) =>
     ipcRenderer.invoke('tracks:update-rating', trackId, playlistId, rating),
+  updateTrackPlayed: (trackId: string, playlistId: string, played: boolean) =>
+    ipcRenderer.invoke('tracks:update-played', trackId, playlistId, played),
   reorderTracks: (playlistId: string, trackIds: string[]) =>
     ipcRenderer.invoke('tracks:reorder', playlistId, trackIds),
   getSettings: () => ipcRenderer.invoke('settings:get'),
@@ -22,6 +24,8 @@ const api = {
     ipcRenderer.invoke('settings:migrate', newPath, moveFiles),
   selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
   confirmMigration: () => ipcRenderer.invoke('dialog:confirm-migration'),
+  selectXmlFile: () => ipcRenderer.invoke('dialog:select-xml-file'),
+  exportRekordboxXml: () => ipcRenderer.invoke('rekordbox:export-xml'),
   openPath: (path: string) => ipcRenderer.invoke('settings:open-path', path),
 
   onRenamingStatus: (

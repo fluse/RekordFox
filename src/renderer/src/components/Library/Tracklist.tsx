@@ -30,6 +30,7 @@ type SortField =
   | 'filesize'
   | 'rating'
   | 'bitrate'
+  | 'dateAdded'
 type SortOrder = 'asc' | 'desc'
 
 interface ColumnConfig {
@@ -89,6 +90,14 @@ const COLUMN_DEFS: ColumnConfig[] = [
     sortField: 'bitrate',
     align: 'center',
     canHide: true,
+    defaultWidth: 170
+  },
+  {
+    id: 'dateAdded',
+    labelKey: 'tracklist.colDateAdded',
+    sortField: 'dateAdded',
+    align: 'center',
+    canHide: true,
     defaultWidth: 140
   },
   {
@@ -104,7 +113,7 @@ const COLUMN_DEFS: ColumnConfig[] = [
     labelKey: 'tracklist.colLoadDeck',
     align: 'center',
     canHide: true,
-    defaultWidth: 160
+    defaultWidth: 110
   }
 ]
 
@@ -143,7 +152,27 @@ export default function Tracklist({
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
     const saved = localStorage.getItem('rekordfox_visible_columns')
-    return saved ? JSON.parse(saved) : DEFAULT_VISIBLE_COLUMNS
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && !parsed.includes('dateAdded')) {
+          const defaultCols = COLUMN_DEFS.map((col) => col.id)
+          const insertIdx = defaultCols.indexOf('dateAdded')
+          const next = [...parsed]
+          if (insertIdx !== -1 && insertIdx <= next.length) {
+            next.splice(insertIdx, 0, 'dateAdded')
+          } else {
+            next.push('dateAdded')
+          }
+          localStorage.setItem('rekordfox_visible_columns', JSON.stringify(next))
+          return next
+        }
+        return parsed
+      } catch {
+        return DEFAULT_VISIBLE_COLUMNS
+      }
+    }
+    return DEFAULT_VISIBLE_COLUMNS
   })
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
@@ -275,7 +304,7 @@ export default function Tracklist({
   }, [visibleColumns])
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-900/40">
+    <div className="flex flex-1 flex-col bg-zinc-900/40 min-h-0 overflow-hidden">
       {/* Header / Search */}
       <div className="flex h-16 items-center justify-between border-b border-zinc-900 px-6">
         <h1 className="text-lg font-bold text-zinc-200 truncate max-w-[300px]">{playlistTitle}</h1>
@@ -351,7 +380,7 @@ export default function Tracklist({
       </div>
 
       {/* Tracks Table */}
-      <div className="flex-1 overflow-auto px-6 py-4">
+      <div className="flex-1 overflow-auto pl-0 pr-6 pb-4 min-h-0">
         <table
           className="w-full text-left border-collapse min-w-full"
           style={{ tableLayout: 'fixed' }}
@@ -377,10 +406,13 @@ export default function Tracklist({
                       ? 'text-right'
                       : 'text-left'
 
+                const isStickyLeft = col.id === 'position'
                 return (
                   <th
                     key={col.id}
-                    className={`py-3 px-3 relative select-none ${alignmentClass} ${
+                    className={`py-3 px-3 relative select-none sticky top-0 bg-zinc-950 border-b border-border/60 ${alignmentClass} ${
+                      isStickyLeft ? 'left-0 z-30 border-r border-border/50' : 'z-20'
+                    } ${
                       isSortable ? 'cursor-pointer hover:text-zinc-300' : ''
                     } ${isSorted ? 'text-primary font-bold' : ''}`}
                     onClick={
@@ -424,7 +456,7 @@ export default function Tracklist({
               })}
             </tr>
           </thead>
-          <tbody className="text-sm divide-y divide-zinc-900/50">
+          <tbody className="text-sm divide-y divide-border/40">
             {filteredAndSortedTracks.map((track) => (
               <TrackRow
                 key={track.id}
