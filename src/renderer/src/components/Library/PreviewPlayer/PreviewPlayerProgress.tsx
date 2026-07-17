@@ -24,7 +24,7 @@ export const PreviewPlayerProgress: React.FC<PreviewPlayerProgressProps> = ({
         onChange={onSeek}
         className="h-1 w-full rounded-lg bg-zinc-800 appearance-none cursor-pointer accent-primary focus:outline-none"
         style={{
-          background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${progressPercent}%, #27272a ${progressPercent}%, #27272a 100%)`
+          background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${progressPercent}%, hsl(var(--secondary)) ${progressPercent}%, hsl(var(--secondary)) 100%)`
         }}
       />
       <div className="flex justify-between text-[10px] font-mono text-zinc-500">

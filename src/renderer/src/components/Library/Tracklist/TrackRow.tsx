@@ -81,9 +81,59 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
     }
   }
 
+  // Reordering claims native drag for position-sorted lists, so dropping a track onto the
+  // Preview Player needs its own HTML5 drag path here. The row itself is a wide, multi-column
+  // <tr> — the browser's default drag snapshot of it looks broken — so we swap in a small
+  // cover+title card as the drag image instead.
+  const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>): void => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(track))
+    e.dataTransfer.effectAllowed = 'copy'
+
+    const preview = document.createElement('div')
+    preview.style.position = 'fixed'
+    preview.style.top = '-1000px'
+    preview.style.left = '-1000px'
+    preview.style.display = 'flex'
+    preview.style.alignItems = 'center'
+    preview.style.gap = '8px'
+    preview.style.maxWidth = '220px'
+    preview.style.padding = '6px 10px'
+    preview.style.borderRadius = '8px'
+    preview.style.background = 'hsl(var(--background))'
+    preview.style.border = '1px solid rgba(255, 255, 255, 0.08)'
+    preview.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.5)'
+    preview.style.color = '#e4e4e7'
+    preview.style.fontSize = '12px'
+    preview.style.fontWeight = '600'
+
+    if (coverUrl) {
+      const img = document.createElement('img')
+      img.src = coverUrl
+      img.style.width = '28px'
+      img.style.height = '28px'
+      img.style.borderRadius = '4px'
+      img.style.objectFit = 'cover'
+      img.style.flexShrink = '0'
+      preview.appendChild(img)
+    }
+
+    const label = document.createElement('div')
+    label.style.overflow = 'hidden'
+    label.style.textOverflow = 'ellipsis'
+    label.style.whiteSpace = 'nowrap'
+    label.textContent = track.title
+    preview.appendChild(label)
+
+    document.body.appendChild(preview)
+    e.dataTransfer.setDragImage(preview, 14, 14)
+    setTimeout(() => preview.remove(), 0)
+  }
+
   return (
     <tr
       ref={ref}
+      draggable={!isReorderEnabled && !isPlaceholder}
+      onDragStart={!isReorderEnabled && !isPlaceholder ? handleDragStart : undefined}
       onPointerDown={
         isReorderEnabled && !isPlaceholder && onReorderPointerDown
           ? (e): void => onReorderPointerDown(track, e)

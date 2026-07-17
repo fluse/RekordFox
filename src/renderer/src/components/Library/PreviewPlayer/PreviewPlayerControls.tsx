@@ -77,7 +77,7 @@ export const PreviewPlayerControls: React.FC<PreviewPlayerControlsProps> = ({
           onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
           className="h-1 w-full rounded-lg bg-zinc-800 appearance-none cursor-pointer accent-primary focus:outline-none"
           style={{
-            background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${displayVolume * 100}%, #27272a ${displayVolume * 100}%, #27272a 100%)`
+            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${displayVolume * 100}%, hsl(var(--secondary)) ${displayVolume * 100}%, hsl(var(--secondary)) 100%)`
           }}
         />
       </div>
