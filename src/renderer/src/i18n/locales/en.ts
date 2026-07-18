@@ -101,6 +101,7 @@ export const en = {
   // Tracklist
   'tracklist.usbExport': 'USB Export',
   'tracklist.searchPlaceholder': 'Search by title, artist...',
+  'tracklist.clearSearch': 'Clear search',
   'tracklist.colPosition': '#',
   'tracklist.colCover': 'Cover',
   'tracklist.colTitle': 'Title / Artist',
@@ -175,6 +176,9 @@ export const en = {
   'contextMenu.playNow': 'Play Now',
   'contextMenu.addToQueue': 'Add to Queue',
   'contextMenu.removeFromQueue': 'Remove from Queue',
+  'contextMenu.searchDiscogs': 'Search Artist on Discogs',
+  'contextMenu.searchBandcamp': 'Search Artist on Bandcamp',
+  'contextMenu.searchYoutube': 'Search Artist on YouTube',
 
   // History
   'sidebar.history': 'Recently Played',

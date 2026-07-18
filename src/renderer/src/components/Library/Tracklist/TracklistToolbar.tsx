@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Search, HardDrive, SlidersHorizontal } from 'lucide-react'
+import { Search, X, HardDrive, SlidersHorizontal } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import { COLUMN_DEFS } from './columns'
 
@@ -42,8 +42,18 @@ export default function TracklistToolbar({
             placeholder={t('tracklist.searchPlaceholder')}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full rounded-full border border-zinc-800 bg-zinc-950 py-1.5 pl-9 pr-4 text-xs text-zinc-300 outline-none transition focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
+            className="w-full rounded-full border border-zinc-800 bg-zinc-950 py-1.5 pl-9 pr-8 text-xs text-zinc-300 outline-none transition focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange('')}
+              title={t('tracklist.clearSearch')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center text-zinc-500 hover:text-zinc-200 cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="relative">

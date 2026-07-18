@@ -104,6 +104,7 @@ export const de = {
   // Tracklist
   'tracklist.usbExport': 'USB Export',
   'tracklist.searchPlaceholder': 'Suchen nach Titel, Interpret...',
+  'tracklist.clearSearch': 'Suche löschen',
   'tracklist.colPosition': '#',
   'tracklist.colCover': 'Cover',
   'tracklist.colTitle': 'Titel / Interpret',
@@ -178,6 +179,9 @@ export const de = {
   'contextMenu.playNow': 'Track abspielen',
   'contextMenu.addToQueue': 'Zur Warteschlange hinzufügen',
   'contextMenu.removeFromQueue': 'Aus Warteschlange entfernen',
+  'contextMenu.searchDiscogs': 'Interpret auf Discogs suchen',
+  'contextMenu.searchBandcamp': 'Interpret auf Bandcamp suchen',
+  'contextMenu.searchYoutube': 'Interpret auf YouTube suchen',
 
   // History
   'sidebar.history': 'Zuletzt abgespielt',

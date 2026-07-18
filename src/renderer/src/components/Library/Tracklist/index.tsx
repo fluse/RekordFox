@@ -1,9 +1,14 @@
 import React, { useMemo, useState } from 'react'
-import { Play, ListPlus } from 'lucide-react'
-import type { Track } from '@main/db'
+import { Play, ListPlus, Search, Disc3, SquarePlay } from 'lucide-react'
+import type { Playlist, Track } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import { useTrackScanner } from '@renderer/hooks/useTrackScanner'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
+import {
+  openDiscogsArtistSearch,
+  openBandcampArtistSearch,
+  openYoutubeArtistSearch
+} from '@renderer/utils/artistSearch'
 import { UsbExportModal, PioneerExportModal } from '@renderer/components/Export'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
 import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
@@ -11,13 +16,17 @@ import TrackRow from './TrackRow'
 import TrackRowPlaceholder from './TrackRowPlaceholder'
 import TracklistToolbar from './TracklistToolbar'
 import TracklistTableHead from './TracklistTableHead'
+import TracklistSearchResults from './TracklistSearchResults'
 import { useColumnConfig } from './useColumnConfig'
 import { useTrackReorder } from './useTrackReorder'
+import { useCrossPlaylistSearch } from './useCrossPlaylistSearch'
+import { sortTracks } from './sortTracks'
 import type { SortField, SortOrder } from './columns'
 
 interface TracklistProps {
   playlistId: string
   playlistTitle: string
+  playlists: Playlist[]
   tracks: Track[]
   onLoadTrack: (track: Track, deck: 'A' | 'B') => void
   onUpdateBpm: (trackId: string, bpm: number) => void
@@ -32,6 +41,7 @@ interface TracklistProps {
 export default function Tracklist({
   playlistId,
   playlistTitle,
+  playlists,
   tracks,
   onLoadTrack,
   onUpdateBpm,
@@ -55,45 +65,24 @@ export default function Tracklist({
   // Background scanning of missing BPMs/Keys
   const scanningBpm = useTrackScanner(tracks, playlistId, onUpdateBpm, onUpdateKey)
 
-  const isReorderEnabled = !search.trim() && sortField === 'position'
+  const { isSearching, searchGroups, applyRatingUpdate } = useCrossPlaylistSearch({
+    search,
+    playlists,
+    sortField,
+    sortOrder,
+    refreshOn: tracks
+  })
+
+  const isReorderEnabled = !isSearching && sortField === 'position'
 
   const filteredAndSortedTracks = useMemo((): Track[] => {
-    let result = [...tracks]
+    return sortTracks(tracks, sortField, sortOrder)
+  }, [tracks, sortField, sortOrder])
 
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      result = result.filter(
-        (track) => track.title.toLowerCase().includes(q) || track.artist.toLowerCase().includes(q)
-      )
-    }
-
-    result.sort((a, b) => {
-      const valA = a[sortField]
-      const valB = b[sortField]
-
-      if (valA === undefined && valB === undefined) return 0
-      if (valA === undefined) return sortOrder === 'asc' ? 1 : -1
-      if (valB === undefined) return sortOrder === 'asc' ? -1 : 1
-
-      if (typeof valA === 'string' && typeof valB === 'string') {
-        const strA = valA.toLowerCase()
-        const strB = valB.toLowerCase()
-        if (strA < strB) return sortOrder === 'asc' ? -1 : 1
-        if (strA > strB) return sortOrder === 'asc' ? 1 : -1
-        return 0
-      }
-
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1
-        return 0
-      }
-
-      return 0
-    })
-
-    return result
-  }, [tracks, search, sortField, sortOrder])
+  const handleSearchResultRating = (trackId: string, rating: number): void => {
+    onUpdateRating(trackId, rating)
+    applyRatingUpdate(trackId, rating)
+  }
 
   const handleReorder = (
     draggedId: string,
@@ -133,8 +122,16 @@ export default function Tracklist({
     }
   }
 
+  const getQueueContext = (track: Track): Track[] => {
+    if (isSearching) {
+      const group = searchGroups.find((g) => g.playlistId === track.playlistId)
+      if (group) return group.tracks
+    }
+    return filteredAndSortedTracks
+  }
+
   const handlePlayNow = (track: Track): void => {
-    usePreviewStore.getState().playNow(track, filteredAndSortedTracks)
+    usePreviewStore.getState().playNow(track, getQueueContext(track))
   }
 
   const handleAddToQueue = (track: Track): void => {
@@ -152,68 +149,87 @@ export default function Tracklist({
         onToggleColumn={toggleColumn}
       />
 
-      <div className="flex-1 overflow-auto pl-0 pr-6 pb-4 min-h-0">
-        <table
-          className="w-full text-left border-collapse min-w-full"
-          style={{ tableLayout: 'fixed' }}
-        >
-          <colgroup>
-            {visibleCols.map((col) => (
-              <col
-                key={col.id}
-                style={{ width: `${columnWidths[col.id] ?? col.defaultWidth}px` }}
-              />
-            ))}
-          </colgroup>
-          <TracklistTableHead
-            visibleCols={visibleCols}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            onResizeStart={startResize}
-          />
-          <tbody className="text-sm divide-y divide-border/40">
-            {displayItems.map((item) =>
-              item.type === 'placeholder' ? (
-                <TrackRowPlaceholder
-                  key={item.key}
-                  ref={registerRow(item.key)}
-                  colSpan={visibleColumns.length}
+      {isSearching ? (
+        <TracklistSearchResults
+          groups={searchGroups}
+          visibleCols={visibleCols}
+          visibleColumns={visibleColumns}
+          columnWidths={columnWidths}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onResizeStart={startResize}
+          onLoadTrack={onLoadTrack}
+          onUpdateRating={handleSearchResultRating}
+          onPlayNow={handlePlayNow}
+          onOpenContextMenu={openContextMenu}
+          currentTrackA={currentTrackA}
+          currentTrackB={currentTrackB}
+        />
+      ) : (
+        <div className="flex-1 overflow-auto pl-0 pr-6 pb-4 min-h-0">
+          <table
+            className="w-full text-left border-collapse min-w-full"
+            style={{ tableLayout: 'fixed' }}
+          >
+            <colgroup>
+              {visibleCols.map((col) => (
+                <col
+                  key={col.id}
+                  style={{ width: `${columnWidths[col.id] ?? col.defaultWidth}px` }}
                 />
-              ) : (
-                <TrackRow
-                  key={item.key}
-                  ref={registerRow(item.key)}
-                  track={item.track}
-                  playlistId={playlistId}
-                  onLoadTrack={onLoadTrack}
-                  onUpdateRating={onUpdateRating}
-                  onPlayNow={handlePlayNow}
-                  onOpenContextMenu={openContextMenu}
-                  isPlayingA={currentTrackA?.id === item.track.id}
-                  isPlayingB={currentTrackB?.id === item.track.id}
-                  activeDownload={activeDownloads?.[item.track.id]}
-                  isScanningBpm={!!scanningBpm[item.track.id]}
-                  isReorderEnabled={isReorderEnabled}
-                  isDragging={item.isDragging}
-                  onReorderPointerDown={onRowPointerDown}
-                  visibleColumns={visibleColumns}
-                />
-              )
-            )}
-            {filteredAndSortedTracks.length === 0 && (
-              <tr>
-                <td
-                  colSpan={visibleColumns.length}
-                  className="py-8 text-center text-zinc-600 text-sm"
-                >
-                  {t('tracklist.noTracksFound')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </colgroup>
+            <TracklistTableHead
+              visibleCols={visibleCols}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              onResizeStart={startResize}
+            />
+            <tbody className="text-sm divide-y divide-border/40">
+              {displayItems.map((item) =>
+                item.type === 'placeholder' ? (
+                  <TrackRowPlaceholder
+                    key={item.key}
+                    ref={registerRow(item.key)}
+                    colSpan={visibleColumns.length}
+                  />
+                ) : (
+                  <TrackRow
+                    key={item.key}
+                    ref={registerRow(item.key)}
+                    track={item.track}
+                    playlistId={playlistId}
+                    onLoadTrack={onLoadTrack}
+                    onUpdateRating={onUpdateRating}
+                    onPlayNow={handlePlayNow}
+                    onOpenContextMenu={openContextMenu}
+                    isPlayingA={currentTrackA?.id === item.track.id}
+                    isPlayingB={currentTrackB?.id === item.track.id}
+                    activeDownload={activeDownloads?.[item.track.id]}
+                    isScanningBpm={!!scanningBpm[item.track.id]}
+                    isReorderEnabled={isReorderEnabled}
+                    isDragging={item.isDragging}
+                    onReorderPointerDown={onRowPointerDown}
+                    visibleColumns={visibleColumns}
+                  />
+                )
+              )}
+              {filteredAndSortedTracks.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={visibleColumns.length}
+                    className="py-8 text-center text-zinc-600 text-sm"
+                  >
+                    {t('tracklist.noTracksFound')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {contextMenu && (
         <TrackContextMenu
@@ -232,6 +248,25 @@ export default function Tracklist({
               label: t('contextMenu.addToQueue'),
               icon: <ListPlus className="h-3.5 w-3.5" />,
               onClick: () => handleAddToQueue(contextMenu.track)
+            },
+            {
+              key: 'searchDiscogs',
+              label: t('contextMenu.searchDiscogs'),
+              icon: <Search className="h-3.5 w-3.5" />,
+              onClick: () => openDiscogsArtistSearch(contextMenu.track.artist),
+              divider: true
+            },
+            {
+              key: 'searchBandcamp',
+              label: t('contextMenu.searchBandcamp'),
+              icon: <Disc3 className="h-3.5 w-3.5" />,
+              onClick: () => openBandcampArtistSearch(contextMenu.track.artist)
+            },
+            {
+              key: 'searchYoutube',
+              label: t('contextMenu.searchYoutube'),
+              icon: <SquarePlay className="h-3.5 w-3.5" />,
+              onClick: () => openYoutubeArtistSearch(contextMenu.track.artist)
             }
           ]}
         />

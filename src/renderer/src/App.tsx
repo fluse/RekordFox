@@ -113,6 +113,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           <Tracklist
             playlistId={selectedPlaylistId}
             playlistTitle={selectedPlaylist.title}
+            playlists={playlists}
             tracks={tracks}
             onLoadTrack={handleLoadTrack}
             onUpdateBpm={handleUpdateBpmInState}

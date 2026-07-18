@@ -25,6 +25,36 @@ function camelotColor(camelot: string): string {
   return `hsl(${hue}, 65%, 52%)`
 }
 
+// Picks black or white text depending on the perceived brightness of the camelot color,
+// so hues like blue/purple (dark) stay readable next to yellow/green (light).
+function camelotTextColor(camelot: string): string {
+  const num = parseInt(camelot)
+  if (isNaN(num)) return '#fafafa'
+  const hue = ((num - 1) / 12) * 360
+  const [r, g, b] = hslToRgb(hue, 0.65, 0.52)
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness > 150 ? '#09090b' : '#fafafa'
+}
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const hue2rgb = (p: number, q: number, t: number): number => {
+    if (t < 0) t += 1
+    if (t > 1) t -= 1
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+  const hNorm = h / 360
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+  const p = 2 * l - q
+  return [
+    hue2rgb(p, q, hNorm + 1 / 3) * 255,
+    hue2rgb(p, q, hNorm) * 255,
+    hue2rgb(p, q, hNorm - 1 / 3) * 255
+  ]
+}
+
 interface TrackRowProps {
   track: Track
   playlistId: string
@@ -303,8 +333,11 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                     <span className="text-zinc-600 text-xs italic">{t('track.waiting')}</span>
                   ) : (
                     <span
-                      className="inline-block px-2 py-0.5 rounded text-xs font-bold text-zinc-950"
-                      style={{ backgroundColor: camelotColor(track.key) }}
+                      className="inline-block px-2 py-0.5 rounded text-xs font-bold"
+                      style={{
+                        backgroundColor: camelotColor(track.key),
+                        color: camelotTextColor(track.key)
+                      }}
                     >
                       {track.key}
                     </span>

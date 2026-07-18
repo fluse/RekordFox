@@ -105,6 +105,7 @@ export const fr = {
   // Tracklist
   'tracklist.usbExport': 'Export USB',
   'tracklist.searchPlaceholder': 'Rechercher par titre, artiste...',
+  'tracklist.clearSearch': 'Effacer la recherche',
   'tracklist.colPosition': '#',
   'tracklist.colCover': 'Couverture',
   'tracklist.colTitle': 'Titre / Artiste',
@@ -181,6 +182,9 @@ export const fr = {
   'contextMenu.playNow': 'Lire maintenant',
   'contextMenu.addToQueue': "Ajouter à la file d'attente",
   'contextMenu.removeFromQueue': "Retirer de la file d'attente",
+  'contextMenu.searchDiscogs': "Rechercher l'artiste sur Discogs",
+  'contextMenu.searchBandcamp': "Rechercher l'artiste sur Bandcamp",
+  'contextMenu.searchYoutube': "Rechercher l'artiste sur YouTube",
 
   // History
   'sidebar.history': 'Écoutés récemment',

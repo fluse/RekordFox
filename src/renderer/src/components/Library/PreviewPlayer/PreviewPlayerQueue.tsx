@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
-import { GripVertical, X, Play, ListPlus } from 'lucide-react'
+import { GripVertical, X, Play, ListPlus, Search, Disc3, SquarePlay } from 'lucide-react'
 import type { Track } from '@main/db'
 import { usePreviewStore, type QueueEntry } from '@renderer/store/usePreviewStore'
 import { useLanguage } from '@renderer/i18n'
 import { getMediaUrl } from '@renderer/utils/audio'
+import {
+  openDiscogsArtistSearch,
+  openBandcampArtistSearch,
+  openYoutubeArtistSearch
+} from '@renderer/utils/artistSearch'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
 import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
 
@@ -299,10 +304,29 @@ export default function PreviewPlayerQueue({
               onClose={closeContextMenu}
               items={[
                 {
+                  key: 'searchDiscogs',
+                  label: t('contextMenu.searchDiscogs'),
+                  icon: <Search className="h-3.5 w-3.5" />,
+                  onClick: () => openDiscogsArtistSearch(contextMenu.track.artist)
+                },
+                {
+                  key: 'searchBandcamp',
+                  label: t('contextMenu.searchBandcamp'),
+                  icon: <Disc3 className="h-3.5 w-3.5" />,
+                  onClick: () => openBandcampArtistSearch(contextMenu.track.artist)
+                },
+                {
+                  key: 'searchYoutube',
+                  label: t('contextMenu.searchYoutube'),
+                  icon: <SquarePlay className="h-3.5 w-3.5" />,
+                  onClick: () => openYoutubeArtistSearch(contextMenu.track.artist)
+                },
+                {
                   key: 'remove',
                   label: t('contextMenu.removeFromQueue'),
                   icon: <X className="h-3.5 w-3.5" />,
                   destructive: true,
+                  divider: true,
                   onClick: () => {
                     const entry = manualQueue.find((e) => e.track.id === contextMenu.track.id)
                     if (entry) removeFromQueue(entry.queueId)
@@ -327,6 +351,25 @@ export default function PreviewPlayerQueue({
                   label: t('contextMenu.addToQueue'),
                   icon: <ListPlus className="h-3.5 w-3.5" />,
                   onClick: () => addToQueue(contextMenu.track)
+                },
+                {
+                  key: 'searchDiscogs',
+                  label: t('contextMenu.searchDiscogs'),
+                  icon: <Search className="h-3.5 w-3.5" />,
+                  onClick: () => openDiscogsArtistSearch(contextMenu.track.artist),
+                  divider: true
+                },
+                {
+                  key: 'searchBandcamp',
+                  label: t('contextMenu.searchBandcamp'),
+                  icon: <Disc3 className="h-3.5 w-3.5" />,
+                  onClick: () => openBandcampArtistSearch(contextMenu.track.artist)
+                },
+                {
+                  key: 'searchYoutube',
+                  label: t('contextMenu.searchYoutube'),
+                  icon: <SquarePlay className="h-3.5 w-3.5" />,
+                  onClick: () => openYoutubeArtistSearch(contextMenu.track.artist)
                 },
                 ...(fallbackTracks.some((track) => track.id === contextMenu.track.id)
                   ? [
