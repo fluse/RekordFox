@@ -1,5 +1,5 @@
 import React from 'react'
-import { Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react'
+import { Pause, Play, SkipBack, SkipForward, Sparkles, Volume2, VolumeX } from 'lucide-react'
 
 interface PreviewPlayerControlsProps {
   isPlaying: boolean
@@ -12,6 +12,10 @@ interface PreviewPlayerControlsProps {
   isMuted: boolean
   onVolumeChange: (volume: number) => void
   onToggleMute: () => void
+  smartMode: boolean
+  onToggleSmartMode: () => void
+  smartModeEnableLabel: string
+  smartModeDisableLabel: string
 }
 
 export const PreviewPlayerControls: React.FC<PreviewPlayerControlsProps> = ({
@@ -24,13 +28,30 @@ export const PreviewPlayerControls: React.FC<PreviewPlayerControlsProps> = ({
   volume,
   isMuted,
   onVolumeChange,
-  onToggleMute
+  onToggleMute,
+  smartMode,
+  onToggleSmartMode,
+  smartModeEnableLabel,
+  smartModeDisableLabel
 }) => {
   const displayVolume = isMuted ? 0 : volume
 
   return (
     <div className="flex items-center justify-between mt-1">
       <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onToggleSmartMode}
+          title={smartMode ? smartModeDisableLabel : smartModeEnableLabel}
+          aria-pressed={smartMode}
+          className={`flex h-7 w-7 items-center justify-center rounded-full transition active:scale-95 cursor-pointer ${
+            smartMode
+              ? 'bg-primary/20 text-primary hover:bg-primary/30'
+              : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
+          }`}
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+        </button>
         <button
           type="button"
           onClick={onPrevious}

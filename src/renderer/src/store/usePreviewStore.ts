@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Track } from '@main/db'
+import { buildSmartQueueOrder } from '@renderer/utils/camelot'
 
 export interface QueueEntry {
   queueId: string
@@ -34,6 +35,7 @@ interface PreviewState {
   historyLimit: number
   isQueuePanelOpen: boolean
   dockMode: PreviewDockMode
+  smartMode: boolean
 
   setHistoryLimit: (limit: number) => void
   playTrack: (track: Track) => void
@@ -45,6 +47,7 @@ interface PreviewState {
   reorderQueue: (draggedQueueId: string, targetQueueId: string, position: 'above' | 'below') => void
   insertIntoQueueAt: (track: Track, atIndex: number) => void
   toggleQueuePanel: () => void
+  toggleSmartMode: () => void
   advance: () => void
   previous: () => void
   removeUpcomingTrack: (trackId: string) => void
@@ -63,6 +66,24 @@ export const usePreviewStore = create<PreviewState>()(
         return { previewTrack: track, isPlaying: true, history }
       }
 
+      // Reorders the not-yet-played tracks of the current context into a
+      // BPM/key-flowing sequence, starting from the track that's playing now.
+      const applySmartOrder = (): void => {
+        const { originContext } = get()
+        if (!originContext) return
+        const { tracks, lastPlayedIndex } = originContext
+        const current = tracks[lastPlayedIndex]
+        const upcoming = tracks.slice(lastPlayedIndex + 1)
+        if (!current || upcoming.length < 2) return
+        const reordered = buildSmartQueueOrder(current, upcoming)
+        set({
+          originContext: {
+            ...originContext,
+            tracks: [...tracks.slice(0, lastPlayedIndex + 1), ...reordered]
+          }
+        })
+      }
+
       return {
         previewTrack: null,
         isPlaying: false,
@@ -72,6 +93,7 @@ export const usePreviewStore = create<PreviewState>()(
         historyLimit: DEFAULT_HISTORY_LIMIT,
         isQueuePanelOpen: false,
         dockMode: 'floating',
+        smartMode: false,
 
         setHistoryLimit: (limit) =>
           set((state) => ({
@@ -90,6 +112,7 @@ export const usePreviewStore = create<PreviewState>()(
               }
             : null
           set({ ...setNowPlaying(track), originContext })
+          if (get().smartMode) applySmartOrder()
         },
 
         stopTrack: () => set({ previewTrack: null, isPlaying: false }),
@@ -132,6 +155,12 @@ export const usePreviewStore = create<PreviewState>()(
         },
 
         toggleQueuePanel: () => set((state) => ({ isQueuePanelOpen: !state.isQueuePanelOpen })),
+
+        toggleSmartMode: () => {
+          const smartMode = !get().smartMode
+          set({ smartMode })
+          if (smartMode) applySmartOrder()
+        },
 
         advance: () => {
           const { manualQueue, originContext } = get()
@@ -212,7 +241,11 @@ export const usePreviewStore = create<PreviewState>()(
     },
     {
       name: 'rekordfox-history-storage',
-      partialize: (state) => ({ history: state.history, dockMode: state.dockMode })
+      partialize: (state) => ({
+        history: state.history,
+        dockMode: state.dockMode,
+        smartMode: state.smartMode
+      })
     }
   )
 )

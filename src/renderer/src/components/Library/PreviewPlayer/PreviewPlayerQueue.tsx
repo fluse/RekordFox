@@ -4,6 +4,7 @@ import type { Track } from '@main/db'
 import { usePreviewStore, type QueueEntry } from '@renderer/store/usePreviewStore'
 import { useLanguage } from '@renderer/i18n'
 import { getMediaUrl } from '@renderer/utils/audio'
+import { camelotColor, camelotTextColor } from '@renderer/utils/camelot'
 import {
   openDiscogsArtistSearch,
   openBandcampArtistSearch,
@@ -106,6 +107,22 @@ function QueueRowShell({
       <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-semibold text-zinc-200">{track.title}</div>
         <div className="truncate text-[10px] text-zinc-500">{track.artist}</div>
+      </div>
+      <div className="flex flex-shrink-0 items-center gap-1.5">
+        {track.bpm > 0 && (
+          <span className="font-mono text-[10px] font-semibold text-primary">{track.bpm}</span>
+        )}
+        {track.key && (
+          <span
+            className="inline-block rounded px-1.5 py-0.5 text-[9px] font-bold"
+            style={{
+              backgroundColor: camelotColor(track.key),
+              color: camelotTextColor(track.key)
+            }}
+          >
+            {track.key}
+          </span>
+        )}
       </div>
       {removable && (
         <button

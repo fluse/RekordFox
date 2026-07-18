@@ -169,6 +169,8 @@ export const es = {
   'preview.close': 'Cerrar',
   'preview.controls.previous': 'Anterior',
   'preview.controls.next': 'Siguiente',
+  'preview.controls.smartModeEnable': 'Activar modo inteligente (ordenar por BPM y tonalidad)',
+  'preview.controls.smartModeDisable': 'Desactivar modo inteligente',
   'preview.dock.toSidebar': 'Anclar como barra lateral',
   'preview.dock.toFloating': 'Convertir en ventana flotante',
   'preview.queue.toggle': 'Cola',

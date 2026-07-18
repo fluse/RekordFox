@@ -164,6 +164,8 @@ export const en = {
   'preview.close': 'Close',
   'preview.controls.previous': 'Previous',
   'preview.controls.next': 'Next',
+  'preview.controls.smartModeEnable': 'Enable smart mode (order by BPM & key)',
+  'preview.controls.smartModeDisable': 'Disable smart mode',
   'preview.dock.toSidebar': 'Dock as sidebar',
   'preview.dock.toFloating': 'Undock to floating',
   'preview.queue.toggle': 'Queue',

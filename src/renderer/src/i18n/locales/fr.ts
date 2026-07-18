@@ -170,6 +170,8 @@ export const fr = {
   'preview.close': 'Fermer',
   'preview.controls.previous': 'Précédent',
   'preview.controls.next': 'Suivant',
+  'preview.controls.smartModeEnable': 'Activer le mode intelligent (trier par BPM et tonalité)',
+  'preview.controls.smartModeDisable': 'Désactiver le mode intelligent',
   'preview.dock.toSidebar': 'Ancrer en barre latérale',
   'preview.dock.toFloating': 'Détacher en fenêtre flottante',
   'preview.queue.toggle': "File d'attente",

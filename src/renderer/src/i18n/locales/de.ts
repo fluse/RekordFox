@@ -167,6 +167,8 @@ export const de = {
   'preview.close': 'Schließen',
   'preview.controls.previous': 'Vorheriger Titel',
   'preview.controls.next': 'Nächster Titel',
+  'preview.controls.smartModeEnable': 'Smart-Modus aktivieren (nach BPM & Tonart sortieren)',
+  'preview.controls.smartModeDisable': 'Smart-Modus deaktivieren',
   'preview.dock.toSidebar': 'Als Seitenleiste anheften',
   'preview.dock.toFloating': 'Als schwebendes Fenster lösen',
   'preview.queue.toggle': 'Warteschlange',
