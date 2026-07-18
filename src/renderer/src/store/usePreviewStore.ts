@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Track } from '@main/db'
-import { buildSmartQueueOrder } from '@renderer/utils/camelot'
+import {
+  buildSmartQueueOrder,
+  DEFAULT_SMART_MODE_OPTIONS,
+  type SmartModeOptions
+} from '@renderer/utils/camelot'
 
 export interface QueueEntry {
   queueId: string
@@ -36,6 +40,7 @@ interface PreviewState {
   isQueuePanelOpen: boolean
   dockMode: PreviewDockMode
   smartMode: boolean
+  smartModeOptions: SmartModeOptions
 
   setHistoryLimit: (limit: number) => void
   playTrack: (track: Track) => void
@@ -48,6 +53,7 @@ interface PreviewState {
   insertIntoQueueAt: (track: Track, atIndex: number) => void
   toggleQueuePanel: () => void
   toggleSmartMode: () => void
+  updateSmartModeOptions: (options: Partial<SmartModeOptions>) => void
   advance: () => void
   previous: () => void
   removeUpcomingTrack: (trackId: string) => void
@@ -69,13 +75,13 @@ export const usePreviewStore = create<PreviewState>()(
       // Reorders the not-yet-played tracks of the current context into a
       // BPM/key-flowing sequence, starting from the track that's playing now.
       const applySmartOrder = (): void => {
-        const { originContext } = get()
+        const { originContext, smartModeOptions } = get()
         if (!originContext) return
         const { tracks, lastPlayedIndex } = originContext
         const current = tracks[lastPlayedIndex]
         const upcoming = tracks.slice(lastPlayedIndex + 1)
         if (!current || upcoming.length < 2) return
-        const reordered = buildSmartQueueOrder(current, upcoming)
+        const reordered = buildSmartQueueOrder(current, upcoming, smartModeOptions)
         set({
           originContext: {
             ...originContext,
@@ -94,6 +100,7 @@ export const usePreviewStore = create<PreviewState>()(
         isQueuePanelOpen: false,
         dockMode: 'floating',
         smartMode: false,
+        smartModeOptions: DEFAULT_SMART_MODE_OPTIONS,
 
         setHistoryLimit: (limit) =>
           set((state) => ({
@@ -160,6 +167,11 @@ export const usePreviewStore = create<PreviewState>()(
           const smartMode = !get().smartMode
           set({ smartMode })
           if (smartMode) applySmartOrder()
+        },
+
+        updateSmartModeOptions: (options) => {
+          set((state) => ({ smartModeOptions: { ...state.smartModeOptions, ...options } }))
+          if (get().smartMode) applySmartOrder()
         },
 
         advance: () => {
@@ -244,7 +256,8 @@ export const usePreviewStore = create<PreviewState>()(
       partialize: (state) => ({
         history: state.history,
         dockMode: state.dockMode,
-        smartMode: state.smartMode
+        smartMode: state.smartMode,
+        smartModeOptions: state.smartModeOptions
       })
     }
   )

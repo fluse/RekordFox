@@ -12,6 +12,7 @@ import PreviewPlayerTrackInfo from './PreviewPlayerTrackInfo'
 import PreviewPlayerProgress from './PreviewPlayerProgress'
 import PreviewPlayerControls from './PreviewPlayerControls'
 import PreviewPlayerQueue, { QUEUE_ID_MIME } from './PreviewPlayerQueue'
+import PreviewPlayerSmartModePanel from './PreviewPlayerSmartModePanel'
 
 const RESTART_THRESHOLD_SECONDS = 3
 
@@ -29,7 +30,9 @@ export default function PreviewPlayer(): React.JSX.Element | null {
     dockMode,
     toggleDockMode,
     smartMode,
-    toggleSmartMode
+    toggleSmartMode,
+    smartModeOptions,
+    updateSmartModeOptions
   } = usePreviewStore()
   const { t } = useLanguage()
   const isDocked = dockMode === 'sidebar'
@@ -157,11 +160,19 @@ export default function PreviewPlayer(): React.JSX.Element | null {
         </div>
 
         {(isDocked || isQueuePanelOpen) && (
-          <PreviewPlayerQueue
-            height={queueHeight}
-            onResizeStart={handleResizeStart}
-            fillHeight={isDocked}
-          />
+          <>
+            {smartMode && (
+              <PreviewPlayerSmartModePanel
+                options={smartModeOptions}
+                onChange={updateSmartModeOptions}
+              />
+            )}
+            <PreviewPlayerQueue
+              height={queueHeight}
+              onResizeStart={handleResizeStart}
+              fillHeight={isDocked}
+            />
+          </>
         )}
       </div>
     </>
