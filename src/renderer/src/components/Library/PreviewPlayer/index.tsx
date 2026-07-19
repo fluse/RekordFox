@@ -32,7 +32,9 @@ export default function PreviewPlayer(): React.JSX.Element | null {
     smartMode,
     toggleSmartMode,
     smartModeOptions,
-    updateSmartModeOptions
+    updateSmartModeOptions,
+    resumePosition,
+    setResumePosition
   } = usePreviewStore()
   const { t } = useLanguage()
   const isDocked = dockMode === 'sidebar'
@@ -52,7 +54,14 @@ export default function PreviewPlayer(): React.JSX.Element | null {
     handleAudioEnded,
     handleSeek,
     seekTo
-  } = useAudioPlayer(previewTrack, isPlaying, setIsPlaying, advance)
+  } = useAudioPlayer(
+    previewTrack,
+    isPlaying,
+    setIsPlaying,
+    advance,
+    resumePosition,
+    setResumePosition
+  )
 
   if (!previewTrack) return null
 

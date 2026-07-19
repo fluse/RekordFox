@@ -42,6 +42,7 @@ interface PreviewState {
   dockMode: PreviewDockMode
   smartMode: boolean
   smartModeOptions: SmartModeOptions
+  resumePosition: number
 
   setHistoryLimit: (limit: number) => void
   playTrack: (track: Track) => void
@@ -60,6 +61,7 @@ interface PreviewState {
   removeUpcomingTrack: (trackId: string) => void
   toggleDockMode: () => void
   syncFilepaths: (changes: { id: string; filepath: string }[]) => void
+  setResumePosition: (time: number) => void
 }
 
 export const usePreviewStore = create<PreviewState>()(
@@ -70,7 +72,7 @@ export const usePreviewStore = create<PreviewState>()(
           0,
           get().historyLimit
         )
-        return { previewTrack: track, isPlaying: true, history }
+        return { previewTrack: track, isPlaying: true, history, resumePosition: 0 }
       }
 
       // Reorders the not-yet-played tracks of the current context into a
@@ -102,6 +104,7 @@ export const usePreviewStore = create<PreviewState>()(
         dockMode: 'floating',
         smartMode: false,
         smartModeOptions: DEFAULT_SMART_MODE_OPTIONS,
+        resumePosition: 0,
 
         setHistoryLimit: (limit) =>
           set((state) => ({
@@ -123,7 +126,7 @@ export const usePreviewStore = create<PreviewState>()(
           if (get().smartMode) applySmartOrder()
         },
 
-        stopTrack: () => set({ previewTrack: null, isPlaying: false }),
+        stopTrack: () => set({ previewTrack: null, isPlaying: false, resumePosition: 0 }),
 
         setIsPlaying: (isPlaying) => set({ isPlaying }),
 
@@ -255,7 +258,9 @@ export const usePreviewStore = create<PreviewState>()(
               : state.originContext,
             history: state.history.map((entry) => ({ ...entry, track: patchTrack(entry.track) }))
           }))
-        }
+        },
+
+        setResumePosition: (time) => set({ resumePosition: time })
       }
     },
     {
@@ -264,7 +269,11 @@ export const usePreviewStore = create<PreviewState>()(
         history: state.history,
         dockMode: state.dockMode,
         smartMode: state.smartMode,
-        smartModeOptions: state.smartModeOptions
+        smartModeOptions: state.smartModeOptions,
+        previewTrack: state.previewTrack,
+        manualQueue: state.manualQueue,
+        originContext: state.originContext,
+        resumePosition: state.resumePosition
       })
     }
   )

@@ -23,10 +23,15 @@ export function useAudioPlayer(
   previewTrack: Track | null,
   isPlaying: boolean,
   setIsPlaying: (isPlaying: boolean) => void,
-  onEnded?: () => void
+  onEnded?: () => void,
+  initialPosition = 0,
+  onPositionChange?: (time: number) => void
 ): UseAudioPlayerResult {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const lastTrackId = useRef<string | null>(null)
+  // Only the very first loaded track (restored from a previous session) may
+  // seek to initialPosition — every track played afterwards starts at 0.
+  const initialPositionConsumed = useRef(false)
 
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -64,6 +69,18 @@ export function useAudioPlayer(
     }
   }, [previewTrack, isPlaying, setIsPlaying])
 
+  // Persists the current playback position right before the app closes, so a
+  // preview player left open can resume from where it left off next launch.
+  useEffect(() => {
+    const handleBeforeUnload = (): void => {
+      if (audioRef.current && previewTrack) {
+        onPositionChange?.(audioRef.current.currentTime)
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [previewTrack, onPositionChange])
+
   // Handle volume changes
   useEffect(() => {
     if (audioRef.current) {
@@ -81,6 +98,11 @@ export function useAudioPlayer(
   const handleLoadedMetadata = (): void => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration)
+      if (!initialPositionConsumed.current && initialPosition > 0) {
+        audioRef.current.currentTime = initialPosition
+        setCurrentTime(initialPosition)
+      }
+      initialPositionConsumed.current = true
     }
   }
 
