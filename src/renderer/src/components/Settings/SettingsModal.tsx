@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   X,
   Folder,
@@ -48,12 +48,17 @@ export default function SettingsModal({
   )
   const { t } = useLanguage()
 
-  useEffect(() => {
+  // Reset transient status messages when the modal closes, so they don't
+  // reappear stale the next time it opens. Adjusting state during render
+  // (rather than in an effect) avoids an extra cascading render.
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen)
     if (!isOpen) {
       setXmlStatus(null)
       setError('')
     }
-  }, [isOpen])
+  }
 
   if (!isOpen) return null
 

@@ -1,8 +1,10 @@
+import type { ElectronAPI } from '@electron-toolkit/preload'
 import { Playlist, Track, AppSettings } from '@main/db'
+import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 
 declare global {
   interface Window {
-    electron: any
+    electron: ElectronAPI
     api: {
       getPlaylists: () => Promise<Playlist[]>
       addPlaylist: (
@@ -113,7 +115,10 @@ declare global {
       onWaveformAnalysisRequest: (
         callback: (data: { trackId: string; filepath: string }) => void
       ) => () => void
-      sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }) => void
+      sendWaveformAnalysisResponse: (
+        trackId: string,
+        result: { peaks: WaveformPeak[]; rms: WaveformPeak[] }
+      ) => void
       logError: (message: string) => void
       windowMinimize: () => void
       windowMaximizeToggle: () => void

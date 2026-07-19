@@ -19,7 +19,7 @@ export class ExportQueueManager {
   private pendingAnalysisResolve:
     | ((value: { peaks: WaveformPeak[]; rms: WaveformPeak[] }) => void)
     | null = null
-  private pendingAnalysisReject: ((reason: any) => void) | null = null
+  private pendingAnalysisReject: ((reason?: unknown) => void) | null = null
   private activeTrackId: string | null = null
 
   constructor() {
@@ -136,9 +136,10 @@ export class ExportQueueManager {
         dbUpdater.init()
         pdbEnabled = true
         console.log('[ExportQueueManager] Successfully connected to export.pdb')
-      } catch (dbErr: any) {
+      } catch (dbErr) {
+        const message = dbErr instanceof Error ? dbErr.message : String(dbErr)
         console.warn(
-          `[ExportQueueManager] Pioneer export.pdb not found or could not be opened: ${dbErr.message}. Skipping database updates.`
+          `[ExportQueueManager] Pioneer export.pdb not found or could not be opened: ${message}. Skipping database updates.`
         )
       }
 
@@ -284,7 +285,7 @@ export class ExportQueueManager {
 
       console.log('[ExportQueueManager] Export finished successfully.')
       return { success: true }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[ExportQueueManager] Export failed:', err)
       this.cleanupCurrentTrackFiles()
 
@@ -299,13 +300,14 @@ export class ExportQueueManager {
         return { success: false, error: 'Export abgebrochen' }
       }
 
+      const message = err instanceof Error ? err.message : String(err)
       win.webContents.send('pioneer:export-progress', {
         currentTrack: 0,
         totalTracks: 0,
-        statusText: `Fehler: ${err.message}`,
+        statusText: `Fehler: ${message}`,
         progressPercent: 0
       })
-      return { success: false, error: err.message }
+      return { success: false, error: message }
     } finally {
       if (dbUpdater) {
         dbUpdater.close()

@@ -184,7 +184,6 @@ function computeChroma(samples: Float32Array, sampleRate: number): Float64Array 
   const OCTAVES = [0, 1, 2, 3, 4] // C2–B6
 
   const chroma = new Float64Array(12)
-  let numBlocks = 0
 
   for (let start = 0; start + BLOCK <= samples.length; start += HOP) {
     const block = samples.slice(start, start + BLOCK)
@@ -196,7 +195,6 @@ function computeChroma(samples: Float32Array, sampleRate: number): Float64Array 
         chroma[pc] += goertzel(block, freq, sampleRate)
       }
     }
-    numBlocks++
   }
 
   // Normalize chroma to [0, 1]

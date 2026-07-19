@@ -217,9 +217,7 @@ export default function PreviewPlayerQueue({
   }
 
   return (
-    <div
-      className={`border-t border-zinc-900 ${fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''}`}
-    >
+    <div className={`border-t border-zinc-900 ${fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''}`}>
       <div
         style={fillHeight ? undefined : { maxHeight: `${height}px` }}
         className={`flex flex-col gap-3 px-4 py-3 overflow-y-auto ${fillHeight ? 'min-h-0 flex-1' : ''}`}

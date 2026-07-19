@@ -30,9 +30,10 @@ export class PioneerDbUpdater {
       this.db = new Database(this.dbPath, { fileMustExist: true })
       // Enable WAL mode for better concurrency and stability on USB drives
       this.db.pragma('journal_mode = WAL')
-    } catch (err: any) {
+    } catch (err) {
       this.close()
-      throw new Error(`Failed to open Pioneer SQLite database at ${this.dbPath}: ${err.message}`)
+      const message = err instanceof Error ? err.message : String(err)
+      throw new Error(`Failed to open Pioneer SQLite database at ${this.dbPath}: ${message}`)
     }
   }
 
@@ -91,19 +92,20 @@ export class PioneerDbUpdater {
 
       runTransaction()
       console.log(`[PioneerDbUpdater] Successfully linked waveforms to track ID: ${trackId}`)
-    } catch (err: any) {
+    } catch (err) {
       console.error(
         `[PioneerDbUpdater] Failed to write waveform links for track ID ${trackId}:`,
         err
       )
+      const message = err instanceof Error ? err.message : String(err)
       // Check if the USB was disconnected during the query execution
       if (!existsSync(this.dbPath)) {
         this.close()
         throw new Error(
-          `Database transaction failed due to connection loss (USB disconnected): ${err.message}`
+          `Database transaction failed due to connection loss (USB disconnected): ${message}`
         )
       }
-      throw new Error(`Pioneer PDB update failed: ${err.message}`)
+      throw new Error(`Pioneer PDB update failed: ${message}`)
     }
   }
 

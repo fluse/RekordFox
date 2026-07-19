@@ -1,4 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { AppSettings } from '@main/db'
+import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 
 // Custom APIs for renderer
 const api = {
@@ -19,7 +21,8 @@ const api = {
   reorderTracks: (playlistId: string, trackIds: string[]) =>
     ipcRenderer.invoke('tracks:reorder', playlistId, trackIds),
   getSettings: () => ipcRenderer.invoke('settings:get'),
-  updateSettings: (settings: any) => ipcRenderer.invoke('settings:update', settings),
+  updateSettings: (settings: Partial<AppSettings>) =>
+    ipcRenderer.invoke('settings:update', settings),
   migrateSettings: (newPath: string, moveFiles: boolean) =>
     ipcRenderer.invoke('settings:migrate', newPath, moveFiles),
   selectDirectory: () => ipcRenderer.invoke('dialog:select-directory'),
@@ -30,18 +33,21 @@ const api = {
 
   onRenamingStatus: (
     callback: (data: { active: boolean; current: number; total: number }) => void
-  ) => {
-    const subscription = (_event: any, data: any) => callback(data)
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      data: { active: boolean; current: number; total: number }
+    ): void => callback(data)
     ipcRenderer.on('renaming-status', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('renaming-status', subscription)
     }
   },
 
-  onTracksUpdated: (callback: () => void) => {
-    const subscription = () => callback()
+  onTracksUpdated: (callback: () => void): (() => void) => {
+    const subscription = (): void => callback()
     ipcRenderer.on('tracks-updated', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('tracks-updated', subscription)
     }
   },
@@ -49,11 +55,15 @@ const api = {
   // Sync / Download events listeners
   onSyncStatusChanged: (
     callback: (playlistId: string, status: string, lastSync?: string) => void
-  ) => {
-    const subscription = (_event: any, playlistId: string, status: string, lastSync?: string) =>
-      callback(playlistId, status, lastSync)
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      playlistId: string,
+      status: string,
+      lastSync?: string
+    ): void => callback(playlistId, status, lastSync)
     ipcRenderer.on('sync-status-changed', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('sync-status-changed', subscription)
     }
   },
@@ -67,41 +77,65 @@ const api = {
       current: number
       total: number
     }) => void
-  ) => {
-    const subscription = (_event: any, data: any) => callback(data)
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      data: {
+        playlistId: string
+        trackId: string
+        title: string
+        percent: number
+        current: number
+        total: number
+      }
+    ): void => callback(data)
     ipcRenderer.on('download-progress', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('download-progress', subscription)
     }
   },
 
   // BPM analyzed event: fires when main process completes BPM analysis for a track
-  onBpmAnalyzed: (callback: (trackId: string, playlistId: string, bpm: number) => void) => {
-    const subscription = (_event: any, trackId: string, playlistId: string, bpm: number) =>
-      callback(trackId, playlistId, bpm)
+  onBpmAnalyzed: (
+    callback: (trackId: string, playlistId: string, bpm: number) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      trackId: string,
+      playlistId: string,
+      bpm: number
+    ): void => callback(trackId, playlistId, bpm)
     ipcRenderer.on('bpm-analyzed', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('bpm-analyzed', subscription)
     }
   },
 
   // Key analyzed event: fires when main process completes key analysis for a track
-  onKeyAnalyzed: (callback: (trackId: string, playlistId: string, key: string) => void) => {
-    const subscription = (_event: any, trackId: string, playlistId: string, key: string) =>
-      callback(trackId, playlistId, key)
+  onKeyAnalyzed: (
+    callback: (trackId: string, playlistId: string, key: string) => void
+  ): (() => void) => {
+    const subscription = (
+      _event: unknown,
+      trackId: string,
+      playlistId: string,
+      key: string
+    ): void => callback(trackId, playlistId, key)
     ipcRenderer.on('key-analyzed', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('key-analyzed', subscription)
     }
   },
 
   // Filepath changed event: fires when the main process renames one or more track
   // files on disk (e.g. after reordering or a BPM update that changes the filename)
-  onTrackFilepathChanged: (callback: (changes: { id: string; filepath: string }[]) => void) => {
-    const subscription = (_event: any, changes: { id: string; filepath: string }[]) =>
+  onTrackFilepathChanged: (
+    callback: (changes: { id: string; filepath: string }[]) => void
+  ): (() => void) => {
+    const subscription = (_event: unknown, changes: { id: string; filepath: string }[]): void =>
       callback(changes)
     ipcRenderer.on('tracks-filepath-changed', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('tracks-filepath-changed', subscription)
     }
   },
@@ -179,7 +213,10 @@ const api = {
     }
   },
 
-  sendWaveformAnalysisResponse: (trackId: string, result: { peaks: any[]; rms: any[] }): void => {
+  sendWaveformAnalysisResponse: (
+    trackId: string,
+    result: { peaks: WaveformPeak[]; rms: WaveformPeak[] }
+  ): void => {
     ipcRenderer.send('waveform:analysis-response', trackId, result)
   },
 
@@ -189,10 +226,10 @@ const api = {
   windowMaximizeToggle: () => ipcRenderer.send('window:maximize-toggle'),
   windowClose: () => ipcRenderer.send('window:close'),
   windowIsMaximized: () => ipcRenderer.invoke('window:is-maximized'),
-  onWindowMaximizedChange: (callback: (isMaximized: boolean) => void) => {
-    const subscription = (_event: any, isMaximized: boolean) => callback(isMaximized)
+  onWindowMaximizedChange: (callback: (isMaximized: boolean) => void): (() => void) => {
+    const subscription = (_event: unknown, isMaximized: boolean): void => callback(isMaximized)
     ipcRenderer.on('window:maximized-change', subscription)
-    return () => {
+    return (): void => {
       ipcRenderer.removeListener('window:maximized-change', subscription)
     }
   }

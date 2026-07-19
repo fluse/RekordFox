@@ -1,6 +1,14 @@
 import { app } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, chmodSync, writeFileSync, unlinkSync, statSync } from 'fs'
+import {
+  existsSync,
+  mkdirSync,
+  chmodSync,
+  writeFileSync,
+  unlinkSync,
+  statSync,
+  renameSync
+} from 'fs'
 import { execFile, spawn } from 'child_process'
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
 
@@ -84,45 +92,55 @@ export interface YtPlaylist {
   entries: YtVideo[]
 }
 
+interface YtDlpFlatEntry {
+  id: string
+  title?: string
+  duration?: number
+  uploader?: string
+  channel?: string
+}
+
 // Fetch playlist information
 export function getPlaylistInfo(playlistUrl: string): Promise<YtPlaylist> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const ytdlpPath = await ensureYtdlp()
-      const args = [
-        '--dump-single-json',
-        '--flat-playlist',
-        '--no-warnings',
-        '--no-update',
-        playlistUrl
-      ]
+  return new Promise((resolve, reject) => {
+    void (async (): Promise<void> => {
+      try {
+        const ytdlpPath = await ensureYtdlp()
+        const args = [
+          '--dump-single-json',
+          '--flat-playlist',
+          '--no-warnings',
+          '--no-update',
+          playlistUrl
+        ]
 
-      execFile(ytdlpPath, args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
-        if (error) {
-          return reject(new Error(`yt-dlp failed: ${error.message}. Stderr: ${stderr}`))
-        }
+        execFile(ytdlpPath, args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+          if (error) {
+            return reject(new Error(`yt-dlp failed: ${error.message}. Stderr: ${stderr}`))
+          }
 
-        try {
-          const data = JSON.parse(stdout)
-          const entries: YtVideo[] = (data.entries || []).map((entry: any) => ({
-            id: entry.id,
-            title: entry.title || 'Unknown Title',
-            duration: entry.duration || 0,
-            uploader: entry.uploader || entry.channel || 'Unknown Artist'
-          }))
+          try {
+            const data = JSON.parse(stdout)
+            const entries: YtVideo[] = (data.entries || []).map((entry: YtDlpFlatEntry) => ({
+              id: entry.id,
+              title: entry.title || 'Unknown Title',
+              duration: entry.duration || 0,
+              uploader: entry.uploader || entry.channel || 'Unknown Artist'
+            }))
 
-          resolve({
-            id: data.id || '',
-            title: data.title || 'YouTube Playlist',
-            entries
-          })
-        } catch (e) {
-          reject(new Error(`Failed to parse playlist JSON: ${e}`))
-        }
-      })
-    } catch (e) {
-      reject(e)
-    }
+            resolve({
+              id: data.id || '',
+              title: data.title || 'YouTube Playlist',
+              entries
+            })
+          } catch (e) {
+            reject(new Error(`Failed to parse playlist JSON: ${e}`))
+          }
+        })
+      } catch (e) {
+        reject(e)
+      }
+    })()
   })
 }
 
@@ -134,92 +152,93 @@ export function downloadTrack(
   _playlistTitle: string,
   progressCallback: (percent: number) => void
 ): Promise<void> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const ytdlpPath = await ensureYtdlp()
-      const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
-
-      // Steps:
-      // 1. Download cover art first
+  return new Promise((resolve, reject) => {
+    void (async (): Promise<void> => {
       try {
-        const coverUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-        const res = await fetch(coverUrl)
-        if (res.ok) {
-          const arrayBuffer = await res.arrayBuffer()
-          writeFileSync(coverPath, Buffer.from(arrayBuffer))
-        }
-      } catch (e) {
-        console.error('Failed to download cover art:', e)
-      }
+        const ytdlpPath = await ensureYtdlp()
+        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
 
-      // 2. Download audio and convert to MP3
-      // We write to a temporary file first
-      const tempOutputTemplate = outputPath.replace(/\.mp3$/, '.temp.%(ext)s')
-      const finalTempOutput = outputPath.replace(/\.mp3$/, '.temp.mp3')
-
-      const args = [
-        '--no-update',
-        '-x',
-        '--audio-format',
-        'mp3',
-        '--audio-quality',
-        '320k', // Highest quality
-        '--ffmpeg-location',
-        ffmpegPath,
-        '--no-playlist',
-        '--newline',
-        '-o',
-        tempOutputTemplate,
-        videoUrl
-      ]
-
-      const child = spawn(ytdlpPath, args)
-
-      child.stdout.on('data', (data) => {
-        const output = data.toString()
-        // Parse progress e.g. "[download]  45.3% of ~10.42MiB at  3.12MiB/s ETA 00:02"
-        const match = output.match(/\[download\]\s+(\d+\.\d+)%/)
-        if (match) {
-          const percent = parseFloat(match[1])
-          // Download is the first 85% of the total process
-          progressCallback(Math.floor(percent * 0.85))
-        } else if (output.includes('[ExtractAudio]')) {
-          progressCallback(95)
-        }
-      })
-
-      child.stderr.on('data', (data) => {
-        console.error('yt-dlp stderr:', data.toString())
-      })
-
-      child.on('close', (code) => {
-        if (code !== 0) {
-          if (existsSync(finalTempOutput)) unlinkSync(finalTempOutput)
-          return reject(new Error(`yt-dlp download failed with code ${code}`))
-        }
-
-        // Rename temp file to target path
-        if (existsSync(finalTempOutput)) {
-          // 3. Write ID3 metadata
-          try {
-            // Read title and artist from file or video info
-            // Let's first rename it
-            const fs = require('fs')
-            fs.renameSync(finalTempOutput, outputPath)
-
-            // Parse Artist - Title
-            // We will fetch title info from yt-dlp first or pass it
-            // Let's resolve the promise after setting metadata in db.ts update or here
-            resolve()
-          } catch (e) {
-            reject(new Error(`Failed to finalize MP3 file: ${e}`))
+        // Steps:
+        // 1. Download cover art first
+        try {
+          const coverUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+          const res = await fetch(coverUrl)
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer()
+            writeFileSync(coverPath, Buffer.from(arrayBuffer))
           }
-        } else {
-          reject(new Error(`Temp file not found at ${finalTempOutput}`))
+        } catch (e) {
+          console.error('Failed to download cover art:', e)
         }
-      })
-    } catch (e) {
-      reject(e)
-    }
+
+        // 2. Download audio and convert to MP3
+        // We write to a temporary file first
+        const tempOutputTemplate = outputPath.replace(/\.mp3$/, '.temp.%(ext)s')
+        const finalTempOutput = outputPath.replace(/\.mp3$/, '.temp.mp3')
+
+        const args = [
+          '--no-update',
+          '-x',
+          '--audio-format',
+          'mp3',
+          '--audio-quality',
+          '320k', // Highest quality
+          '--ffmpeg-location',
+          ffmpegPath,
+          '--no-playlist',
+          '--newline',
+          '-o',
+          tempOutputTemplate,
+          videoUrl
+        ]
+
+        const child = spawn(ytdlpPath, args)
+
+        child.stdout.on('data', (data) => {
+          const output = data.toString()
+          // Parse progress e.g. "[download]  45.3% of ~10.42MiB at  3.12MiB/s ETA 00:02"
+          const match = output.match(/\[download\]\s+(\d+\.\d+)%/)
+          if (match) {
+            const percent = parseFloat(match[1])
+            // Download is the first 85% of the total process
+            progressCallback(Math.floor(percent * 0.85))
+          } else if (output.includes('[ExtractAudio]')) {
+            progressCallback(95)
+          }
+        })
+
+        child.stderr.on('data', (data) => {
+          console.error('yt-dlp stderr:', data.toString())
+        })
+
+        child.on('close', (code) => {
+          if (code !== 0) {
+            if (existsSync(finalTempOutput)) unlinkSync(finalTempOutput)
+            return reject(new Error(`yt-dlp download failed with code ${code}`))
+          }
+
+          // Rename temp file to target path
+          if (existsSync(finalTempOutput)) {
+            // 3. Write ID3 metadata
+            try {
+              // Read title and artist from file or video info
+              // Let's first rename it
+              renameSync(finalTempOutput, outputPath)
+
+              // Parse Artist - Title
+              // We will fetch title info from yt-dlp first or pass it
+              // Let's resolve the promise after setting metadata in db.ts update or here
+              resolve()
+            } catch (e) {
+              reject(new Error(`Failed to finalize MP3 file: ${e}`))
+            }
+          } else {
+            reject(new Error(`Temp file not found at ${finalTempOutput}`))
+          }
+        })
+      } catch (e) {
+        reject(e)
+      }
+    })()
   })
 }

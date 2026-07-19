@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
-import { existsSync, unlinkSync } from 'fs'
+import { existsSync, unlinkSync, statSync, mkdirSync, readFileSync } from 'fs'
 import {
   Playlist,
   Track,
@@ -128,13 +128,12 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
     }
 
     // Check existing tracks for missing metadata (filesize, bitrate, format)
-    const fs = require('fs')
     for (const track of localTracks) {
       if (ytTracksMap.has(track.id) && existsSync(track.filepath)) {
         let trackUpdated = false
         if (track.filesize === undefined || track.filesize === 0) {
           try {
-            track.filesize = fs.statSync(track.filepath).size
+            track.filesize = statSync(track.filepath).size
             trackUpdated = true
           } catch (e) {
             console.error(`Failed to get size for ${track.filepath}:`, e)
@@ -181,8 +180,7 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
 
     const queue = [...toDownload]
 
-    const worker = async () => {
-      const fs = require('fs')
+    const worker = async (): Promise<void> => {
       while (queue.length > 0) {
         const ytTrack = queue.shift()
         if (!ytTrack) break
@@ -210,8 +208,8 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
 
         const playlistFolder = getPlaylistFolderName(playlist)
         const targetDir = join(downloadsDir, playlistFolder)
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true })
+        if (!existsSync(targetDir)) {
+          mkdirSync(targetDir, { recursive: true })
         }
 
         const sanitizedCoverName = `${playlist.id}_${ytTrack.id}.jpg`
@@ -245,17 +243,17 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
 
           // Parse metadata & write ID3 (embed cover image as binary buffer)
           const { title, artist } = parseTitleAndArtist(ytTrack.title, ytTrack.uploader)
-          const tags: any = {
+          const tags: Parameters<typeof nodeId3.write>[0] = {
             title,
             artist,
             album: ytPlaylist.title
           }
-          if (fs.existsSync(coverPath)) {
+          if (existsSync(coverPath)) {
             tags.image = {
               mime: 'image/jpeg',
               type: { id: 3, name: 'front cover' },
               description: 'Cover',
-              imageBuffer: fs.readFileSync(coverPath)
+              imageBuffer: readFileSync(coverPath)
             }
           }
           nodeId3.write(tags, filepath)
@@ -264,8 +262,8 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
           let filesize = 0
           let bitrate = 320
           try {
-            if (fs.existsSync(filepath)) {
-              filesize = fs.statSync(filepath).size
+            if (existsSync(filepath)) {
+              filesize = statSync(filepath).size
               if (ytTrack.duration > 0) {
                 bitrate = Math.round((filesize * 8) / (ytTrack.duration * 1000))
               }

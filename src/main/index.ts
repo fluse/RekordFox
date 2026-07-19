@@ -31,6 +31,12 @@ import { detectUsbDrives } from './usb'
 import { exportPlaylistToUsb } from './export/m3u8/m3u8Exporter'
 import { ExportQueueManager } from './export/pioneer/ExportQueueManager'
 import { handleMediaRequest } from './media'
+import { writeRekordboxXml } from './export/rekordbox/rekordboxXmlExporter'
+import { existsSync } from 'fs'
+
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
+}
 
 app.setName('RekordFox')
 
@@ -138,9 +144,9 @@ app.whenReady().then(async () => {
       }
 
       return { success: true, playlist: newPlaylist }
-    } catch (e: any) {
+    } catch (e) {
       console.error('Error adding playlist:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -148,8 +154,8 @@ app.whenReady().then(async () => {
     try {
       deletePlaylistFromDb(id)
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -157,8 +163,8 @@ app.whenReady().then(async () => {
     try {
       renamePlaylist(id, newTitle)
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -185,8 +191,8 @@ app.whenReady().then(async () => {
         mainWindow.webContents.send('tracks-filepath-changed', [change])
       }
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -206,8 +212,8 @@ app.whenReady().then(async () => {
           }
         }
         return { success: true, bpm }
-      } catch (e: any) {
-        return { success: false, error: e.message }
+      } catch (e) {
+        return { success: false, error: getErrorMessage(e) }
       }
     }
   )
@@ -225,8 +231,8 @@ app.whenReady().then(async () => {
           }
         }
         return { success: true, key: camelot }
-      } catch (e: any) {
-        return { success: false, error: e.message }
+      } catch (e) {
+        return { success: false, error: getErrorMessage(e) }
       }
     }
   )
@@ -237,8 +243,8 @@ app.whenReady().then(async () => {
       try {
         updateTrackRating(trackId, playlistId, rating)
         return { success: true }
-      } catch (e: any) {
-        return { success: false, error: e.message }
+      } catch (e) {
+        return { success: false, error: getErrorMessage(e) }
       }
     }
   )
@@ -249,8 +255,8 @@ app.whenReady().then(async () => {
       try {
         updateTrackPlayed(trackId, playlistId, played)
         return { success: true }
-      } catch (e: any) {
-        return { success: false, error: e.message }
+      } catch (e) {
+        return { success: false, error: getErrorMessage(e) }
       }
     }
   )
@@ -262,8 +268,8 @@ app.whenReady().then(async () => {
         mainWindow.webContents.send('tracks-filepath-changed', changes)
       }
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -326,8 +332,8 @@ app.whenReady().then(async () => {
       }
 
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -335,8 +341,8 @@ app.whenReady().then(async () => {
     try {
       await migrateDownloadsFolder(newPath, moveFiles)
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -344,8 +350,8 @@ app.whenReady().then(async () => {
     try {
       await shell.openPath(folderPath)
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) }
     }
   })
 
@@ -396,13 +402,12 @@ app.whenReady().then(async () => {
       if (!settings.rekordboxXmlPath) {
         return { success: false, error: 'Kein XML-Exportpfad konfiguriert' }
       }
-      const { writeRekordboxXml } = require('./export/rekordbox/rekordboxXmlExporter')
       const playlists = getPlaylists()
       const tracks = getTracks()
       writeRekordboxXml(settings.rekordboxXmlPath, playlists, tracks)
       return { success: true }
-    } catch (e: any) {
-      return { success: false, error: e.message || 'Export fehlgeschlagen' }
+    } catch (e) {
+      return { success: false, error: getErrorMessage(e) || 'Export fehlgeschlagen' }
     }
   })
 
@@ -463,7 +468,6 @@ app.whenReady().then(async () => {
   // (runs in background 3s after startup to not block UI)
   setTimeout(() => {
     if (!mainWindow || mainWindow.isDestroyed()) return
-    const { existsSync } = require('fs')
     const allTracks = getTracks()
 
     const needsBpm = allTracks.filter((t) => t.bpm === 0 && t.filepath && existsSync(t.filepath))
@@ -473,7 +477,7 @@ app.whenReady().then(async () => {
 
     console.log(`[Analysis] ${needsBpm.length} tracks need BPM, ${needsKey.length} tracks need Key`)
 
-    const analyzeNext = async (index: number) => {
+    const analyzeNext = async (index: number): Promise<void> => {
       if (index >= needsBpm.length) {
         console.log('[BPM] Background analysis complete.')
         return
@@ -496,7 +500,7 @@ app.whenReady().then(async () => {
       setTimeout(() => analyzeNext(index + 1), 200)
     }
 
-    const analyzeKeyNext = async (index: number) => {
+    const analyzeKeyNext = async (index: number): Promise<void> => {
       if (index >= needsKey.length) {
         console.log('[Key] Background analysis complete.')
         return

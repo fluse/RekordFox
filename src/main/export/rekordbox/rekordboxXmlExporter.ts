@@ -1,5 +1,28 @@
 import { writeFileSync, existsSync } from 'fs'
 
+// Structural subsets of db.ts's Playlist/Track - kept local (rather than
+// imported from ./db) to avoid a circular import, since db.ts calls into
+// this module from saveDb().
+interface ExportPlaylist {
+  id: string
+  title: string
+}
+
+interface ExportTrack {
+  id: string
+  playlistId: string
+  title: string
+  artist: string
+  filepath: string
+  filesize?: number
+  duration: number
+  bpm: number
+  key: string
+  bitrate?: number
+  rating: number
+  position?: number
+}
+
 function escapeXml(unsafe: string): string {
   return unsafe.replace(/[<>&'"]/g, (c) => {
     switch (c) {
@@ -34,7 +57,7 @@ function filePathToLocation(filepath: string): string {
   return `file://localhost${encodedParts.join('/')}`
 }
 
-export function generateRekordboxXml(playlists: any[], tracks: any[]): string {
+export function generateRekordboxXml(playlists: ExportPlaylist[], tracks: ExportTrack[]): string {
   const validTracks = tracks.filter((t) => t.filepath && existsSync(t.filepath))
 
   const trackIdMap = new Map<string, number>()
@@ -107,7 +130,11 @@ export function generateRekordboxXml(playlists: any[], tracks: any[]): string {
   return lines.join('\n')
 }
 
-export function writeRekordboxXml(targetPath: string, playlists: any[], tracks: any[]): void {
+export function writeRekordboxXml(
+  targetPath: string,
+  playlists: ExportPlaylist[],
+  tracks: ExportTrack[]
+): void {
   const xmlContent = generateRekordboxXml(playlists, tracks)
   writeFileSync(targetPath, xmlContent, 'utf-8')
 }

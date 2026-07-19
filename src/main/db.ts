@@ -1,6 +1,17 @@
 import { app } from 'electron'
-import { join, basename } from 'path'
-import { existsSync, writeFileSync, readFileSync, mkdirSync, copyFileSync, unlinkSync } from 'fs'
+import { join, basename, dirname } from 'path'
+import {
+  existsSync,
+  writeFileSync,
+  readFileSync,
+  mkdirSync,
+  copyFileSync,
+  unlinkSync,
+  statSync,
+  renameSync
+} from 'fs'
+import nodeId3 from 'node-id3'
+import { writeRekordboxXml } from './export/rekordbox/rekordboxXmlExporter'
 
 export interface Playlist {
   id: string // YouTube playlist ID
@@ -127,7 +138,6 @@ export function initDb(): void {
       }
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
-      const fs = require('fs')
       let dbUpdated = false
 
       // Assign position sequences to existing tracks if they don't have them
@@ -156,19 +166,19 @@ export function initDb(): void {
       // Self-healing subfolders migration: move files from root downloads dir (or anywhere incorrect) into correct playlist subfolders
       if (dbData.tracks && Array.isArray(dbData.tracks)) {
         for (const track of dbData.tracks) {
-          if (track.filepath && fs.existsSync(track.filepath)) {
+          if (track.filepath && existsSync(track.filepath)) {
             const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
             if (playlist) {
               const expectedDir = join(getDownloadsDir(), getPlaylistFolderName(playlist))
-              const actualDir = require('path').dirname(track.filepath)
+              const actualDir = dirname(track.filepath)
 
               if (actualDir !== expectedDir) {
                 try {
-                  if (!fs.existsSync(expectedDir)) {
-                    fs.mkdirSync(expectedDir, { recursive: true })
+                  if (!existsSync(expectedDir)) {
+                    mkdirSync(expectedDir, { recursive: true })
                   }
                   const targetPath = join(expectedDir, basename(track.filepath))
-                  fs.renameSync(track.filepath, targetPath)
+                  renameSync(track.filepath, targetPath)
                   track.filepath = targetPath
                   dbUpdated = true
                 } catch (e) {
@@ -188,8 +198,8 @@ export function initDb(): void {
           let trackUpdated = false
           if (track.filesize === undefined || track.filesize === 0) {
             try {
-              if (fs.existsSync(track.filepath)) {
-                track.filesize = fs.statSync(track.filepath).size
+              if (existsSync(track.filepath)) {
+                track.filesize = statSync(track.filepath).size
                 trackUpdated = true
               }
             } catch (e) {
@@ -218,13 +228,13 @@ export function initDb(): void {
           }
           if (track.dateAdded === undefined) {
             try {
-              if (track.filepath && fs.existsSync(track.filepath)) {
-                const stats = fs.statSync(track.filepath)
+              if (track.filepath && existsSync(track.filepath)) {
+                const stats = statSync(track.filepath)
                 track.dateAdded = (stats.birthtime || stats.mtime || new Date()).toISOString()
               } else {
                 track.dateAdded = new Date().toISOString()
               }
-            } catch (e) {
+            } catch {
               track.dateAdded = new Date().toISOString()
             }
             trackUpdated = true
@@ -239,8 +249,7 @@ export function initDb(): void {
 
           // Ensure cover image and BPM are embedded in the MP3 file ID3 tags
           try {
-            if (fs.existsSync(track.filepath)) {
-              const nodeId3 = require('node-id3')
+            if (existsSync(track.filepath)) {
               const currentTags = nodeId3.read(track.filepath)
 
               // 1. If BPM is in database but missing from ID3 tags, update the tag
@@ -254,7 +263,7 @@ export function initDb(): void {
 
               // 2. If cover image is missing, write the whole set of tags
               if (!currentTags || !currentTags.image) {
-                if (fs.existsSync(track.coverPath)) {
+                if (existsSync(track.coverPath)) {
                   const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
                   const albumName = playlist ? playlist.title : 'RekordFox'
                   const tags = {
@@ -274,7 +283,7 @@ export function initDb(): void {
                       mime: 'image/jpeg',
                       type: { id: 3, name: 'front cover' },
                       description: 'Cover',
-                      imageBuffer: fs.readFileSync(track.coverPath)
+                      imageBuffer: readFileSync(track.coverPath)
                     }
                   }
                   nodeId3.write(tags, track.filepath)
@@ -307,7 +316,6 @@ function saveDb(): void {
     writeFileSync(dbPath, JSON.stringify(dbData, null, 2), 'utf-8')
     if (dbData.settings?.rekordboxXmlPath) {
       try {
-        const { writeRekordboxXml } = require('./export/rekordbox/rekordboxXmlExporter')
         writeRekordboxXml(dbData.settings.rekordboxXmlPath, dbData.playlists, dbData.tracks)
       } catch (xmlErr) {
         console.error('Failed to auto-export Rekordbox XML:', xmlErr)
@@ -429,8 +437,6 @@ export interface FilepathChange {
 export function updateTrackPositions(playlistId: string, trackIds: string[]): FilepathChange[] {
   const settings = getSettings()
   const playlistTracks = dbData.tracks.filter((t) => t.playlistId === playlistId)
-  const fs = require('fs')
-  const path = require('path')
   const changes: FilepathChange[] = []
 
   for (const track of playlistTracks) {
@@ -442,16 +448,16 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
       const oldFilepath = track.filepath
       track.position = newPosition
 
-      if (settings.filenameTemplate === 'custom' && oldFilepath && fs.existsSync(oldFilepath)) {
+      if (settings.filenameTemplate === 'custom' && oldFilepath && existsSync(oldFilepath)) {
         try {
           const playlist = dbData.playlists.find((p) => p.id === playlistId)
           const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
           const targetDir = playlistFolder
-            ? path.join(getDownloadsDir(), playlistFolder)
-            : path.dirname(oldFilepath)
+            ? join(getDownloadsDir(), playlistFolder)
+            : dirname(oldFilepath)
 
-          if (playlistFolder && !fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true })
+          if (playlistFolder && !existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true })
           }
 
           const newFilename = getTrackFilename(
@@ -463,9 +469,9 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
             track.bpm || 0,
             'custom'
           )
-          const newFilepath = path.join(targetDir, newFilename)
+          const newFilepath = join(targetDir, newFilename)
           if (oldFilepath !== newFilepath) {
-            fs.renameSync(oldFilepath, newFilepath)
+            renameSync(oldFilepath, newFilepath)
             track.filepath = newFilepath
             changes.push({ id: track.id, filepath: newFilepath })
           }
@@ -497,7 +503,6 @@ export function updateTrackBpm(
 
     // Write BPM to the ID3 tags of the local file
     try {
-      const nodeId3 = require('node-id3')
       const tags = {
         bpm: bpm.toString()
       }
@@ -510,17 +515,15 @@ export function updateTrackBpm(
     const settings = getSettings()
     if (settings.filenameTemplate === 'custom' && oldFilepath) {
       try {
-        const fs = require('fs')
-        const path = require('path')
-        if (fs.existsSync(oldFilepath)) {
+        if (existsSync(oldFilepath)) {
           const playlist = dbData.playlists.find((p) => p.id === playlistId)
           const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
           const targetDir = playlistFolder
-            ? path.join(getDownloadsDir(), playlistFolder)
-            : path.dirname(oldFilepath)
+            ? join(getDownloadsDir(), playlistFolder)
+            : dirname(oldFilepath)
 
-          if (playlistFolder && !fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true })
+          if (playlistFolder && !existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true })
           }
 
           const newFilename = getTrackFilename(
@@ -532,9 +535,9 @@ export function updateTrackBpm(
             bpm,
             'custom'
           )
-          const newFilepath = path.join(targetDir, newFilename)
+          const newFilepath = join(targetDir, newFilename)
           if (oldFilepath !== newFilepath) {
-            fs.renameSync(oldFilepath, newFilepath)
+            renameSync(oldFilepath, newFilepath)
             track.filepath = newFilepath
             saveDb()
             return { id: track.id, filepath: newFilepath }
@@ -561,8 +564,7 @@ export function updateTrackKey(
 
     // Write key to the ID3 TKEY tag of the local file
     try {
-      const nodeId3 = require('node-id3')
-      const tags: any = {}
+      const tags: Parameters<typeof nodeId3.update>[0] = {}
       if (tkey) tags.initialKey = tkey // TKEY frame
       nodeId3.update(tags, track.filepath)
     } catch (e) {
@@ -579,8 +581,6 @@ export function updateTrackRating(trackId: string, playlistId: string, rating: n
 
     // Write POPM frame to ID3 tags (0 to 255 rating)
     try {
-      const nodeId3 = require('node-id3')
-
       // Star rating POPM mapping
       // 0 -> 0, 1 -> 32, 2 -> 64, 3 -> 128, 4 -> 196, 5 -> 255
       const ratingMap = [0, 32, 64, 128, 196, 255]
@@ -657,9 +657,7 @@ export async function renameAllTracksFilenameAsync(
   newTemplate: 'default' | 'custom',
   onProgress: (current: number, total: number) => void
 ): Promise<void> {
-  const fs = require('fs')
-  const path = require('path')
-  const tracksToRename = dbData.tracks.filter((t) => t.filepath && fs.existsSync(t.filepath))
+  const tracksToRename = dbData.tracks.filter((t) => t.filepath && existsSync(t.filepath))
   const total = tracksToRename.length
 
   if (total === 0) {
@@ -673,11 +671,11 @@ export async function renameAllTracksFilenameAsync(
       const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
       const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
       const targetDir = playlistFolder
-        ? path.join(getDownloadsDir(), playlistFolder)
-        : path.dirname(track.filepath)
+        ? join(getDownloadsDir(), playlistFolder)
+        : dirname(track.filepath)
 
-      if (playlistFolder && !fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true })
+      if (playlistFolder && !existsSync(targetDir)) {
+        mkdirSync(targetDir, { recursive: true })
       }
 
       const newFilename = getTrackFilename(
@@ -689,9 +687,9 @@ export async function renameAllTracksFilenameAsync(
         track.bpm || 0,
         newTemplate
       )
-      const newFilepath = path.join(targetDir, newFilename)
+      const newFilepath = join(targetDir, newFilename)
       if (track.filepath !== newFilepath) {
-        fs.renameSync(track.filepath, newFilepath)
+        renameSync(track.filepath, newFilepath)
         track.filepath = newFilepath
       }
     } catch (err) {

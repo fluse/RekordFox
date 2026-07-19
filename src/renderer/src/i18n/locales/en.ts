@@ -83,7 +83,8 @@ export const en = {
   'settings.rekordboxXmlError': 'XML export failed: {{error}}',
   'settings.historyLimitLabel': 'History Size',
   'settings.historyLimitCount': '{{count}} Tracks',
-  'settings.historyLimitHelp': 'Sets how many recently played tracks are kept in the history (10 to 200).',
+  'settings.historyLimitHelp':
+    'Sets how many recently played tracks are kept in the history (10 to 200).',
   'settings.errorChangeHistoryLimit': 'Error changing history size.',
 
   // Deck
