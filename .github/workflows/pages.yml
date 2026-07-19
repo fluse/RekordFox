@@ -1,0 +1,44 @@
+name: Deploy GitHub Pages
+
+# Startet automatisch bei jedem Push auf main, der etwas im docs/-Ordner ändert
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+  # Erlaubt zusätzlich manuelles Starten über die GitHub-UI (Actions-Tab)
+  workflow_dispatch:
+
+# Notwendige Rechte, damit der Workflow auf GitHub Pages deployen darf
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Verhindert überlappende Deploys, bricht ältere laufende Deploys aber nicht ab
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RekordFox - YouTube Playlist Sync & MP3 Downloader</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #f1f1f1;
+            --accent-color: #ff5722; /* Ein fuchsiger Orange-Ton */
+            --box-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background-color: var(--box-bg);
+            align-items: center;
+        }
+
+        .lang-switch select {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-box {
+            background-color: var(--box-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .download-section {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--box-bg);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: #fff;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .other-downloads {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .other-btn {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        #version-info {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🦊 RekordFox</h2>
+        <div class="lang-switch">
+            <select id="language-select" onchange="changeLanguage()">
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1 data-i18n="heroTitle">RekordFox</h1>
+        <p data-i18n="heroSubtitle">Dein automatischer YouTube zu MP3 Playlist-Synchronisierer.</p>
+        
+        <div id="primary-download">
+            <p data-i18n="detectingOs">Erkenne Betriebssystem...</p>
+            <!-- Der Button wird via JS generiert -->
+        </div>
+        <p id="version-info">Lade aktuelle Version...</p>
+    </section>
+
+    <section class="features">
+        <div class="feature-box">
+            <h3 data-i18n="feature1Title">Auto-Sync</h3>
+            <p data-i18n="feature1Desc">Füge YouTube Playlisten hinzu und halte deine lokale MP3-Bibliothek immer auf dem neuesten Stand.</p>
+        </div>
+        <div class="feature-box">
+            <h3 data-i18n="feature2Title">Musik Entdecken</h3>
+            <p data-i18n="feature2Desc">Finde automatisch neue Tracks, die perfekt zu deinen bestehenden Playlisten passen.</p>
+        </div>
+        <div class="feature-box">
+            <h3 data-i18n="feature3Title">Lokal & Offline</h3>
+            <p data-i18n="feature3Desc">Alle konvertierten MP3s liegen sicher auf deiner Festplatte, bereit für DJ-Software wie Rekordbox.</p>
+        </div>
+    </section>
+
+    <section class="download-section">
+        <h2 data-i18n="allDownloads">Alle Downloads</h2>
+        <div class="other-downloads" id="all-downloads-container">
+            <!-- Buttons werden via JS aus der GitHub API generiert -->
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 fluse | <a href="https://github.com/fluse/RekordFox" style="color: var(--accent-color);">GitHub Repository</a></p>
+    </footer>
+
+    <script>
+        // --- 1. Übersetzungen (i18n) ---
+        const translations = {
+            de: {
+                heroTitle: "RekordFox",
+                heroSubtitle: "Dein automatischer YouTube zu MP3 Playlist-Synchronisierer.",
+                feature1Title: "Auto-Sync",
+                feature1Desc: "Füge YouTube Playlisten hinzu und halte deine lokale MP3-Bibliothek immer auf dem neuesten Stand.",
+                feature2Title: "Musik Entdecken",
+                feature2Desc: "Finde automatisch neue Tracks, die perfekt zu deinen bestehenden Playlisten passen.",
+                feature3Title: "Lokal & Offline",
+                feature3Desc: "Alle konvertierten MP3s liegen sicher auf deiner Festplatte, bereit für DJ-Software.",
+                allDownloads: "Alle Plattformen",
+                downloadFor: "Download für",
+                detectingOs: "Analysiere System...",
+                noReleaseFound: "Keine Version gefunden."
+            },
+            en: {
+                heroTitle: "RekordFox",
+                heroSubtitle: "Your automatic YouTube to MP3 playlist synchronizer.",
+                feature1Title: "Auto-Sync",
+                feature1Desc: "Add YouTube playlists and keep your local MP3 library constantly up to date.",
+                feature2Title: "Discover Music",
+                feature2Desc: "Automatically find new tracks that perfectly match your existing playlists.",
+                feature3Title: "Local & Offline",
+                feature3Desc: "All converted MP3s are safely stored on your hard drive, ready for DJ software.",
+                allDownloads: "All Platforms",
+                downloadFor: "Download for",
+                detectingOs: "Detecting System...",
+                noReleaseFound: "No release found."
+            }
+        };
+
+        let currentLang = 'de';
+
+        function changeLanguage() {
+            currentLang = document.getElementById('language-select').value;
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    element.innerText = translations[currentLang][key];
+                }
+            });
+            // Update OS Button Text falls schon geladen
+            renderPrimaryButton(); 
+        }
+
+        // --- 2. OS Erkennung ---
+        function getOS() {
+            let userAgent = window.navigator.userAgent;
+            let platform = window.navigator.platform;
+            let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+            let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+            
+            if (macosPlatforms.indexOf(platform) !== -1 || userAgent.includes('Mac')) return 'macOS';
+            if (windowsPlatforms.indexOf(platform) !== -1 || userAgent.includes('Win')) return 'Windows';
+            if (/Linux/.test(platform) || userAgent.includes('Linux')) return 'Linux';
+            return 'Unknown';
+        }
+
+        // --- 3. GitHub API Fetch ---
+        let releaseData = null;
+        let userOS = getOS();
+
+        async function fetchLatestRelease() {
+            try {
+                // Ersetze dies mit deinem echten Repo: fluse/RekordFox
+                const response = await fetch('https://api.github.com/repos/fluse/RekordFox/releases/latest');
+                if (!response.ok) throw new Error('API Rate Limit oder Repo nicht gefunden');
+                
+                releaseData = await response.json();
+                document.getElementById('version-info').innerText = `Aktuelle Version: ${releaseData.tag_name}`;
+                
+                renderPrimaryButton();
+                renderAllDownloads();
+            } catch (error) {
+                console.error(error);
+                document.getElementById('primary-download').innerHTML = `<p>${translations[currentLang].noReleaseFound}</p>`;
+            }
+        }
+
+        function getDownloadUrlForOS(osName) {
+            if (!releaseData || !releaseData.assets) return null;
+            
+            // Logik zum Finden der richtigen Datei anhand der Dateiendung
+            const asset = releaseData.assets.find(a => {
+                if (osName === 'Windows' && a.name.endsWith('.exe')) return true;
+                if (osName === 'macOS' && (a.name.endsWith('.dmg') || a.name.endsWith('.zip'))) return true;
+                if (osName === 'Linux' && (a.name.endsWith('.AppImage') || a.name.endsWith('.deb'))) return true;
+                return false;
+            });
+            return asset ? asset.browser_download_url : releaseData.html_url;
+        }
+
+        function renderPrimaryButton() {
+            const container = document.getElementById('primary-download');
+            if (!releaseData) return;
+
+            const dlUrl = getDownloadUrlForOS(userOS) || releaseData.html_url;
+            const osText = userOS !== 'Unknown' ? userOS : 'GitHub';
+            const btnText = `${translations[currentLang].downloadFor} ${osText}`;
+
+            container.innerHTML = `<a href="${dlUrl}" class="btn">🦊 ${btnText}</a>`;
+        }
+
+        function renderAllDownloads() {
+            const container = document.getElementById('all-downloads-container');
+            if (!releaseData || !releaseData.assets) return;
+
+            let buttonsHtml = '';
+            const platforms = ['Windows', 'macOS', 'Linux'];
+            
+            platforms.forEach(platform => {
+                const url = getDownloadUrlForOS(platform);
+                if (url) {
+                    buttonsHtml += `<a href="${url}" class="other-btn">${platform}</a>`;
+                }
+            });
+
+            // Fallback auf die Release-Seite, falls keine Assets da sind
+            if(buttonsHtml === '') {
+                buttonsHtml = `<a href="${releaseData.html_url}" class="other-btn">Zu den GitHub Releases</a>`;
+            }
+
+            container.innerHTML = buttonsHtml;
+        }
+
+        // Init
+        fetchLatestRelease();
+        // Initiale Sprache setzen (könnte man auch aus dem Browser auslesen)
+        changeLanguage();
+    </script>
+</body>
+</html>
