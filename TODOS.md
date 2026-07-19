@@ -14,5 +14,20 @@ Tracks in der Trackliste sollen auch den Youtube link in den id3 tags haben und 
 ## GitHub App Page
 Baue mir eine simple Webseite für diese App, wo alles drauf erklärt ist was die App macht und kann und wo man die letzte Version drüber runterladen kann.
 
-# Vorschau Player
+## Vorschau Player
+
+### Open Close verhalten
+Der Vorschau Player soll sich nicht immer schließen, wenn nichts passiert ist. Wenn er offen ist, bleibt er offen, wenn er geschlossen wird, bleibt er zu außer ein track wird abgespielt. Auch über die App neustarts hinweg.
+
+### Trimmen
 Trimmen, wenn du merkst, ein lied ist am anfang stumm oder am ende stumm, soll der player versuchen diese bereiche (nur anfang und Ende) skippen, damit durchgehen musik läuft. Dieses verhalten sollte per toggle ein oder ab geschaltet werden können.
+
+### BPM angleichen
+Ich hätte gern ein Feature für den Player, der hingeht und automatisch die BPM beim abspielen an den vorherigen track angleicht. Zusätzlich soll man auch ein Tempo definieren können.
+
+Es soll auch möglich seint, dass die BPM über die Zeit schneller werden.
+
+Es soll auch möglich sein, dass die BPM über die Zeit langsamer werden.
+
+
+### Visual Equilizer
