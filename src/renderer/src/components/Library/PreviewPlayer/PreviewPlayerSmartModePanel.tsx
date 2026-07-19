@@ -5,7 +5,7 @@ import type {
   SetProfile,
   SmartModeOptions,
   TargetEnergy
-} from '@renderer/utils/camelot'
+} from '@renderer/utils/harmonicChaining'
 
 interface SegmentedOption<T extends string> {
   value: T

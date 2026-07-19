@@ -3,9 +3,10 @@ import { persist } from 'zustand/middleware'
 import type { Track } from '@main/db'
 import {
   buildSmartQueueOrder,
+  isTrackPlayable,
   DEFAULT_SMART_MODE_OPTIONS,
   type SmartModeOptions
-} from '@renderer/utils/camelot'
+} from '@renderer/utils/harmonicChaining'
 
 export interface QueueEntry {
   queueId: string
@@ -79,7 +80,7 @@ export const usePreviewStore = create<PreviewState>()(
         if (!originContext) return
         const { tracks, lastPlayedIndex } = originContext
         const current = tracks[lastPlayedIndex]
-        const upcoming = tracks.slice(lastPlayedIndex + 1)
+        const upcoming = tracks.slice(lastPlayedIndex + 1).filter(isTrackPlayable)
         if (!current || upcoming.length < 2) return
         const reordered = buildSmartQueueOrder(current, upcoming, smartModeOptions)
         set({
@@ -184,7 +185,13 @@ export const usePreviewStore = create<PreviewState>()(
           }
 
           if (originContext) {
-            const nextIndex = originContext.lastPlayedIndex + 1
+            let nextIndex = originContext.lastPlayedIndex + 1
+            while (
+              originContext.tracks[nextIndex] &&
+              !isTrackPlayable(originContext.tracks[nextIndex])
+            ) {
+              nextIndex++
+            }
             const nextTrack = originContext.tracks[nextIndex]
             if (nextTrack) {
               set({

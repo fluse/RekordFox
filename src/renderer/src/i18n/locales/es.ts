@@ -99,6 +99,9 @@ export const es = {
   'track.waiting': 'Esperando...',
   'track.downloading': 'Descargando ({{percent}}%)',
   'track.queued': 'En cola...',
+  'track.downloadFailedLabel': 'No disponible',
+  'track.downloadFailedHint':
+    'Este tema no se pudo descargar y queda excluido de las colas y del modo aleatorio inteligente.',
   'track.newLabel': 'NUEVO',
 
   // Tracklist

@@ -97,6 +97,9 @@ export const en = {
   'track.waiting': 'Waiting...',
   'track.downloading': 'Downloading ({{percent}}%)',
   'track.queued': 'Queued...',
+  'track.downloadFailedLabel': 'Unavailable',
+  'track.downloadFailedHint':
+    'This track could not be downloaded and is excluded from queues and smart shuffle.',
   'track.newLabel': 'NEW',
 
   // Tracklist

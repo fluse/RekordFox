@@ -38,6 +38,7 @@ export interface Track {
   position?: number
   dateAdded?: string
   played?: boolean
+  downloadFailed?: boolean // true if the last download attempt failed; excluded from queue/shuffle relevance
 }
 
 export function getPlaylistFolderName(playlist: Playlist): string {
@@ -241,6 +242,10 @@ export function initDb(): void {
           }
           if (track.played === undefined) {
             track.played = true // default existing tracks to played
+            trackUpdated = true
+          }
+          if (track.downloadFailed === undefined) {
+            track.downloadFailed = false
             trackUpdated = true
           }
           if (trackUpdated) {
@@ -604,6 +609,18 @@ export function updateTrackPlayed(trackId: string, playlistId: string, played: b
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
     track.played = played
+    saveDb()
+  }
+}
+
+export function updateTrackDownloadFailed(
+  trackId: string,
+  playlistId: string,
+  downloadFailed: boolean
+): void {
+  const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
+  if (track) {
+    track.downloadFailed = downloadFailed
     saveDb()
   }
 }

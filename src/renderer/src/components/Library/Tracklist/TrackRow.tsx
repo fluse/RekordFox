@@ -1,5 +1,5 @@
 import React from 'react'
-import { Loader2, Music, Star, Play, Pause } from 'lucide-react'
+import { Loader2, Music, Star, Play, Pause, AlertCircle } from 'lucide-react'
 import type { Track } from '@main/db'
 import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
@@ -311,7 +311,15 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
               return (
                 <td key={colId} className="py-2.5 text-center text-xs font-mono text-zinc-400 px-3">
                   {isPlaceholder ? (
-                    activeDownload ? (
+                    track.downloadFailed ? (
+                      <div
+                        className="flex items-center justify-center gap-1.5 text-xs text-red-500 font-semibold"
+                        title={t('track.downloadFailedHint')}
+                      >
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span>{t('track.downloadFailedLabel')}</span>
+                      </div>
+                    ) : activeDownload ? (
                       <div className="flex items-center justify-center gap-1.5 text-xs text-primary font-semibold">
                         <span>{t('track.downloading', { percent: activeDownload.percent })}</span>
                       </div>

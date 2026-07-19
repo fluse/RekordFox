@@ -4,6 +4,7 @@ import type { Playlist, Track } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import { useTrackScanner } from '@renderer/hooks/useTrackScanner'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
+import { isTrackPlayable } from '@renderer/utils/harmonicChaining'
 import {
   openDiscogsArtistSearch,
   openBandcampArtistSearch,
@@ -125,9 +126,9 @@ export default function Tracklist({
   const getQueueContext = (track: Track): Track[] => {
     if (isSearching) {
       const group = searchGroups.find((g) => g.playlistId === track.playlistId)
-      if (group) return group.tracks
+      if (group) return group.tracks.filter(isTrackPlayable)
     }
-    return filteredAndSortedTracks
+    return filteredAndSortedTracks.filter(isTrackPlayable)
   }
 
   const handlePlayNow = (track: Track): void => {

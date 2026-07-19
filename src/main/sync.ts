@@ -12,6 +12,7 @@ import {
   getTracksForPlaylist,
   updateTrackBpm,
   updateTrackKey,
+  updateTrackDownloadFailed,
   getSettings,
   getPlaylists,
   getTrackFilename,
@@ -331,6 +332,9 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
             })
         } catch (err) {
           console.error(`Failed to download track ${ytTrack.id}:`, err)
+          // Flag the track as undownloadable so it's excluded from queue/shuffle relevance
+          // until a future sync attempt succeeds and clears the flag.
+          updateTrackDownloadFailed(ytTrack.id, playlist.id, true)
           // Send completion event even on failure so progress bar advances and UI cleans up
           win.webContents.send('download-progress', {
             playlistId: playlist.id,

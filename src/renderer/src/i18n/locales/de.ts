@@ -99,6 +99,9 @@ export const de = {
   'track.waiting': 'Warte...',
   'track.downloading': 'Lade herunter ({{percent}}%)',
   'track.queued': 'In Warteschlange...',
+  'track.downloadFailedLabel': 'Nicht verfügbar',
+  'track.downloadFailedHint':
+    'Dieser Track konnte nicht heruntergeladen werden und wird bei Warteschlangen und Smart Shuffle nicht berücksichtigt.',
   'track.newLabel': 'NEU',
 
   // Tracklist

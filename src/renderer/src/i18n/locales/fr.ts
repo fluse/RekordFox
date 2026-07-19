@@ -100,6 +100,9 @@ export const fr = {
   'track.waiting': 'Attente...',
   'track.downloading': 'Téléchargement ({{percent}}%)',
   'track.queued': 'En attente...',
+  'track.downloadFailedLabel': 'Indisponible',
+  'track.downloadFailedHint':
+    "Ce titre n'a pas pu être téléchargé et est exclu des files d'attente et du mode shuffle intelligent.",
   'track.newLabel': 'NOUV.',
 
   // Tracklist
