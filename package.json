@@ -4,7 +4,7 @@
   "description": "The modern, intuitive, and fast DJ library management alternative to Rekordbox.",
   "main": "./out/main/index.js",
   "author": "holger.schauf",
-  "homepage": "https://github.com/fluse/RekordFox.git",
+  "homepage": "https://fluse.github.io/RekordFox",
   "repository": {
     "type": "git",
     "url": "https://github.com/fluse/RekordFox.git"
