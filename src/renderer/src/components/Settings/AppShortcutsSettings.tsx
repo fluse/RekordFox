@@ -119,15 +119,13 @@ export default function AppShortcutsSettings({
                 <div className="flex items-center gap-1.5">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant={isRecording ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => {
                       setConflict(null)
                       setRecordingAction(action)
                     }}
-                    className={`min-w-[110px] font-mono ${
-                      isRecording ? 'border-primary bg-primary/10 text-primary animate-pulse' : ''
-                    }`}
+                    className={`min-w-[110px] font-mono ${isRecording ? 'animate-pulse' : ''}`}
                   >
                     {isRecording
                       ? t('settings.shortcuts.pressKey')

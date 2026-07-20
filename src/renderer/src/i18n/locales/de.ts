@@ -88,7 +88,7 @@ export const de = {
   'settings.historyLimitLabel': 'Verlaufsgröße',
   'settings.historyLimitCount': '{{count}} Tracks',
   'settings.historyLimitHelp':
-    'Legt fest, wie viele zuletzt abgespielte Tracks im Verlauf behalten werden (10 bis 200).',
+    'Legt fest, wie viele zuletzt abgespielte Tracks im Verlauf behalten werden (10 bis 500).',
   'settings.errorChangeHistoryLimit': 'Fehler beim Ändern der Verlaufsgröße.',
   'settings.shortcuts.title': 'Vorschau-Player Shortcuts',
   'settings.shortcuts.help':

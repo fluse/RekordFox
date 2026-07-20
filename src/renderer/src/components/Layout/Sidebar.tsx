@@ -126,7 +126,8 @@ export default function Sidebar({
         <div className="space-y-1">
           {playlists.map((playlist) => {
             const syncState = activeSyncs[playlist.id] || { status: playlist.syncStatus }
-            const isSelected = !isHistorySelected && selectedPlaylistId === playlist.id
+            const isSelected =
+              !isHistorySelected && !isSettingsSelected && selectedPlaylistId === playlist.id
 
             return (
               <div

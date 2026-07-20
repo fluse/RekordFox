@@ -2,8 +2,7 @@ export const es = {
   // App General
   'app.name': 'RekordFox',
   'app.tagline': 'Tu estación de sincronización DJ',
-  'app.selectPlaylistPrompt':
-    'Selecciona una lista de reproducción o añade una nueva para ver los temas.',
+  'app.selectPlaylistPrompt': 'Selecciona una playlist o añade una nueva para ver los temas.',
 
   // Title Bar
   'titlebar.minimize': 'Minimizar',
@@ -18,19 +17,19 @@ export const es = {
   'mixer.master': 'MASTER',
 
   // Sidebar
-  'sidebar.playlists': 'Listas de reproducción',
-  'sidebar.loadingDetails': 'Cargando detalles de la lista de reproducción...',
-  'sidebar.noPlaylists': 'Sin listas de reproducción',
+  'sidebar.playlists': 'Playlists',
+  'sidebar.loadingDetails': 'Cargando detalles de la playlist...',
+  'sidebar.noPlaylists': 'Sin playlists',
   'sidebar.addNow': 'Añadir ahora',
   'sidebar.settings': 'Ajustes',
 
   // Add Playlist Modal
-  'addPlaylist.title': 'Añadir lista de reproducción de YouTube',
-  'addPlaylist.label': 'URL de la lista de reproducción',
+  'addPlaylist.title': 'Añadir playlist de YouTube',
+  'addPlaylist.label': 'URL de la playlist',
   'addPlaylist.placeholder': 'https://www.youtube.com/playlist?list=...',
   'addPlaylist.errorInvalidUrl':
-    'Introduce una URL de lista de reproducción de YouTube válida (debe contener "list=").',
-  'addPlaylist.errorAddFailed': 'Error al añadir la lista de reproducción.',
+    'Introduce una URL de playlist de YouTube válida (debe contener "list=").',
+  'addPlaylist.errorAddFailed': 'Error al añadir la playlist.',
   'addPlaylist.cancel': 'Cancelar',
   'addPlaylist.add': 'Añadir',
   'addPlaylist.loading': 'Cargando...',
@@ -39,44 +38,43 @@ export const es = {
   'settings.title': 'Ajustes',
   'settings.categoryGeneral': 'General',
   'settings.categoryLibrary': 'Biblioteca',
-  'settings.categoryDownloads': 'Descargas y sincronización',
+  'settings.categoryDownloads': 'Descargas',
   'settings.categoryShortcuts': 'Atajos',
   'settings.saved': 'Configuración guardada',
-  'settings.theme': 'Esquema de colores',
+  'settings.theme': 'Tema',
   'settings.themeDark': 'Oscuro',
   'settings.themeLight': 'Claro',
-  'settings.downloadPathLabel': 'Lugar de almacenamiento de las listas',
-  'settings.downloadPathSyncingTooltip':
-    'El lugar de almacenamiento no se puede cambiar durante la sincronización',
+  'settings.downloadPathLabel': 'Carpeta de descargas',
+  'settings.downloadPathSyncingTooltip': 'No se puede cambiar la carpeta durante la sincronización',
   'settings.downloadPathSelectTooltip': 'Seleccionar otra carpeta',
   'settings.downloadPathSelect': 'Seleccionar',
   'settings.downloadPathOpenTooltip': 'Abrir carpeta en Finder/Explorador',
   'settings.downloadPathOpen': 'Abrir',
   'settings.downloadPathSyncingWarning':
-    '⚠️ El lugar de almacenamiento no se puede cambiar durante una sincronización activa.',
+    '⚠️ No se puede cambiar la carpeta durante una sincronización activa.',
   'settings.downloadPathHelp':
-    'Todos los MP3 e imágenes de portada de tus listas de reproducción de YouTube se guardan aquí.',
+    'Aquí se guardan los MP3 y las portadas de tus playlists de YouTube.',
   'settings.concurrentDownloads': 'Descargas simultáneas',
   'settings.workersCount': '{{count}} Workers',
   'settings.concurrentDownloadsHelp':
-    'Establece cuántos temas de una lista se descargan simultáneamente (1 a 12).',
+    'Establece cuántos temas de una playlist se descargan a la vez (1 a 12).',
   'settings.languageLabel': 'Idioma',
   'settings.close': 'Cerrar',
-  'settings.errorChangePath': 'Error al cambiar el lugar de almacenamiento.',
+  'settings.errorChangePath': 'Error al cambiar la carpeta.',
   'settings.errorChangeTheme': 'Error al cambiar el tema.',
   'settings.errorChangeWorkers': 'Error al cambiar la cantidad de workers.',
   'settings.errorChangeLanguage': 'Error al cambiar el idioma.',
-  'settings.filenameTemplateLabel': 'Formato del nombre del archivo',
+  'settings.filenameTemplateLabel': 'Formato de nombre',
   'settings.filenameTemplateDefault': 'Estándar (ID/Criptográfico)',
   'settings.filenameTemplateCustom': 'Legible (Posición-Artista-Pista-BPM-Hash)',
   'settings.filenameTemplateHelp':
-    'Determina cómo se nombran los archivos MP3 descargados en tu carpeta de almacenamiento.',
+    'Determina cómo se nombran los archivos MP3 en tu carpeta de descargas.',
   'settings.errorChangeFilenameTemplate': 'Error al cambiar el formato del nombre de archivo.',
   'settings.renamingIndicator': 'Renombrando... ({{current}}/{{total}})',
   'settings.renamingIndicatorText': 'Renombrando archivos...',
   'settings.rekordboxXmlLabel': 'Auto-exportación XML de Rekordbox',
   'settings.rekordboxXmlHelp':
-    'Si está configurado, RekordFox exportará automáticamente un archivo rekordbox.xml con cada cambio para mantener tus listas de reproducción en Rekordbox sincronizadas.',
+    'Si está configurado, RekordFox exportará automáticamente un archivo rekordbox.xml con cada cambio para mantener tus playlists sincronizadas en Rekordbox.',
   'settings.rekordboxXmlSelect': 'Seleccionar',
   'settings.rekordboxXmlSelectTooltip': 'Seleccionar archivo XML para exportar',
   'settings.rekordboxXmlClear': 'Borrar',
@@ -88,9 +86,9 @@ export const es = {
   'settings.historyLimitLabel': 'Tamaño del historial',
   'settings.historyLimitCount': '{{count}} pistas',
   'settings.historyLimitHelp':
-    'Establece cuántas pistas reproducidas recientemente se guardan en el historial (10 a 200).',
+    'Establece cuántas pistas reproducidas recientemente se guardan en el historial (10 a 500).',
   'settings.errorChangeHistoryLimit': 'Error al cambiar el tamaño del historial.',
-  'settings.shortcuts.title': 'Atajos del reproductor de vista previa',
+  'settings.shortcuts.title': 'Atajos del reproductor',
   'settings.shortcuts.help':
     'Haz clic en un atajo y pulsa la tecla que quieras asignarle. Funcionan en toda la app mientras haya una pista cargada.',
   'settings.shortcuts.previewPlayPause': 'Reproducir / Pausar',
@@ -143,7 +141,7 @@ export const es = {
 
   // USB Export Modal
   'usbExport.title': 'Exportar USB',
-  'usbExport.playlistLabel': 'Lista de reproducción: {{title}}',
+  'usbExport.playlistLabel': 'Playlist: {{title}}',
   'usbExport.scanning': 'Buscando memorias USB disponibles...',
   'usbExport.noStickDetectedTitle': 'No se ha detectado ninguna memoria USB',
   'usbExport.noStickDetectedDesc':
@@ -153,16 +151,16 @@ export const es = {
   'usbExport.cancel': 'Cancelar',
   'usbExport.scanAgain': 'Buscar de nuevo',
   'usbExport.exportBtn': 'Exportar',
-  'usbExport.playlistExistsTitle': 'La lista de reproducción ya existe',
+  'usbExport.playlistExistsTitle': 'La playlist ya existe',
   'usbExport.playlistExistsDesc':
-    'La lista de reproducción "{{title}}" ya existe en la memoria USB {{driveName}}. ¿Quieres sobrescribirla?',
+    'La playlist "{{title}}" ya existe en la memoria USB {{driveName}}. ¿Sobrescribirla?',
   'usbExport.overwriteConfirm': 'Sí, sobrescribir',
   'usbExport.exporting': 'Exportando temas...',
   'usbExport.preparing': 'Preparando...',
   'usbExport.initializing': 'Inicializando exportación...',
   'usbExport.successTitle': '¡Exportación completada!',
   'usbExport.successDesc':
-    'La lista de reproducción se ha transferido correctamente a {{driveName}} en una estructura compatible con Rekordbox.',
+    'La playlist se transfirió correctamente a {{driveName}} en formato compatible con Rekordbox.',
   'usbExport.doneBtn': 'Hecho',
   'usbExport.failedTitle': 'Exportación fallida',
   'usbExport.failedError': 'Exportación fallida.',
@@ -174,15 +172,14 @@ export const es = {
 
   // Actions & Confirmations (useApp)
   'actions.confirmDeletePlaylist':
-    '¿Realmente quieres borrar esta lista de reproducción y todos los archivos MP3 locales asociados?',
+    '¿Seguro que quieres borrar esta playlist y todos sus MP3 locales?',
   'actions.errorDeletePlaylist': 'Error al borrar: {{error}}',
-  'actions.errorRenamePlaylist': 'Error al renombrar la lista de reproducción: {{error}}',
+  'actions.errorRenamePlaylist': 'Error al renombrar la playlist: {{error}}',
   'actions.errorReorderTracks': 'Error al reordenar las pistas: {{error}}',
   'actions.errorSyncPlaylist': 'Error al sincronizar: {{error}}',
   'actions.errorUpdateSettings': 'Error al actualizar los ajustes: {{error}}',
   'actions.errorUpdateSettingsGeneral': 'Error al actualizar los ajustes.',
-  'actions.successMigrate':
-    '¡Lugar de almacenamiento cambiado con éxito y archivos movidos si correspondía!',
+  'actions.successMigrate': '¡Carpeta cambiada con éxito y archivos movidos si correspondía!',
   'actions.errorMigrate': 'Error en la migración: {{error}}',
   'actions.errorMigrateGeneral': 'Error en la migración.',
 
@@ -223,8 +220,8 @@ export const es = {
   'contextMenu.searchYoutube': 'Buscar artista en YouTube',
 
   // History
-  'sidebar.history': 'Reproducidos recientemente',
-  'history.title': 'Reproducidos recientemente',
+  'sidebar.history': 'Recientes',
+  'history.title': 'Recientes',
   'history.subtitle': 'Las últimas {{count}} pistas reproducidas',
   'history.empty': 'Aún no se ha reproducido ninguna pista.'
 }

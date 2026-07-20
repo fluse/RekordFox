@@ -41,9 +41,9 @@ export default function SettingsView({
   ]
 
   return (
-    <div className="flex flex-1 overflow-hidden bg-zinc-900/40">
-      <div className="w-56 flex-shrink-0 border-r border-zinc-900 p-4 space-y-1 overflow-y-auto">
-        <h1 className="px-2 pb-3 text-lg font-bold text-zinc-100">{t('settings.title')}</h1>
+    <div className="flex flex-1 overflow-hidden bg-muted/20">
+      <div className="w-56 flex-shrink-0 border-r border-border p-4 space-y-1 overflow-y-auto">
+        <h1 className="px-2 pb-3 text-lg font-bold text-foreground">{t('settings.title')}</h1>
         {categories.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -52,8 +52,8 @@ export default function SettingsView({
             className={cn(
               'flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition cursor-pointer',
               category === key
-                ? 'bg-zinc-900 text-zinc-100'
-                : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
             )}
           >
             <Icon className="h-4 w-4" />

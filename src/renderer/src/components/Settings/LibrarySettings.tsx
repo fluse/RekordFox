@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@renderer/components/ui/button'
 import { Label } from '@renderer/components/ui/label'
 import { Slider } from '@renderer/components/ui/slider'
+import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
 import type { AppSettings } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 
@@ -61,24 +61,16 @@ export default function LibrarySettings({
         <Label className="mb-2 block text-sm font-medium text-muted-foreground">
           {t('settings.filenameTemplateLabel')}
         </Label>
-        <div className="flex flex-col gap-2">
-          <Button
-            type="button"
-            variant={(settings.filenameTemplate || 'default') === 'default' ? 'default' : 'outline'}
-            disabled={renamingStatus?.active}
-            onClick={() => handleUpdateFilenameTemplate('default')}
-          >
-            {t('settings.filenameTemplateDefault')}
-          </Button>
-          <Button
-            type="button"
-            variant={settings.filenameTemplate === 'custom' ? 'default' : 'outline'}
-            disabled={renamingStatus?.active}
-            onClick={() => handleUpdateFilenameTemplate('custom')}
-          >
-            {t('settings.filenameTemplateCustom')}
-          </Button>
-        </div>
+        <ToggleGroupField
+          orientation="vertical"
+          value={settings.filenameTemplate || 'default'}
+          onValueChange={handleUpdateFilenameTemplate}
+          disabled={renamingStatus?.active}
+          options={[
+            { value: 'default', label: t('settings.filenameTemplateDefault') },
+            { value: 'custom', label: t('settings.filenameTemplateCustom') }
+          ]}
+        />
         <p className="mt-2 text-[10px] text-muted-foreground">
           {t('settings.filenameTemplateHelp')}
         </p>
@@ -119,7 +111,7 @@ export default function LibrarySettings({
         </div>
         <Slider
           min={10}
-          max={200}
+          max={500}
           step={10}
           value={[historyLimit]}
           onValueChange={([value]) => setHistoryLimit(value)}

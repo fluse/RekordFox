@@ -86,7 +86,7 @@ export const en = {
   'settings.historyLimitLabel': 'History Size',
   'settings.historyLimitCount': '{{count}} Tracks',
   'settings.historyLimitHelp':
-    'Sets how many recently played tracks are kept in the history (10 to 200).',
+    'Sets how many recently played tracks are kept in the history (10 to 500).',
   'settings.errorChangeHistoryLimit': 'Error changing history size.',
   'settings.shortcuts.title': 'Preview Player Shortcuts',
   'settings.shortcuts.help':

@@ -119,11 +119,12 @@ export default function DownloadsSettings({
               readOnly
               value={settings.downloadPath}
               title={settings.downloadPath}
-              className="flex-1 text-xs"
+              className="h-8 flex-1 text-xs"
             />
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={handleSelectFolder}
               disabled={loading || isSyncing}
               title={
@@ -142,6 +143,7 @@ export default function DownloadsSettings({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => window.api.openPath(settings.downloadPath)}
               disabled={loading || !settings.downloadPath}
               title={t('settings.downloadPathOpenTooltip')}
@@ -171,11 +173,12 @@ export default function DownloadsSettings({
               placeholder="Nicht konfiguriert (z. B. rekordbox.xml)"
               value={settings.rekordboxXmlPath || ''}
               title={settings.rekordboxXmlPath || ''}
-              className="flex-1 text-xs"
+              className="h-8 flex-1 text-xs"
             />
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={handleSelectXmlFile}
               disabled={loading}
               title={t('settings.rekordboxXmlSelectTooltip')}
@@ -188,6 +191,7 @@ export default function DownloadsSettings({
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={handleExportXmlNow}
                   disabled={loading}
                   title={t('settings.rekordboxXmlExportNowTooltip')}
@@ -202,7 +206,7 @@ export default function DownloadsSettings({
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon"
+                  size="icon-sm"
                   onClick={handleClearXmlFile}
                   disabled={loading}
                   title={t('settings.rekordboxXmlClearTooltip')}

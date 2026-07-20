@@ -89,7 +89,7 @@ export const fr = {
   'settings.historyLimitLabel': "Taille de l'historique",
   'settings.historyLimitCount': '{{count}} titres',
   'settings.historyLimitHelp':
-    "Définit le nombre de titres récemment écoutés conservés dans l'historique (10 à 200).",
+    "Définit le nombre de titres récemment écoutés conservés dans l'historique (10 à 500).",
   'settings.errorChangeHistoryLimit': "Erreur lors du changement de taille de l'historique.",
   'settings.shortcuts.title': "Raccourcis du lecteur d'aperçu",
   'settings.shortcuts.help':

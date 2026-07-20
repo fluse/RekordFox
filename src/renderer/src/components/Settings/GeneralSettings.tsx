@@ -1,8 +1,8 @@
 import React from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@renderer/components/ui/button'
 import { Label } from '@renderer/components/ui/label'
+import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
 import type { AppSettings } from '@main/db'
 import { useLanguage, type Language } from '@renderer/i18n'
 
@@ -11,12 +11,12 @@ interface GeneralSettingsProps {
   onUpdateSettings: (settings: Partial<AppSettings>) => Promise<void>
 }
 
-const LANGUAGES = [
+const LANGUAGES: { code: Language; name: string }[] = [
   { code: 'de', name: 'Deutsch' },
   { code: 'en', name: 'English' },
   { code: 'fr', name: 'Français' },
   { code: 'es', name: 'Español' }
-] as const
+]
 
 export default function GeneralSettings({
   settings,
@@ -50,45 +50,45 @@ export default function GeneralSettings({
         <Label className="mb-2 block text-sm font-medium text-muted-foreground">
           {t('settings.theme')}
         </Label>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant={settings.theme === 'dark' ? 'default' : 'outline'}
-            className="flex-1"
-            onClick={() => handleToggleTheme('dark')}
-          >
-            <Moon className="h-4 w-4" />
-            {t('settings.themeDark')}
-          </Button>
-          <Button
-            type="button"
-            variant={settings.theme === 'light' ? 'default' : 'outline'}
-            className="flex-1"
-            onClick={() => handleToggleTheme('light')}
-          >
-            <Sun className="h-4 w-4" />
-            {t('settings.themeLight')}
-          </Button>
-        </div>
+        <ToggleGroupField
+          value={settings.theme}
+          onValueChange={handleToggleTheme}
+          options={[
+            {
+              value: 'dark',
+              label: (
+                <>
+                  <Moon className="h-3.5 w-3.5" />
+                  {t('settings.themeDark')}
+                </>
+              )
+            },
+            {
+              value: 'light',
+              label: (
+                <>
+                  <Sun className="h-3.5 w-3.5" />
+                  {t('settings.themeLight')}
+                </>
+              )
+            }
+          ]}
+        />
       </div>
 
       <div>
         <Label className="mb-2 block text-sm font-medium text-muted-foreground">
           {t('settings.languageLabel')}
         </Label>
-        <div className="grid grid-cols-4 gap-2">
-          {LANGUAGES.map((lang) => (
-            <Button
-              key={lang.code}
-              type="button"
-              variant={(settings.language || 'de') === lang.code ? 'default' : 'outline'}
-              title={lang.name}
-              onClick={() => handleUpdateLanguage(lang.code)}
-            >
-              {lang.code.toUpperCase()}
-            </Button>
-          ))}
-        </div>
+        <ToggleGroupField
+          value={settings.language || 'de'}
+          onValueChange={handleUpdateLanguage}
+          options={LANGUAGES.map((lang) => ({
+            value: lang.code,
+            label: lang.code.toUpperCase(),
+            title: lang.name
+          }))}
+        />
       </div>
     </div>
   )
