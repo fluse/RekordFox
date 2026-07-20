@@ -7,7 +7,8 @@ import {
   HistoryView
 } from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
-import SettingsModal from '@renderer/components/Settings'
+import SettingsView from '@renderer/components/Settings'
+import { Toaster } from '@renderer/components/ui/sonner'
 import { ChevronDown } from 'lucide-react'
 import { useApp } from './hooks/useApp'
 
@@ -18,9 +19,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const { t } = useLanguage()
   const [showSplash, setShowSplash] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
-  const [viewMode, setViewMode] = useState<'library' | 'history'>('library')
+  const [viewMode, setViewMode] = useState<'library' | 'history' | 'settings'>('library')
 
   const {
     playlists,
@@ -91,7 +91,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           onSyncPlaylist={handleSyncPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
           onOpenAddModal={() => setIsAddModalOpen(true)}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenSettings={() => setViewMode('settings')}
+          isSettingsSelected={viewMode === 'settings'}
           activeSyncs={activeSyncs}
           width={sidebarWidth}
           theme={settings.theme}
@@ -107,7 +108,15 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           <div className="absolute inset-y-0 -left-2 -right-2" />
         </div>
 
-        {viewMode === 'history' ? (
+        {viewMode === 'settings' ? (
+          <SettingsView
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onMigrate={handleMigrate}
+            isSyncing={Object.keys(activeSyncs).length > 0}
+            renamingStatus={renamingStatus}
+          />
+        ) : viewMode === 'history' ? (
           <HistoryView />
         ) : selectedPlaylistId && selectedPlaylist ? (
           <Tracklist
@@ -140,14 +149,10 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         onAdd={handleAddPlaylist}
       />
 
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        onMigrate={handleMigrate}
-        isSyncing={Object.keys(activeSyncs).length > 0}
-        renamingStatus={renamingStatus}
+      <Toaster
+        theme={settings.theme === 'light' ? 'light' : 'dark'}
+        richColors
+        position="bottom-right"
       />
     </div>
   )

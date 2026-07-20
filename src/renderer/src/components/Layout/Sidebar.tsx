@@ -26,6 +26,7 @@ interface SidebarProps {
   onRenamePlaylist: (id: string, newTitle: string) => void
   onOpenAddModal: () => void
   onOpenSettings: () => void
+  isSettingsSelected: boolean
   activeSyncs: Record<
     string,
     {
@@ -55,6 +56,7 @@ export default function Sidebar({
   onRenamePlaylist,
   onOpenAddModal,
   onOpenSettings,
+  isSettingsSelected,
   activeSyncs,
   width,
   theme = 'dark',
@@ -319,7 +321,11 @@ export default function Sidebar({
       <div className="border-t border-zinc-900 p-4 bg-zinc-950/20 space-y-2">
         <button
           onClick={onOpenSettings}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 transition-colors cursor-pointer"
+          className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+            isSettingsSelected
+              ? 'bg-zinc-900 text-zinc-100'
+              : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
+          }`}
         >
           <Settings className="h-4 w-4" />
           <span>{t('sidebar.settings')}</span>

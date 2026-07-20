@@ -41,6 +41,7 @@ export const de = {
   'settings.categoryLibrary': 'Bibliothek',
   'settings.categoryDownloads': 'Downloads & Sync',
   'settings.categoryShortcuts': 'Shortcuts',
+  'settings.saved': 'Einstellung gespeichert',
   'settings.theme': 'Farbschema',
   'settings.themeDark': 'Dunkel',
   'settings.themeLight': 'Hell',

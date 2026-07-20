@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { toast } from 'sonner'
 import type { Playlist, Track, AppSettings } from '@main/db'
 import { de } from '../i18n/locales/de'
 import { en } from '../i18n/locales/en'
@@ -274,8 +275,8 @@ export function useApp(): UseAppReturn {
         const res = await window.api.updateSettings(newSettings)
         if (res.success) {
           setSettings((prev) => ({ ...prev, ...newSettings }))
+          toast.success(t('settings.saved'))
         } else {
-          alert(t('actions.errorUpdateSettings', { error: res.error || '' }))
           throw new Error(res.error || '')
         }
       } catch (err) {
@@ -299,13 +300,13 @@ export function useApp(): UseAppReturn {
             }
             return currentPlaylistId
           })
-          alert(t('actions.successMigrate'))
+          toast.success(t('actions.successMigrate'))
         } else {
-          alert(t('actions.errorMigrate', { error: res.error || '' }))
+          toast.error(t('actions.errorMigrate', { error: res.error || '' }))
         }
       } catch (err) {
         console.error(err)
-        alert(t('actions.errorMigrateGeneral'))
+        toast.error(t('actions.errorMigrateGeneral'))
       }
     },
     [t]

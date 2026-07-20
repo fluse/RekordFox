@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
+import { Button } from '@renderer/components/ui/button'
+import { Label } from '@renderer/components/ui/label'
 import { useLanguage, type TranslationKey } from '@renderer/i18n'
 import {
   APP_SHORTCUT_ACTIONS,
@@ -26,13 +28,11 @@ const ACTION_LABEL_KEYS: Record<AppShortcutAction, TranslationKey> = {
 interface AppShortcutsSettingsProps {
   shortcuts: Record<AppShortcutAction, string>
   onChange: (shortcuts: Record<string, string>) => void
-  theme: 'dark' | 'light'
 }
 
 export default function AppShortcutsSettings({
   shortcuts,
-  onChange,
-  theme
+  onChange
 }: AppShortcutsSettingsProps): React.JSX.Element {
   const { t } = useLanguage()
   const [recordingAction, setRecordingAction] = useState<AppShortcutAction | null>(null)
@@ -91,19 +91,21 @@ export default function AppShortcutsSettings({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="block text-sm font-medium text-zinc-400">
+        <Label className="block text-sm font-medium text-muted-foreground">
           {t('settings.shortcuts.title')}
-        </label>
-        <button
+        </Label>
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={handleResetAll}
-          className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
+          className="text-muted-foreground"
         >
           <RotateCcw className="h-3 w-3" />
           {t('settings.shortcuts.resetAll')}
-        </button>
+        </Button>
       </div>
-      <p className="mb-3 text-[10px] text-zinc-500">{t('settings.shortcuts.help')}</p>
+      <p className="mb-3 text-[10px] text-muted-foreground">{t('settings.shortcuts.help')}</p>
 
       <div className="flex flex-col gap-1.5">
         {APP_SHORTCUT_ACTIONS.map((action) => {
@@ -112,39 +114,38 @@ export default function AppShortcutsSettings({
 
           return (
             <div key={action} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2">
-                <span className="text-xs text-zinc-300">{t(ACTION_LABEL_KEYS[action])}</span>
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+                <span className="text-xs text-foreground/80">{t(ACTION_LABEL_KEYS[action])}</span>
                 <div className="flex items-center gap-1.5">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       setConflict(null)
                       setRecordingAction(action)
                     }}
-                    className={`min-w-[110px] rounded border px-2 py-1 text-[11px] font-mono font-bold transition cursor-pointer ${
-                      isRecording
-                        ? 'border-primary bg-primary/10 text-primary animate-pulse'
-                        : theme === 'light'
-                          ? 'border-amber-600/30 bg-amber-600/10 text-amber-700 hover:bg-amber-600/20'
-                          : 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800'
+                    className={`min-w-[110px] font-mono ${
+                      isRecording ? 'border-primary bg-primary/10 text-primary animate-pulse' : ''
                     }`}
                   >
                     {isRecording
                       ? t('settings.shortcuts.pressKey')
                       : formatCombo(shortcuts[action])}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleReset(action)}
                     title={t('settings.shortcuts.reset')}
-                    className="rounded p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition cursor-pointer"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               {hasConflict && (
-                <p className="text-[10px] font-semibold text-red-500 bg-red-500/10 border border-red-500/20 rounded px-2 py-1">
+                <p className="text-[10px] font-semibold text-destructive bg-destructive/10 border border-destructive/20 rounded px-2 py-1">
                   {t('settings.shortcuts.conflict', {
                     action: t(ACTION_LABEL_KEYS[conflict.withAction])
                   })}

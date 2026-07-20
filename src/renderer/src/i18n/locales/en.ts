@@ -40,6 +40,7 @@ export const en = {
   'settings.categoryLibrary': 'Library',
   'settings.categoryDownloads': 'Downloads & Sync',
   'settings.categoryShortcuts': 'Shortcuts',
+  'settings.saved': 'Setting saved',
   'settings.theme': 'Color Scheme',
   'settings.themeDark': 'Dark',
   'settings.themeLight': 'Light',

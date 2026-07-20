@@ -41,6 +41,7 @@ export const es = {
   'settings.categoryLibrary': 'Biblioteca',
   'settings.categoryDownloads': 'Descargas y sincronización',
   'settings.categoryShortcuts': 'Atajos',
+  'settings.saved': 'Configuración guardada',
   'settings.theme': 'Esquema de colores',
   'settings.themeDark': 'Oscuro',
   'settings.themeLight': 'Claro',
