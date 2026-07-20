@@ -40,6 +40,7 @@ export const fr = {
   'settings.categoryGeneral': 'Général',
   'settings.categoryLibrary': 'Bibliothèque',
   'settings.categoryDownloads': 'Téléchargements et synchro',
+  'settings.categoryShortcuts': 'Raccourcis',
   'settings.theme': 'Schéma de couleurs',
   'settings.themeDark': 'Sombre',
   'settings.themeLight': 'Clair',
@@ -89,6 +90,24 @@ export const fr = {
   'settings.historyLimitHelp':
     "Définit le nombre de titres récemment écoutés conservés dans l'historique (10 à 200).",
   'settings.errorChangeHistoryLimit': "Erreur lors du changement de taille de l'historique.",
+  'settings.shortcuts.title': "Raccourcis du lecteur d'aperçu",
+  'settings.shortcuts.help':
+    "Clique sur un raccourci puis appuie sur la touche souhaitée pour le réattribuer. Ils fonctionnent dans toute l'app tant qu'un titre est chargé.",
+  'settings.shortcuts.previewPlayPause': 'Lecture / Pause',
+  'settings.shortcuts.previewNext': 'Titre suivant',
+  'settings.shortcuts.previewPrevious': 'Titre précédent',
+  'settings.shortcuts.previewVolumeUp': 'Augmenter le volume',
+  'settings.shortcuts.previewVolumeDown': 'Baisser le volume',
+  'settings.shortcuts.previewMute': 'Couper le son',
+  'settings.shortcuts.previewSeekForward': 'Avance rapide',
+  'settings.shortcuts.previewSeekBackward': 'Retour rapide',
+  'settings.shortcuts.previewToggleQueue': "Afficher/masquer la file d'attente",
+  'settings.shortcuts.previewToggleDock': 'Basculer le mode ancré',
+  'settings.shortcuts.change': 'Modifier',
+  'settings.shortcuts.reset': 'Réinitialiser',
+  'settings.shortcuts.resetAll': 'Tout réinitialiser',
+  'settings.shortcuts.pressKey': 'Appuie sur une touche... (Échap pour annuler)',
+  'settings.shortcuts.conflict': 'Déjà attribué à "{{action}}"',
 
   // Deck
   'deck.loadingWaveform': "Décodage de la forme d'onde...",

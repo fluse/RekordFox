@@ -57,6 +57,7 @@ export interface AppSettings {
   filenameTemplate?: 'default' | 'custom'
   rekordboxXmlPath?: string
   historyLimit?: number
+  appShortcuts?: Record<string, string>
 }
 
 interface DatabaseSchema {

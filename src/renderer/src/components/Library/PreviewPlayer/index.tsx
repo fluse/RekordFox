@@ -4,6 +4,7 @@ import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
 import { useAudioPlayer } from './useAudioPlayer'
+import { useAppShortcuts } from './useAppShortcuts'
 import { useDraggablePosition } from './useDraggablePosition'
 import { useResizableHeight } from './useResizableHeight'
 import { useResizableWidth } from './useResizableWidth'
@@ -16,7 +17,13 @@ import PreviewPlayerSmartModePanel from './PreviewPlayerSmartModePanel'
 
 const RESTART_THRESHOLD_SECONDS = 3
 
-export default function PreviewPlayer(): React.JSX.Element | null {
+interface PreviewPlayerProps {
+  appShortcuts?: Record<string, string>
+}
+
+export default function PreviewPlayer({
+  appShortcuts
+}: PreviewPlayerProps): React.JSX.Element | null {
   const {
     previewTrack,
     isPlaying,
@@ -63,11 +70,6 @@ export default function PreviewPlayer(): React.JSX.Element | null {
     setResumePosition
   )
 
-  if (!previewTrack) return null
-
-  const displayDuration = duration || previewTrack.duration || 0
-  const coverUrl = previewTrack.coverPath ? getMediaUrl(previewTrack.coverPath) : ''
-
   const handlePrevious = (): void => {
     if (currentTime > RESTART_THRESHOLD_SECONDS) {
       seekTo(0)
@@ -75,6 +77,28 @@ export default function PreviewPlayer(): React.JSX.Element | null {
       previous()
     }
   }
+
+  useAppShortcuts({
+    savedShortcuts: appShortcuts,
+    previewTrack,
+    isPlaying,
+    setIsPlaying,
+    advance,
+    previous: handlePrevious,
+    volume,
+    handleVolumeChange,
+    toggleMute,
+    currentTime,
+    duration,
+    seekTo,
+    toggleQueuePanel,
+    toggleDockMode
+  })
+
+  if (!previewTrack) return null
+
+  const displayDuration = duration || previewTrack.duration || 0
+  const coverUrl = previewTrack.coverPath ? getMediaUrl(previewTrack.coverPath) : ''
 
   // Accepts drops anywhere over the player, not just the queue list, so tracks
   // dragged from a playlist land in the queue even when the queue panel is closed.

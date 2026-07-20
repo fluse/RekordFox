@@ -39,6 +39,7 @@ export const en = {
   'settings.categoryGeneral': 'General',
   'settings.categoryLibrary': 'Library',
   'settings.categoryDownloads': 'Downloads & Sync',
+  'settings.categoryShortcuts': 'Shortcuts',
   'settings.theme': 'Color Scheme',
   'settings.themeDark': 'Dark',
   'settings.themeLight': 'Light',
@@ -86,6 +87,24 @@ export const en = {
   'settings.historyLimitHelp':
     'Sets how many recently played tracks are kept in the history (10 to 200).',
   'settings.errorChangeHistoryLimit': 'Error changing history size.',
+  'settings.shortcuts.title': 'Preview Player Shortcuts',
+  'settings.shortcuts.help':
+    'Click a shortcut and press the key you want to assign to it. They work app-wide as long as a track is loaded.',
+  'settings.shortcuts.previewPlayPause': 'Play / Pause',
+  'settings.shortcuts.previewNext': 'Next track',
+  'settings.shortcuts.previewPrevious': 'Previous track',
+  'settings.shortcuts.previewVolumeUp': 'Volume up',
+  'settings.shortcuts.previewVolumeDown': 'Volume down',
+  'settings.shortcuts.previewMute': 'Mute',
+  'settings.shortcuts.previewSeekForward': 'Seek forward',
+  'settings.shortcuts.previewSeekBackward': 'Seek backward',
+  'settings.shortcuts.previewToggleQueue': 'Toggle queue panel',
+  'settings.shortcuts.previewToggleDock': 'Toggle dock mode',
+  'settings.shortcuts.change': 'Change',
+  'settings.shortcuts.reset': 'Reset',
+  'settings.shortcuts.resetAll': 'Reset all',
+  'settings.shortcuts.pressKey': 'Press a key... (Esc to cancel)',
+  'settings.shortcuts.conflict': 'Already assigned to "{{action}}"',
 
   // Deck
   'deck.loadingWaveform': 'Decoding waveform...',

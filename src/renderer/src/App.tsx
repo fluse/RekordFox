@@ -130,7 +130,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           </div>
         )}
 
-        <PreviewPlayer />
+        <PreviewPlayer appShortcuts={settings.appShortcuts} />
       </div>
 
       {/* Modal Dialogs */}

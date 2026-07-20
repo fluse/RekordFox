@@ -18,6 +18,9 @@ Wenn es möglich ist, soll geschaut werden, auf welchem Betriebssystem der User 
 
 ## Vorschau Player
 
+### Keyboard Shortcuts
+Damit der Player auch ohne Maus bedient werden kann, möchte ich gerne dazu Keyboard Shortcuts haben, diese sollen auch über die Einstellungen definiert werden können. 
+
 ### Trimmen
 Trimmen, wenn du merkst, ein lied ist am anfang stumm oder am ende stumm, soll der player versuchen diese bereiche (nur anfang und Ende) skippen, damit durchgehen musik läuft. Dieses verhalten sollte per toggle ein oder ab geschaltet werden können.
 

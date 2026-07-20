@@ -10,12 +10,15 @@ import {
   Trash2,
   Palette,
   Music,
-  Download
+  Download,
+  Keyboard
 } from 'lucide-react'
 import type { AppSettings } from '@main/db'
 import { useLanguage, type Language } from '@renderer/i18n'
+import { resolveAppShortcuts } from '@renderer/utils/appShortcuts'
+import AppShortcutsSettings from './AppShortcutsSettings'
 
-type SettingsCategory = 'general' | 'library' | 'downloads'
+type SettingsCategory = 'general' | 'library' | 'downloads' | 'shortcuts'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -213,7 +216,8 @@ export default function SettingsModal({
             [
               { key: 'general', label: t('settings.categoryGeneral'), icon: Palette },
               { key: 'library', label: t('settings.categoryLibrary'), icon: Music },
-              { key: 'downloads', label: t('settings.categoryDownloads'), icon: Download }
+              { key: 'downloads', label: t('settings.categoryDownloads'), icon: Download },
+              { key: 'shortcuts', label: t('settings.categoryShortcuts'), icon: Keyboard }
             ] as const
           ).map(({ key, label, icon: Icon }) => (
             <button
@@ -567,6 +571,14 @@ export default function SettingsModal({
                 <p className="mt-2 text-[10px] text-zinc-500">{t('settings.historyLimitHelp')}</p>
               </div>
             </>
+          )}
+
+          {category === 'shortcuts' && (
+            <AppShortcutsSettings
+              shortcuts={resolveAppShortcuts(settings.appShortcuts)}
+              onChange={(appShortcuts) => onUpdateSettings({ appShortcuts })}
+              theme={settings.theme}
+            />
           )}
 
           {error && (

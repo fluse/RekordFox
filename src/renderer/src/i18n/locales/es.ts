@@ -40,6 +40,7 @@ export const es = {
   'settings.categoryGeneral': 'General',
   'settings.categoryLibrary': 'Biblioteca',
   'settings.categoryDownloads': 'Descargas y sincronización',
+  'settings.categoryShortcuts': 'Atajos',
   'settings.theme': 'Esquema de colores',
   'settings.themeDark': 'Oscuro',
   'settings.themeLight': 'Claro',
@@ -88,6 +89,24 @@ export const es = {
   'settings.historyLimitHelp':
     'Establece cuántas pistas reproducidas recientemente se guardan en el historial (10 a 200).',
   'settings.errorChangeHistoryLimit': 'Error al cambiar el tamaño del historial.',
+  'settings.shortcuts.title': 'Atajos del reproductor de vista previa',
+  'settings.shortcuts.help':
+    'Haz clic en un atajo y pulsa la tecla que quieras asignarle. Funcionan en toda la app mientras haya una pista cargada.',
+  'settings.shortcuts.previewPlayPause': 'Reproducir / Pausar',
+  'settings.shortcuts.previewNext': 'Pista siguiente',
+  'settings.shortcuts.previewPrevious': 'Pista anterior',
+  'settings.shortcuts.previewVolumeUp': 'Subir volumen',
+  'settings.shortcuts.previewVolumeDown': 'Bajar volumen',
+  'settings.shortcuts.previewMute': 'Silenciar',
+  'settings.shortcuts.previewSeekForward': 'Avanzar',
+  'settings.shortcuts.previewSeekBackward': 'Retroceder',
+  'settings.shortcuts.previewToggleQueue': 'Mostrar/ocultar cola',
+  'settings.shortcuts.previewToggleDock': 'Alternar modo anclado',
+  'settings.shortcuts.change': 'Cambiar',
+  'settings.shortcuts.reset': 'Restablecer',
+  'settings.shortcuts.resetAll': 'Restablecer todo',
+  'settings.shortcuts.pressKey': 'Pulsa una tecla... (Esc para cancelar)',
+  'settings.shortcuts.conflict': 'Ya asignado a "{{action}}"',
 
   // Deck
   'deck.loadingWaveform': 'Decodificando forma de onda...',

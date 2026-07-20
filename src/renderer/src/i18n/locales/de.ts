@@ -40,6 +40,7 @@ export const de = {
   'settings.categoryGeneral': 'Allgemein',
   'settings.categoryLibrary': 'Bibliothek',
   'settings.categoryDownloads': 'Downloads & Sync',
+  'settings.categoryShortcuts': 'Shortcuts',
   'settings.theme': 'Farbschema',
   'settings.themeDark': 'Dunkel',
   'settings.themeLight': 'Hell',
@@ -88,6 +89,24 @@ export const de = {
   'settings.historyLimitHelp':
     'Legt fest, wie viele zuletzt abgespielte Tracks im Verlauf behalten werden (10 bis 200).',
   'settings.errorChangeHistoryLimit': 'Fehler beim Ändern der Verlaufsgröße.',
+  'settings.shortcuts.title': 'Vorschau-Player Shortcuts',
+  'settings.shortcuts.help':
+    'Klicke auf einen Shortcut und drücke die gewünschte Taste, um ihn neu zu belegen. Sie funktionieren app-weit, solange ein Track geladen ist.',
+  'settings.shortcuts.previewPlayPause': 'Play / Pause',
+  'settings.shortcuts.previewNext': 'Nächster Titel',
+  'settings.shortcuts.previewPrevious': 'Vorheriger Titel',
+  'settings.shortcuts.previewVolumeUp': 'Lauter',
+  'settings.shortcuts.previewVolumeDown': 'Leiser',
+  'settings.shortcuts.previewMute': 'Stumm schalten',
+  'settings.shortcuts.previewSeekForward': 'Vorspulen',
+  'settings.shortcuts.previewSeekBackward': 'Zurückspulen',
+  'settings.shortcuts.previewToggleQueue': 'Warteschlange ein-/ausblenden',
+  'settings.shortcuts.previewToggleDock': 'Dock-Modus umschalten',
+  'settings.shortcuts.change': 'Ändern',
+  'settings.shortcuts.reset': 'Zurücksetzen',
+  'settings.shortcuts.resetAll': 'Alle zurücksetzen',
+  'settings.shortcuts.pressKey': 'Taste drücken... (Esc zum Abbrechen)',
+  'settings.shortcuts.conflict': 'Bereits belegt von "{{action}}"',
 
   // Deck
   'deck.loadingWaveform': 'Dekodiere Welle...',
