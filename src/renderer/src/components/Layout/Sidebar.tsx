@@ -258,7 +258,7 @@ export default function Sidebar({
                                 </div>
                                 <div className="h-0.5 w-full rounded-full bg-zinc-900/60 overflow-hidden">
                                   <div
-                                    className="h-full bg-purple-500 transition-all duration-200"
+                                    className="h-full bg-primary transition-all duration-200"
                                     style={{ width: `${dl.percent}%` }}
                                   />
                                 </div>

@@ -52,8 +52,12 @@ export function getPlaylistFolderName(playlist: Playlist): string {
   return `${cleanTitle}-${provider}-${playlist.id}`
 }
 
+export type ColorScheme = 'purple' | 'blue' | 'green' | 'orange' | 'rose' | 'teal' | 'custom'
+
 export interface AppSettings {
   theme: 'dark' | 'light'
+  colorScheme?: ColorScheme
+  customAccentColor?: string // hex color, used when colorScheme === 'custom'
   downloadPath: string
   sidebarWidth: number
   maxWorkers: number
@@ -83,6 +87,7 @@ let dbData: DatabaseSchema = {
   discoverBlacklist: [],
   settings: {
     theme: 'dark',
+    colorScheme: 'purple',
     downloadPath: '',
     sidebarWidth: 256,
     maxWorkers: 1,
@@ -110,6 +115,7 @@ export function initDb(): void {
   if (!existsSync(dbPath)) {
     dbData.settings = {
       theme: 'dark',
+      colorScheme: 'purple',
       downloadPath: defaultDownloadsDir,
       sidebarWidth: 256,
       maxWorkers: 3,
@@ -131,6 +137,7 @@ export function initDb(): void {
       if (!dbData.settings) {
         dbData.settings = {
           theme: 'dark',
+          colorScheme: 'purple',
           downloadPath: defaultDownloadsDir,
           sidebarWidth: 256,
           maxWorkers: 3,
@@ -140,6 +147,7 @@ export function initDb(): void {
         }
       } else {
         if (!dbData.settings.theme) dbData.settings.theme = 'dark'
+        if (!dbData.settings.colorScheme) dbData.settings.colorScheme = 'purple'
         if (!dbData.settings.downloadPath) dbData.settings.downloadPath = defaultDownloadsDir
         if (!dbData.settings.sidebarWidth) dbData.settings.sidebarWidth = 256
         if (!dbData.settings.maxWorkers) dbData.settings.maxWorkers = 3
@@ -331,6 +339,7 @@ export function initDb(): void {
       console.error('Error reading database file, recreating:', e)
       dbData.settings = {
         theme: 'dark',
+        colorScheme: 'purple',
         downloadPath: defaultDownloadsDir,
         sidebarWidth: 256,
         maxWorkers: 3
@@ -675,6 +684,7 @@ export function getSettings(): AppSettings {
   return (
     dbData.settings || {
       theme: 'dark',
+      colorScheme: 'purple',
       downloadPath: defaultDownloadsDir,
       sidebarWidth: 256,
       maxWorkers: 3,

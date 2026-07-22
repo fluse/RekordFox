@@ -379,10 +379,10 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                       disabled={isPlaceholder}
                       className={`rounded px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
                         isPlayingB
-                          ? 'bg-purple-600 text-white'
+                          ? 'bg-primary text-white'
                           : isPlaceholder
                             ? 'bg-zinc-950/40 text-zinc-700 cursor-not-allowed border border-zinc-900/60'
-                            : 'bg-zinc-800 text-zinc-300 hover:bg-purple-600/20 hover:text-purple-400'
+                            : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
                       }`}
                     >
                       B

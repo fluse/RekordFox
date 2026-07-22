@@ -126,7 +126,7 @@ export default function Mixer(): React.JSX.Element {
             step="0.05"
             value={volumeB}
             onChange={(e) => setVolume('B', parseFloat(e.target.value))}
-            className="accent-purple-600 h-1.5 w-14 cursor-pointer bg-zinc-900 rounded-lg outline-none rotate-270"
+            className="accent-primary h-1.5 w-14 cursor-pointer bg-zinc-900 rounded-lg outline-none rotate-270"
           />
           <span className="text-[9px] font-mono text-zinc-500">{Math.round(volumeB * 100)}%</span>
         </div>

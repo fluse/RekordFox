@@ -76,9 +76,7 @@ export default function Deck({
       onDrop={handleDrop}
       className={`flex flex-col border p-4 rounded-xl shadow-lg relative select-none w-[420px] transition-all duration-200 ${
         isDragOver
-          ? deckId === 'A'
-            ? 'border-primary ring-2 ring-primary/20 bg-primary/5 scale-[1.01]'
-            : 'border-purple-600 ring-2 ring-purple-600/20 bg-purple-600/5 scale-[1.01]'
+          ? 'border-primary ring-2 ring-primary/20 bg-primary/5 scale-[1.01]'
           : 'border-zinc-900 bg-zinc-950'
       } ${deckId === 'A' ? 'border-l-primary/30' : 'border-r-primary/30'}`}
     >

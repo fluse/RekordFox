@@ -3,7 +3,8 @@ import { Moon, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { Label } from '@renderer/components/ui/label'
 import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
-import type { AppSettings } from '@main/db'
+import ColorSchemePicker from './ColorSchemePicker'
+import type { AppSettings, ColorScheme } from '@main/db'
 import { useLanguage, type Language } from '@renderer/i18n'
 
 interface GeneralSettingsProps {
@@ -34,6 +35,21 @@ export default function GeneralSettings({
     }
   }
 
+  const handleChangeColorScheme = async (
+    colorScheme: ColorScheme,
+    customAccentColor?: string
+  ): Promise<void> => {
+    if (colorScheme === settings.colorScheme && customAccentColor === settings.customAccentColor) {
+      return
+    }
+    try {
+      await onUpdateSettings({ colorScheme, customAccentColor })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      toast.error(msg || t('settings.errorChangeColorScheme'))
+    }
+  }
+
   const handleUpdateLanguage = async (language: Language): Promise<void> => {
     if (language === settings.language) return
     try {
@@ -48,7 +64,7 @@ export default function GeneralSettings({
     <div className="space-y-6">
       <div>
         <Label className="mb-2 block text-sm font-medium text-muted-foreground">
-          {t('settings.theme')}
+          {t('settings.appearanceMode')}
         </Label>
         <ToggleGroupField
           value={settings.theme}
@@ -73,6 +89,17 @@ export default function GeneralSettings({
               )
             }
           ]}
+        />
+      </div>
+
+      <div>
+        <Label className="mb-2 block text-sm font-medium text-muted-foreground">
+          {t('settings.colorScheme')}
+        </Label>
+        <ColorSchemePicker
+          value={settings.colorScheme || 'purple'}
+          customColor={settings.customAccentColor}
+          onChange={handleChangeColorScheme}
         />
       </div>
 

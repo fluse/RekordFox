@@ -7,6 +7,7 @@ import { fr } from '../i18n/locales/fr'
 import { es } from '../i18n/locales/es'
 import type { TranslationKey } from '../i18n'
 import { usePreviewStore } from '../store/usePreviewStore'
+import { applyColorScheme } from '../lib/colorSchemes'
 
 const translations = { de, en, fr, es }
 
@@ -60,6 +61,7 @@ export function useApp(): UseAppReturn {
   // App settings state
   const [settings, setSettings] = useState<AppSettings>({
     theme: 'dark',
+    colorScheme: 'purple',
     downloadPath: '',
     sidebarWidth: 256,
     maxWorkers: 3,
@@ -397,6 +399,15 @@ export function useApp(): UseAppReturn {
       root.classList.add('dark')
     }
   }, [settings.theme])
+
+  // 2b. Apply the selected accent color scheme (independent of light/dark mode)
+  useEffect((): void => {
+    applyColorScheme(
+      document.documentElement,
+      settings.colorScheme || 'purple',
+      settings.customAccentColor
+    )
+  }, [settings.colorScheme, settings.customAccentColor])
 
   // 3. Fetch tracks when selected playlist changes
   useEffect((): void => {
