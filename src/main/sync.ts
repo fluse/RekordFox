@@ -10,8 +10,6 @@ import {
   getDownloadsDir,
   getCoversDir,
   getTracksForPlaylist,
-  updateTrackBpm,
-  updateTrackKey,
   updateTrackDownloadFailed,
   getSettings,
   getPlaylists,
@@ -19,8 +17,7 @@ import {
   getPlaylistFolderName
 } from './db'
 import { getPlaylistInfo, downloadTrack } from './downloader'
-import { analyzeBpm } from './bpm'
-import { analyzeKey } from './key'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
 import nodeId3 from 'node-id3'
 
 // Map of active synchronization tasks
@@ -303,34 +300,13 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
           })
 
           // Analyze BPM and Key in the background (non-blocking, run in parallel)
-          analyzeBpm(filepath)
-            .then((bpm) => {
-              if (bpm > 0) {
-                const change = updateTrackBpm(ytTrack.id, playlist.id, bpm)
-                if (!win.isDestroyed()) {
-                  win.webContents.send('bpm-analyzed', ytTrack.id, playlist.id, bpm)
-                  if (change) {
-                    win.webContents.send('tracks-filepath-changed', [change])
-                  }
-                }
-              }
-            })
-            .catch((err) => {
-              console.error(`BPM analysis failed for track ${ytTrack.id}:`, err)
-            })
+          analyzeAndNotifyBpm(ytTrack.id, playlist.id, filepath, win).catch((err) => {
+            console.error(`BPM analysis failed for track ${ytTrack.id}:`, err)
+          })
 
-          analyzeKey(filepath)
-            .then(({ camelot, tkey }) => {
-              if (camelot) {
-                updateTrackKey(ytTrack.id, playlist.id, camelot, tkey)
-                if (!win.isDestroyed()) {
-                  win.webContents.send('key-analyzed', ytTrack.id, playlist.id, camelot)
-                }
-              }
-            })
-            .catch((err) => {
-              console.error(`Key analysis failed for track ${ytTrack.id}:`, err)
-            })
+          analyzeAndNotifyKey(ytTrack.id, playlist.id, filepath, win).catch((err) => {
+            console.error(`Key analysis failed for track ${ytTrack.id}:`, err)
+          })
         } catch (err) {
           console.error(`Failed to download track ${ytTrack.id}:`, err)
           // Flag the track as undownloadable so it's excluded from queue/shuffle relevance
