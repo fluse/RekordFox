@@ -4,7 +4,7 @@ import icon from '../../resources/icon.png?asset'
 import { initDb } from './db'
 import { ensureYtdlp } from './downloader'
 import { startBackgroundSync, stopBackgroundSync } from './sync'
-import { handleMediaRequest } from './media'
+import { handleMediaRequest, handleYoutubeStreamRequest } from './media'
 import { ExportQueueManager } from './export/pioneer/ExportQueueManager'
 import { createWindow, getMainWindow, setupActivateHandler } from './window'
 import { createTray } from './tray'
@@ -42,7 +42,11 @@ app.whenReady().then(async () => {
   }
 
   // Register custom media protocol (serves local files with byte-range support for seeking)
-  protocol.handle('media', handleMediaRequest)
+  protocol.handle('media', (request) =>
+    request.url.startsWith('media://youtube/')
+      ? handleYoutubeStreamRequest(request)
+      : handleMediaRequest(request)
+  )
 
   electronApp.setAppUserModelId('com.electron')
 

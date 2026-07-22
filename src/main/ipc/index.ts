@@ -7,6 +7,7 @@ import { registerRekordboxIpc } from './rekordbox'
 import { registerUsbIpc } from './usb'
 import { registerPioneerExportIpc } from './pioneerExport'
 import { registerSystemIpc } from './system'
+import { registerExploreIpc } from './explore'
 
 export function registerIpcHandlers(exportQueueManager: ExportQueueManager): void {
   registerPlaylistsIpc()
@@ -17,4 +18,5 @@ export function registerIpcHandlers(exportQueueManager: ExportQueueManager): voi
   registerUsbIpc()
   registerPioneerExportIpc(exportQueueManager)
   registerSystemIpc()
+  registerExploreIpc()
 }

@@ -1,5 +1,15 @@
 import React from 'react'
-import { Music, Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink } from 'lucide-react'
+import {
+  Music,
+  Play,
+  ListPlus,
+  Search,
+  Disc3,
+  SquarePlay,
+  ExternalLink,
+  Compass
+} from 'lucide-react'
+import type { Track } from '@main/db'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { useLanguage } from '@renderer/i18n'
 import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
@@ -12,7 +22,11 @@ import {
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
 import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
 
-export default function HistoryView(): React.JSX.Element {
+interface HistoryViewProps {
+  onFindSimilarTrack?: (track: Track) => void
+}
+
+export default function HistoryView({ onFindSimilarTrack }: HistoryViewProps): React.JSX.Element {
   const { t } = useLanguage()
   const history = usePreviewStore((s) => s.history)
   const historyLimit = usePreviewStore((s) => s.historyLimit)
@@ -100,6 +114,16 @@ export default function HistoryView(): React.JSX.Element {
               onClick: () => openYoutubeVideo(contextMenu.track.id),
               divider: true
             },
+            ...(onFindSimilarTrack
+              ? [
+                  {
+                    key: 'findSimilar',
+                    label: t('contextMenu.findSimilar'),
+                    icon: <Compass className="h-3.5 w-3.5" />,
+                    onClick: () => onFindSimilarTrack(contextMenu.track)
+                  }
+                ]
+              : []),
             {
               key: 'searchDiscogs',
               label: t('contextMenu.searchDiscogs'),

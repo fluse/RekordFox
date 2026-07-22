@@ -22,6 +22,7 @@ export const es = {
   'sidebar.noPlaylists': 'Sin playlists',
   'sidebar.addNow': 'Añadir ahora',
   'sidebar.settings': 'Ajustes',
+  'sidebar.discover': 'Descubrir',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Añadir playlist de YouTube',
@@ -219,10 +220,39 @@ export const es = {
   'contextMenu.searchBandcamp': 'Buscar artista en Bandcamp',
   'contextMenu.searchYoutube': 'Buscar artista en YouTube',
   'contextMenu.openYoutubeVideo': 'Abrir vídeo de YouTube',
+  'contextMenu.findSimilar': 'Buscar pistas similares',
 
   // History
   'sidebar.history': 'Recientes',
   'history.title': 'Recientes',
   'history.subtitle': 'Las últimas {{count}} pistas reproducidas',
-  'history.empty': 'Aún no se ha reproducido ninguna pista.'
+  'history.empty': 'Aún no se ha reproducido ninguna pista.',
+
+  // Discover
+  'discover.title': 'Descubrir',
+  'discover.subtitle': 'Nuevas pistas que encajan musicalmente con tu playlist.',
+  'discover.selectPlaylistLabel': 'Playlist',
+  'discover.selectPlaylistPlaceholder': 'Selecciona una playlist...',
+  'discover.basedOnArtists': 'Basado en los artistas principales de esta playlist.',
+  'discover.seedTrackLabel': 'Similar a "{{title}}"',
+  'discover.clearSeedTrack': 'Volver a toda la playlist',
+  'discover.refresh': 'Actualizar',
+  'discover.loading': 'Buscando pistas que encajen...',
+  'discover.empty': 'No se encontraron recomendaciones.',
+  'discover.emptyHint': 'Prueba con otra playlist o sincroniza algunas pistas primero.',
+  'discover.needTracksFirst':
+    'Esta playlist todavía no tiene pistas. Sincronízala primero para obtener recomendaciones.',
+  'discover.noPlaylists': 'Crea primero una playlist para obtener recomendaciones.',
+  'discover.errorLoading': 'Error al cargar las recomendaciones: {{error}}',
+  'discover.blacklistButton': 'No me interesa — no sugerir de nuevo',
+  'discover.blacklistedToast': '"{{title}}" no se volverá a sugerir.',
+  'discover.blacklistErrorToast': 'Error al ocultar "{{title}}": {{error}}',
+  'discover.undo': 'Deshacer',
+  'discover.addButton': 'Añadir',
+  'discover.added': 'Añadido',
+  'discover.addedToast': '"{{title}}" se añadió a "{{playlist}}" y se está descargando.',
+  'discover.addErrorToast': 'Error al añadir "{{title}}": {{error}}',
+  'discover.selectAll': 'Seleccionar todo',
+  'discover.clearSelection': 'Quitar selección',
+  'discover.addSelected': 'Añadir seleccionados ({{count}})'
 }

@@ -23,6 +23,7 @@ export const de = {
   'sidebar.noPlaylists': 'Keine Playlists',
   'sidebar.addNow': 'Jetzt hinzufügen',
   'sidebar.settings': 'Einstellungen',
+  'sidebar.discover': 'Entdecken',
 
   // Add Playlist Modal
   'addPlaylist.title': 'YouTube Playlist hinzufügen',
@@ -220,10 +221,41 @@ export const de = {
   'contextMenu.searchBandcamp': 'Interpret auf Bandcamp suchen',
   'contextMenu.searchYoutube': 'Interpret auf YouTube suchen',
   'contextMenu.openYoutubeVideo': 'YouTube Video öffnen',
+  'contextMenu.findSimilar': 'Ähnliche Tracks finden',
 
   // History
   'sidebar.history': 'Zuletzt abgespielt',
   'history.title': 'Zuletzt abgespielt',
   'history.subtitle': 'Die letzten {{count}} abgespielten Tracks',
-  'history.empty': 'Noch keine Tracks abgespielt.'
+  'history.empty': 'Noch keine Tracks abgespielt.',
+
+  // Discover
+  'discover.title': 'Entdecken',
+  'discover.subtitle': 'Neue Tracks, die musikalisch zu deiner Playlist passen.',
+  'discover.selectPlaylistLabel': 'Playlist',
+  'discover.selectPlaylistPlaceholder': 'Playlist auswählen...',
+  'discover.basedOnArtists': 'Basierend auf den Haupt-Interpreten dieser Playlist.',
+  'discover.seedTrackLabel': 'Ähnlich wie „{{title}}“',
+  'discover.clearSeedTrack': 'Zurück zur ganzen Playlist',
+  'discover.refresh': 'Neu laden',
+  'discover.loading': 'Suche nach passenden Tracks...',
+  'discover.empty': 'Keine Empfehlungen gefunden.',
+  'discover.emptyHint':
+    'Versuche es mit einer anderen Playlist oder synchronisiere zuerst ein paar Tracks.',
+  'discover.needTracksFirst':
+    'Diese Playlist enthält noch keine Tracks. Synchronisiere sie zuerst, um Empfehlungen zu erhalten.',
+  'discover.noPlaylists': 'Lege zuerst eine Playlist an, um Empfehlungen zu erhalten.',
+  'discover.errorLoading': 'Fehler beim Laden der Empfehlungen: {{error}}',
+  'discover.blacklistButton': 'Nicht interessiert — nie wieder vorschlagen',
+  'discover.blacklistedToast': '„{{title}}“ wird nicht mehr vorgeschlagen.',
+  'discover.blacklistErrorToast': 'Fehler beim Ausblenden von „{{title}}“: {{error}}',
+  'discover.undo': 'Rückgängig',
+  'discover.addButton': 'Hinzufügen',
+  'discover.added': 'Hinzugefügt',
+  'discover.addedToast':
+    '„{{title}}“ wurde zu „{{playlist}}“ hinzugefügt und wird jetzt heruntergeladen.',
+  'discover.addErrorToast': 'Fehler beim Hinzufügen von „{{title}}“: {{error}}',
+  'discover.selectAll': 'Alle auswählen',
+  'discover.clearSelection': 'Auswahl aufheben',
+  'discover.addSelected': 'Ausgewählte hinzufügen ({{count}})'
 }

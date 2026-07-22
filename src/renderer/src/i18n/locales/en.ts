@@ -22,6 +22,7 @@ export const en = {
   'sidebar.noPlaylists': 'No Playlists',
   'sidebar.addNow': 'Add now',
   'sidebar.settings': 'Settings',
+  'sidebar.discover': 'Discover',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Add YouTube Playlist',
@@ -218,10 +219,39 @@ export const en = {
   'contextMenu.searchBandcamp': 'Search Artist on Bandcamp',
   'contextMenu.searchYoutube': 'Search Artist on YouTube',
   'contextMenu.openYoutubeVideo': 'Open YouTube Video',
+  'contextMenu.findSimilar': 'Find Similar Tracks',
 
   // History
   'sidebar.history': 'Recently Played',
   'history.title': 'Recently Played',
   'history.subtitle': 'The last {{count}} played tracks',
-  'history.empty': 'No tracks played yet.'
+  'history.empty': 'No tracks played yet.',
+
+  // Discover
+  'discover.title': 'Discover',
+  'discover.subtitle': 'New tracks that musically fit your playlist.',
+  'discover.selectPlaylistLabel': 'Playlist',
+  'discover.selectPlaylistPlaceholder': 'Select a playlist...',
+  'discover.basedOnArtists': "Based on this playlist's main artists.",
+  'discover.seedTrackLabel': 'Similar to "{{title}}"',
+  'discover.clearSeedTrack': 'Back to whole playlist',
+  'discover.refresh': 'Refresh',
+  'discover.loading': 'Looking for matching tracks...',
+  'discover.empty': 'No recommendations found.',
+  'discover.emptyHint': 'Try a different playlist or sync a few tracks first.',
+  'discover.needTracksFirst':
+    'This playlist has no tracks yet. Sync it first to get recommendations.',
+  'discover.noPlaylists': 'Create a playlist first to get recommendations.',
+  'discover.errorLoading': 'Error loading recommendations: {{error}}',
+  'discover.blacklistButton': 'Not interested — never suggest again',
+  'discover.blacklistedToast': '"{{title}}" won\'t be suggested again.',
+  'discover.blacklistErrorToast': 'Error hiding "{{title}}": {{error}}',
+  'discover.undo': 'Undo',
+  'discover.addButton': 'Add',
+  'discover.added': 'Added',
+  'discover.addedToast': '"{{title}}" was added to "{{playlist}}" and is now downloading.',
+  'discover.addErrorToast': 'Error adding "{{title}}": {{error}}',
+  'discover.selectAll': 'Select all',
+  'discover.clearSelection': 'Clear selection',
+  'discover.addSelected': 'Add selected ({{count}})'
 }

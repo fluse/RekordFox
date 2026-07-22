@@ -111,7 +111,7 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
     const currentLocalTrackIds = new Set(currentLocalTracks.map((t) => t.id))
     const ytTracksMap = new Map(ytPlaylist.entries.map((e) => [e.id, e]))
 
-    const toDownload = ytPlaylist.entries.filter((e) => {
+    const toDownload: typeof ytPlaylist.entries = ytPlaylist.entries.filter((e) => {
       if (!currentLocalTrackIds.has(e.id)) return true
       const track = currentLocalTracks.find((t) => t.id === e.id)
       if (!track || !existsSync(track.filepath) || !existsSync(track.coverPath)) {
@@ -119,6 +119,24 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
       }
       return false
     })
+
+    // Discover-added tracks aren't part of the remote playlist entries above, so retry their
+    // download here too if it previously failed (e.g. the immediate download after adding
+    // them failed and the periodic background sync should pick it back up).
+    for (const track of currentLocalTracks) {
+      if (
+        track.source === 'discover' &&
+        !ytTracksMap.has(track.id) &&
+        (!existsSync(track.filepath) || !existsSync(track.coverPath))
+      ) {
+        toDownload.push({
+          id: track.id,
+          title: track.title,
+          duration: track.duration,
+          uploader: track.artist
+        })
+      }
+    }
 
     if (addedPlaceholders) {
       // Send IPC notification so the frontend can reload the track list immediately
@@ -155,7 +173,12 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
       }
     }
 
-    const toDelete = currentLocalTracks.filter((t) => !ytTracksMap.has(t.id))
+    // Tracks added via the Discover feature are never part of the actual remote YouTube
+    // playlist (we only write them to the local db), so excluding them here keeps them from
+    // being wiped out as "removed" on every subsequent sync.
+    const toDelete = currentLocalTracks.filter(
+      (t) => !ytTracksMap.has(t.id) && t.source !== 'discover'
+    )
 
     // 1. Delete removed tracks
     for (const track of toDelete) {
@@ -285,7 +308,8 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
             filesize,
             format: 'MP3',
             rating: 0,
-            bitrate
+            bitrate,
+            source: existingTrack?.source
           }
           addTrack(newTrack)
 

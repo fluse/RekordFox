@@ -1,6 +1,7 @@
 import type { ElectronAPI } from '@electron-toolkit/preload'
 import { Playlist, Track, AppSettings } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
+import type { RecommendedTrack } from '@main/explore'
 
 declare global {
   interface Window {
@@ -127,6 +128,18 @@ declare global {
         hasTrack: boolean
       }) => void
       onTrayControl: (callback: (action: 'play-pause' | 'next' | 'previous') => void) => () => void
+      getRecommendations: (
+        playlistId: string,
+        seedTrackId?: string,
+        limit?: number
+      ) => Promise<{ success: boolean; recommendations?: RecommendedTrack[]; error?: string }>
+      addDiscoverTrack: (
+        playlistId: string,
+        track: RecommendedTrack
+      ) => Promise<{ success: boolean; error?: string }>
+      blacklistDiscoverTrack: (videoId: string) => Promise<{ success: boolean; error?: string }>
+      unblacklistDiscoverTrack: (videoId: string) => Promise<{ success: boolean; error?: string }>
+      prefetchDiscoverStreams: (videoIds: string[]) => void
       windowMinimize: () => void
       windowMaximizeToggle: () => void
       windowClose: () => void

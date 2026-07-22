@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppSettings } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
+import type { RecommendedTrack } from '@main/explore'
 
 // Custom APIs for renderer
 const api = {
@@ -238,6 +239,18 @@ const api = {
     return (): void => {
       ipcRenderer.removeListener('tray:control', subscription)
     }
+  },
+
+  getRecommendations: (playlistId: string, seedTrackId?: string, limit?: number) =>
+    ipcRenderer.invoke('explore:get-recommendations', { playlistId, seedTrackId, limit }),
+  addDiscoverTrack: (playlistId: string, track: RecommendedTrack) =>
+    ipcRenderer.invoke('explore:add-track', playlistId, track),
+  blacklistDiscoverTrack: (videoId: string) =>
+    ipcRenderer.invoke('explore:blacklist-track', videoId),
+  unblacklistDiscoverTrack: (videoId: string) =>
+    ipcRenderer.invoke('explore:unblacklist-track', videoId),
+  prefetchDiscoverStreams: (videoIds: string[]): void => {
+    ipcRenderer.send('explore:prefetch-streams', videoIds)
   },
 
   windowMinimize: () => ipcRenderer.send('window:minimize'),

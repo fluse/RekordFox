@@ -23,6 +23,7 @@ export const fr = {
   'sidebar.noPlaylists': 'Aucune playlist',
   'sidebar.addNow': 'Ajouter maintenant',
   'sidebar.settings': 'Paramètres',
+  'sidebar.discover': 'Découvrir',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Ajouter une playlist YouTube',
@@ -223,10 +224,40 @@ export const fr = {
   'contextMenu.searchBandcamp': "Rechercher l'artiste sur Bandcamp",
   'contextMenu.searchYoutube': "Rechercher l'artiste sur YouTube",
   'contextMenu.openYoutubeVideo': 'Ouvrir la vidéo YouTube',
+  'contextMenu.findSimilar': 'Trouver des titres similaires',
 
   // History
   'sidebar.history': 'Écoutés récemment',
   'history.title': 'Écoutés récemment',
   'history.subtitle': 'Les {{count}} derniers titres écoutés',
-  'history.empty': 'Aucun titre écouté pour le moment.'
+  'history.empty': 'Aucun titre écouté pour le moment.',
+
+  // Discover
+  'discover.title': 'Découvrir',
+  'discover.subtitle': 'De nouveaux titres qui correspondent musicalement à ta playlist.',
+  'discover.selectPlaylistLabel': 'Playlist',
+  'discover.selectPlaylistPlaceholder': 'Choisir une playlist...',
+  'discover.basedOnArtists': 'Basé sur les principaux artistes de cette playlist.',
+  'discover.seedTrackLabel': 'Similaire à « {{title}} »',
+  'discover.clearSeedTrack': 'Revenir à toute la playlist',
+  'discover.refresh': 'Actualiser',
+  'discover.loading': 'Recherche de titres correspondants...',
+  'discover.empty': 'Aucune recommandation trouvée.',
+  'discover.emptyHint': "Essaie une autre playlist ou synchronise d'abord quelques titres.",
+  'discover.needTracksFirst':
+    "Cette playlist ne contient pas encore de titres. Synchronise-la d'abord pour obtenir des recommandations.",
+  'discover.noPlaylists': "Crée d'abord une playlist pour obtenir des recommandations.",
+  'discover.errorLoading': 'Erreur lors du chargement des recommandations : {{error}}',
+  'discover.blacklistButton': 'Pas intéressé — ne plus suggérer',
+  'discover.blacklistedToast': '« {{title}} » ne sera plus suggéré.',
+  'discover.blacklistErrorToast': 'Erreur lors du masquage de « {{title}} » : {{error}}',
+  'discover.undo': 'Annuler',
+  'discover.addButton': 'Ajouter',
+  'discover.added': 'Ajouté',
+  'discover.addedToast':
+    '« {{title}} » a été ajouté à « {{playlist}} » et est en cours de téléchargement.',
+  'discover.addErrorToast': "Erreur lors de l'ajout de « {{title}} » : {{error}}",
+  'discover.selectAll': 'Tout sélectionner',
+  'discover.clearSelection': 'Désélectionner',
+  'discover.addSelected': 'Ajouter la sélection ({{count}})'
 }

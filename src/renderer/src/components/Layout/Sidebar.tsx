@@ -8,7 +8,8 @@ import {
   Loader2,
   Settings,
   Pencil,
-  History
+  History,
+  Compass
 } from 'lucide-react'
 import type { Playlist } from '@main/db'
 import logo from '@renderer/assets/logo-rekordfox.svg'
@@ -21,6 +22,8 @@ interface SidebarProps {
   onSelectPlaylist: (id: string) => void
   isHistorySelected: boolean
   onSelectHistory: () => void
+  isDiscoverSelected: boolean
+  onSelectDiscover: () => void
   onDeletePlaylist: (id: string) => void
   onSyncPlaylist: (id: string) => void
   onRenamePlaylist: (id: string, newTitle: string) => void
@@ -51,6 +54,8 @@ export default function Sidebar({
   onSelectPlaylist,
   isHistorySelected,
   onSelectHistory,
+  isDiscoverSelected,
+  onSelectDiscover,
   onDeletePlaylist,
   onSyncPlaylist,
   onRenamePlaylist,
@@ -111,6 +116,18 @@ export default function Sidebar({
           <span>{t('sidebar.history')}</span>
         </button>
 
+        <button
+          onClick={onSelectDiscover}
+          className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition cursor-pointer ${
+            isDiscoverSelected
+              ? 'bg-zinc-900 text-zinc-100'
+              : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
+          }`}
+        >
+          <Compass className="h-4 w-4" />
+          <span>{t('sidebar.discover')}</span>
+        </button>
+
         <div className="flex items-center justify-between px-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             {t('sidebar.playlists')}
@@ -127,7 +144,10 @@ export default function Sidebar({
           {playlists.map((playlist) => {
             const syncState = activeSyncs[playlist.id] || { status: playlist.syncStatus }
             const isSelected =
-              !isHistorySelected && !isSettingsSelected && selectedPlaylistId === playlist.id
+              !isHistorySelected &&
+              !isSettingsSelected &&
+              !isDiscoverSelected &&
+              selectedPlaylistId === playlist.id
 
             return (
               <div

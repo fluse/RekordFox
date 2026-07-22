@@ -39,6 +39,10 @@ export interface Track {
   dateAdded?: string
   played?: boolean
   downloadFailed?: boolean // true if the last download attempt failed; excluded from queue/shuffle relevance
+  // Present (and always 'discover') for tracks added via the Discover feature rather than
+  // found in the actual remote YouTube playlist. Sync must never delete these based on the
+  // playlist diff, since they will never appear in the remote playlist's entries.
+  source?: 'discover'
 }
 
 export function getPlaylistFolderName(playlist: Playlist): string {
@@ -64,6 +68,9 @@ interface DatabaseSchema {
   playlists: Playlist[]
   tracks: Track[]
   settings?: AppSettings
+  // Video IDs the user marked as "not interested" from the Discover feature — excluded from
+  // all future recommendations.
+  discoverBlacklist?: string[]
 }
 
 let dbPath = ''
@@ -73,6 +80,7 @@ let coversDir = ''
 let dbData: DatabaseSchema = {
   playlists: [],
   tracks: [],
+  discoverBlacklist: [],
   settings: {
     theme: 'dark',
     downloadPath: '',
@@ -117,6 +125,7 @@ export function initDb(): void {
       // Ensure arrays exist
       if (!dbData.playlists) dbData.playlists = []
       if (!dbData.tracks) dbData.tracks = []
+      if (!dbData.discoverBlacklist) dbData.discoverBlacklist = []
 
       // Ensure settings exist with defaults
       if (!dbData.settings) {
@@ -370,6 +379,27 @@ export function getTracksForPlaylist(playlistId: string): Track[] {
       const posB = b.position !== undefined ? b.position : 999999
       return posA - posB
     })
+}
+
+export function getDiscoverBlacklist(): string[] {
+  return dbData.discoverBlacklist || []
+}
+
+export function addToDiscoverBlacklist(videoId: string): void {
+  if (!dbData.discoverBlacklist) dbData.discoverBlacklist = []
+  if (!dbData.discoverBlacklist.includes(videoId)) {
+    dbData.discoverBlacklist.push(videoId)
+    saveDb()
+  }
+}
+
+export function removeFromDiscoverBlacklist(videoId: string): void {
+  if (!dbData.discoverBlacklist) return
+  const next = dbData.discoverBlacklist.filter((id) => id !== videoId)
+  if (next.length !== dbData.discoverBlacklist.length) {
+    dbData.discoverBlacklist = next
+    saveDb()
+  }
 }
 
 export function addPlaylist(playlist: Playlist): void {

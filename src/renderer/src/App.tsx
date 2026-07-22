@@ -8,8 +8,10 @@ import {
 } from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
 import SettingsView from '@renderer/components/Settings'
+import { DiscoverView, type DiscoverContext } from '@renderer/components/Discover'
 import { Toaster } from '@renderer/components/ui/sonner'
 import { ChevronDown } from 'lucide-react'
+import type { Track } from '@main/db'
 import { useApp } from './hooks/useApp'
 
 import { LanguageProvider, useLanguage } from './i18n'
@@ -20,7 +22,18 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const [showSplash, setShowSplash] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
-  const [viewMode, setViewMode] = useState<'library' | 'history' | 'settings'>('library')
+  const [viewMode, setViewMode] = useState<'library' | 'history' | 'settings' | 'discover'>(
+    'library'
+  )
+  const [discoverContext, setDiscoverContext] = useState<DiscoverContext | null>(null)
+
+  const handleFindSimilarTrack = (track: Track): void => {
+    setDiscoverContext({
+      playlistId: track.playlistId,
+      seedTrack: { id: track.id, title: track.title }
+    })
+    setViewMode('discover')
+  }
 
   const {
     playlists,
@@ -87,6 +100,13 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           }}
           isHistorySelected={viewMode === 'history'}
           onSelectHistory={() => setViewMode('history')}
+          isDiscoverSelected={viewMode === 'discover'}
+          onSelectDiscover={() => {
+            setDiscoverContext((prev) =>
+              prev ? prev : selectedPlaylistId ? { playlistId: selectedPlaylistId } : null
+            )
+            setViewMode('discover')
+          }}
           onDeletePlaylist={handleDeletePlaylist}
           onSyncPlaylist={handleSyncPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
@@ -117,7 +137,13 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             renamingStatus={renamingStatus}
           />
         ) : viewMode === 'history' ? (
-          <HistoryView />
+          <HistoryView onFindSimilarTrack={handleFindSimilarTrack} />
+        ) : viewMode === 'discover' ? (
+          <DiscoverView
+            playlists={playlists}
+            context={discoverContext}
+            onContextChange={setDiscoverContext}
+          />
         ) : selectedPlaylistId && selectedPlaylist ? (
           <Tracklist
             playlistId={selectedPlaylistId}
@@ -129,6 +155,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             onUpdateKey={handleUpdateKeyInState}
             onUpdateRating={handleUpdateRatingInState}
             onReorderTracks={handleReorderTracks}
+            onFindSimilarTrack={handleFindSimilarTrack}
             currentTrackA={loadedTrackA}
             currentTrackB={loadedTrackB}
             activeDownloads={activeSyncs[selectedPlaylistId]?.activeDownloads}

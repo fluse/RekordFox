@@ -1,11 +1,22 @@
 import MusicTempo from 'music-tempo'
 
-// Convert a file path to the custom media URL
+// Convert a file path to the custom media URL. Some Track objects (e.g. a Discover preview
+// that streams from YouTube rather than a downloaded file) already carry a directly-usable
+// media://... URL in `filepath` — pass those through unchanged instead of treating them as a
+// raw filesystem path.
 export function getMediaUrl(filepath: string): string {
+  if (/^(https?:|media:)/i.test(filepath)) return filepath
+
   const normalizedPath = filepath.replace(/\\/g, '/')
   const cleanPath = normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath
   const encodedPath = cleanPath.split('/').map(encodeURIComponent).join('/')
   return `media://local/${encodedPath}`
+}
+
+// Build the URL for previewing a YouTube video's audio directly, without downloading it first —
+// the main process resolves and proxies the actual stream (see media.ts).
+export function getYoutubeStreamUrl(videoId: string): string {
+  return `media://youtube/${encodeURIComponent(videoId)}`
 }
 
 // Decode audio file and compute BPM using music-tempo

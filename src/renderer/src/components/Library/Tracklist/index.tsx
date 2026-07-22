@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink } from 'lucide-react'
+import { Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink, Compass } from 'lucide-react'
 import type { Playlist, Track } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import { useTrackScanner } from '@renderer/hooks/useTrackScanner'
@@ -35,6 +35,7 @@ interface TracklistProps {
   onUpdateKey: (trackId: string, key: string) => void
   onUpdateRating: (trackId: string, rating: number) => void
   onReorderTracks: (playlistId: string, trackIds: string[]) => Promise<void>
+  onFindSimilarTrack?: (track: Track) => void
   currentTrackA: Track | null
   currentTrackB: Track | null
   activeDownloads?: Record<string, { trackId: string; title: string; percent: number }>
@@ -50,6 +51,7 @@ export default function Tracklist({
   onUpdateKey,
   onUpdateRating,
   onReorderTracks,
+  onFindSimilarTrack,
   currentTrackA,
   currentTrackB,
   activeDownloads
@@ -258,6 +260,16 @@ export default function Tracklist({
               onClick: () => openYoutubeVideo(contextMenu.track.id),
               divider: true
             },
+            ...(onFindSimilarTrack
+              ? [
+                  {
+                    key: 'findSimilar',
+                    label: t('contextMenu.findSimilar'),
+                    icon: <Compass className="h-3.5 w-3.5" />,
+                    onClick: () => onFindSimilarTrack(contextMenu.track)
+                  }
+                ]
+              : []),
             {
               key: 'searchDiscogs',
               label: t('contextMenu.searchDiscogs'),

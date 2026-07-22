@@ -144,6 +144,52 @@ export function getPlaylistInfo(playlistUrl: string): Promise<YtPlaylist> {
   })
 }
 
+interface CachedStreamUrl {
+  url: string
+  expiresAt: number
+}
+
+// Signed googlevideo URLs stay valid for hours, but resolving one via yt-dlp takes a couple of
+// seconds — an <audio> element issues several requests per playback (initial + range requests
+// while buffering/seeking), so we cache per video for a while to keep preview playback snappy.
+const streamUrlCache = new Map<string, CachedStreamUrl>()
+const STREAM_URL_CACHE_TTL_MS = 20 * 60 * 1000
+
+// Resolves a direct, playable audio stream URL for a video without downloading it. Used by the
+// Discover feature to let users preview a recommended track before adding it to a playlist.
+export function getStreamUrl(videoId: string): Promise<string> {
+  const cached = streamUrlCache.get(videoId)
+  if (cached && cached.expiresAt > Date.now()) {
+    return Promise.resolve(cached.url)
+  }
+
+  return new Promise((resolve, reject) => {
+    void (async (): Promise<void> => {
+      try {
+        const ytdlpPath = await ensureYtdlp()
+        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
+        const args = ['--no-update', '--no-warnings', '-f', 'bestaudio', '-g', videoUrl]
+
+        execFile(ytdlpPath, args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+          if (error) {
+            return reject(
+              new Error(`yt-dlp failed to resolve stream URL: ${error.message}. Stderr: ${stderr}`)
+            )
+          }
+          const url = stdout.trim().split('\n')[0]
+          if (!url) {
+            return reject(new Error('yt-dlp returned no stream URL.'))
+          }
+          streamUrlCache.set(videoId, { url, expiresAt: Date.now() + STREAM_URL_CACHE_TTL_MS })
+          resolve(url)
+        })
+      } catch (e) {
+        reject(e)
+      }
+    })()
+  })
+}
+
 // Download a track as MP3 and write metadata
 export function downloadTrack(
   videoId: string,

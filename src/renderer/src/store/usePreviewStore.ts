@@ -47,6 +47,7 @@ interface PreviewState {
   setHistoryLimit: (limit: number) => void
   playTrack: (track: Track) => void
   playNow: (track: Track, contextTracks?: Track[]) => void
+  playStreamPreview: (track: Track) => void
   stopTrack: () => void
   setIsPlaying: (isPlaying: boolean) => void
   addToQueue: (track: Track) => void
@@ -125,6 +126,19 @@ export const usePreviewStore = create<PreviewState>()(
           set({ ...setNowPlaying(track), originContext })
           if (get().smartMode) applySmartOrder()
         },
+
+        // Plays a track that isn't part of the library (e.g. a Discover recommendation
+        // streamed directly from YouTube before it's been downloaded) through the same
+        // player/UI as everything else, but deliberately skips history and any queue
+        // context — it's a standalone audition, not something to resume/skip through or
+        // drag into a Deck.
+        playStreamPreview: (track) =>
+          set({
+            previewTrack: track,
+            isPlaying: true,
+            originContext: null,
+            resumePosition: 0
+          }),
 
         stopTrack: () => set({ previewTrack: null, isPlaying: false, resumePosition: 0 }),
 
