@@ -222,6 +222,24 @@ const api = {
 
   logError: (message: string) => ipcRenderer.send('log-error', message),
 
+  sendPlayerState: (state: {
+    title: string
+    artist: string
+    isPlaying: boolean
+    hasTrack: boolean
+  }): void => {
+    ipcRenderer.send('player:state-changed', state)
+  },
+
+  onTrayControl: (callback: (action: 'play-pause' | 'next' | 'previous') => void): (() => void) => {
+    const subscription = (_event: unknown, action: 'play-pause' | 'next' | 'previous'): void =>
+      callback(action)
+    ipcRenderer.on('tray:control', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('tray:control', subscription)
+    }
+  },
+
   windowMinimize: () => ipcRenderer.send('window:minimize'),
   windowMaximizeToggle: () => ipcRenderer.send('window:maximize-toggle'),
   windowClose: () => ipcRenderer.send('window:close'),

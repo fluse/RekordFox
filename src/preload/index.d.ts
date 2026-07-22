@@ -120,6 +120,13 @@ declare global {
         result: { peaks: WaveformPeak[]; rms: WaveformPeak[] }
       ) => void
       logError: (message: string) => void
+      sendPlayerState: (state: {
+        title: string
+        artist: string
+        isPlaying: boolean
+        hasTrack: boolean
+      }) => void
+      onTrayControl: (callback: (action: 'play-pause' | 'next' | 'previous') => void) => () => void
       windowMinimize: () => void
       windowMaximizeToggle: () => void
       windowClose: () => void

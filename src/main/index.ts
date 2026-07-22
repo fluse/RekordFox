@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow, ipcMain, protocol, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, protocol, dialog, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import trayIconAsset from '../../resources/trayIconTemplate.png?asset'
 
 import {
   initDb,
@@ -58,6 +59,81 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+
+interface TrayPlayerState {
+  title: string
+  artist: string
+  isPlaying: boolean
+  hasTrack: boolean
+}
+
+let trayPlayerState: TrayPlayerState = {
+  title: '',
+  artist: '',
+  isPlaying: false,
+  hasTrack: false
+}
+
+function sendTrayControl(action: 'play-pause' | 'next' | 'previous'): void {
+  mainWindow?.webContents.send('tray:control', action)
+}
+
+function updateTrayMenu(): void {
+  if (!tray) return
+  const { title, artist, isPlaying, hasTrack } = trayPlayerState
+
+  const menu = Menu.buildFromTemplate([
+    {
+      label: hasTrack ? `${title} — ${artist}` : 'Kein Track wird abgespielt',
+      enabled: false
+    },
+    { type: 'separator' },
+    {
+      label: isPlaying ? 'Pause' : 'Abspielen',
+      enabled: hasTrack,
+      click: () => sendTrayControl('play-pause')
+    },
+    {
+      label: 'Zurück',
+      enabled: hasTrack,
+      click: () => sendTrayControl('previous')
+    },
+    {
+      label: 'Weiter',
+      enabled: hasTrack,
+      click: () => sendTrayControl('next')
+    },
+    { type: 'separator' },
+    {
+      label: 'RekordFox anzeigen',
+      click: () => {
+        if (!mainWindow) return
+        mainWindow.show()
+        mainWindow.focus()
+      }
+    },
+    { label: 'Beenden', click: () => app.quit() }
+  ])
+
+  tray.setContextMenu(menu)
+  tray.setToolTip(hasTrack ? `${title} — ${artist}` : 'RekordFox')
+}
+
+function createTray(): void {
+  const trayIcon = nativeImage.createFromPath(trayIconAsset).resize({ width: 18, height: 18 })
+  trayIcon.setTemplateImage(true)
+  tray = new Tray(trayIcon)
+  tray.on('click', () => {
+    if (!mainWindow) return
+    if (mainWindow.isVisible()) {
+      mainWindow.focus()
+    } else {
+      mainWindow.show()
+    }
+  })
+  updateTrayMenu()
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -457,7 +533,13 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('window:is-maximized', () => mainWindow?.isMaximized() ?? false)
 
+  ipcMain.on('player:state-changed', (_, state: TrayPlayerState) => {
+    trayPlayerState = state
+    updateTrayMenu()
+  })
+
   createWindow()
+  createTray()
 
   // Start Background Sync Scheduler
   if (mainWindow) {

@@ -1,7 +1,5 @@
 Act as an expert TypeScript/Node.js Developer. 
 
-Ich entwickle eine App namens "RekordFox". Die App erlaubt es Nutzern, YouTube-Playlisten hinzuzufügen, diese zeitlich immer wieder zu synchronisieren und die Audio-Spuren als MP3s lokal auf der Platte zu speichern. 
-
 Ich möchte nun ein "Entdecken"-Feature einbauen. Die Idee: Der Nutzer wählt eine seiner bestehenden Playlisten (die aus YouTube-Video-IDs besteht) aus, und die App schlägt musikalisch passende, neue Tracks vor. Klickt der Nutzer auf "Hinzufügen", wird die neue Video-ID einfach in die bestehende Playlist-Konfiguration geschrieben und beim nächsten Sync als MP3 heruntergeladen.
 
 **Die technische Strategie:**

@@ -5,6 +5,7 @@ import { getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
 import { useAudioPlayer } from './useAudioPlayer'
 import { useAppShortcuts } from './useAppShortcuts'
+import { useTraySync } from './useTraySync'
 import { useDraggablePosition } from './useDraggablePosition'
 import { useResizableHeight } from './useResizableHeight'
 import { useResizableWidth } from './useResizableWidth'
@@ -93,6 +94,14 @@ export default function PreviewPlayer({
     seekTo,
     toggleQueuePanel,
     toggleDockMode
+  })
+
+  useTraySync({
+    previewTrack,
+    isPlaying,
+    setIsPlaying,
+    advance,
+    previous: handlePrevious
   })
 
   if (!previewTrack) return null
