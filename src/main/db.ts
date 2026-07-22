@@ -8,7 +8,8 @@ import {
   copyFileSync,
   unlinkSync,
   statSync,
-  renameSync
+  renameSync,
+  readdirSync
 } from 'fs'
 import nodeId3 from 'node-id3'
 import { writeRekordboxXml } from './export/rekordbox/rekordboxXmlExporter'
@@ -370,6 +371,43 @@ export function getDownloadsDir(): string {
 
 export function getCoversDir(): string {
   return coversDir
+}
+
+export interface StorageStats {
+  downloadsSize: number
+  downloadsCount: number
+  cacheSize: number
+  cacheCount: number
+}
+
+export function getStorageStats(): StorageStats {
+  let downloadsSize = 0
+  let downloadsCount = 0
+  for (const track of dbData.tracks) {
+    if (track.filesize) {
+      downloadsSize += track.filesize
+      downloadsCount++
+    }
+  }
+
+  let cacheSize = 0
+  let cacheCount = 0
+  try {
+    if (existsSync(coversDir)) {
+      for (const file of readdirSync(coversDir)) {
+        try {
+          cacheSize += statSync(join(coversDir, file)).size
+          cacheCount++
+        } catch {
+          // skip unreadable file
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Failed to compute cache size:', e)
+  }
+
+  return { downloadsSize, downloadsCount, cacheSize, cacheCount }
 }
 
 export function getPlaylists(): Playlist[] {

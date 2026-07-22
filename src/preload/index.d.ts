@@ -1,5 +1,5 @@
 import type { ElectronAPI } from '@electron-toolkit/preload'
-import { Playlist, Track, AppSettings } from '@main/db'
+import { Playlist, Track, AppSettings, StorageStats } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 import type { RecommendedTrack } from '@main/explore'
 
@@ -50,6 +50,7 @@ declare global {
       selectXmlFile: () => Promise<string | null>
       exportRekordboxXml: () => Promise<{ success: boolean; error?: string }>
       openPath: (path: string) => Promise<{ success: boolean; error?: string }>
+      getStorageStats: () => Promise<StorageStats>
       onRenamingStatus: (
         callback: (data: { active: boolean; current: number; total: number }) => void
       ) => () => void

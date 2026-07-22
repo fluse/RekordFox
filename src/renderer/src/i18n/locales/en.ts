@@ -68,6 +68,13 @@ export const en = {
   'settings.workersCount': '{{count}} Workers',
   'settings.concurrentDownloadsHelp':
     'Sets how many tracks of a playlist are downloaded simultaneously (1 to 12).',
+  'settings.storageSectionLabel': 'Storage',
+  'settings.storageDownloadsLabel': 'Downloaded Tracks',
+  'settings.storageDownloadsValue': '{{count}} tracks · {{size}}',
+  'settings.storageCacheLabel': 'Cache (cover art)',
+  'settings.storageCacheValue': '{{size}}',
+  'settings.storageHelp':
+    'Shows how much disk space your downloaded tracks and the cover art cache currently use.',
   'settings.languageLabel': 'Language',
   'settings.close': 'Close',
   'settings.errorChangePath': 'Error changing storage location.',

@@ -31,6 +31,7 @@ const api = {
   selectXmlFile: () => ipcRenderer.invoke('dialog:select-xml-file'),
   exportRekordboxXml: () => ipcRenderer.invoke('rekordbox:export-xml'),
   openPath: (path: string) => ipcRenderer.invoke('settings:open-path', path),
+  getStorageStats: () => ipcRenderer.invoke('settings:get-storage-stats'),
 
   onRenamingStatus: (
     callback: (data: { active: boolean; current: number; total: number }) => void

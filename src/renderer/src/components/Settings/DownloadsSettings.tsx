@@ -1,12 +1,24 @@
-import React, { useState } from 'react'
-import { Folder, FolderOpen, FileCode, Trash2, Loader2 } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Folder, FolderOpen, FileCode, Trash2, Loader2, HardDrive } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
 import { Slider } from '@renderer/components/ui/slider'
-import type { AppSettings } from '@main/db'
+import type { AppSettings, StorageStats } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return '0 MB'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unitIndex = 0
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex++
+  }
+  return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
 
 interface DownloadsSettingsProps {
   settings: AppSettings
@@ -24,6 +36,11 @@ export default function DownloadsSettings({
   const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [maxWorkers, setMaxWorkers] = useState(settings.maxWorkers || 3)
+  const [storageStats, setStorageStats] = useState<StorageStats | null>(null)
+
+  useEffect(() => {
+    window.api.getStorageStats().then(setStorageStats)
+  }, [])
 
   // Keeps the slider's local drag state in sync when settings.maxWorkers
   // changes from outside (e.g. still loading on mount), without a useEffect.
@@ -160,6 +177,37 @@ export default function DownloadsSettings({
             <p className="text-[10px] text-muted-foreground">{t('settings.downloadPathHelp')}</p>
           )}
         </div>
+      </div>
+
+      <div>
+        <Label className="mb-2 block text-sm font-medium text-muted-foreground">
+          {t('settings.storageSectionLabel')}
+        </Label>
+        <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <HardDrive className="h-4 w-4" />
+              {t('settings.storageDownloadsLabel')}
+            </span>
+            <span className="font-medium">
+              {storageStats
+                ? t('settings.storageDownloadsValue', {
+                    count: storageStats.downloadsCount,
+                    size: formatBytes(storageStats.downloadsSize)
+                  })
+                : '…'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t('settings.storageCacheLabel')}</span>
+            <span className="font-medium">
+              {storageStats
+                ? t('settings.storageCacheValue', { size: formatBytes(storageStats.cacheSize) })
+                : '…'}
+            </span>
+          </div>
+        </div>
+        <p className="mt-2 text-[10px] text-muted-foreground">{t('settings.storageHelp')}</p>
       </div>
 
       <div>

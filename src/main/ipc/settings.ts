@@ -4,6 +4,7 @@ import {
   updateSettings,
   renameAllTracksFilenameAsync,
   migrateDownloadsFolder,
+  getStorageStats,
   AppSettings
 } from '../db'
 import { isAnyPlaylistSyncing } from '../sync'
@@ -74,4 +75,8 @@ export function registerSettingsIpc(): void {
       return {}
     })
   )
+
+  ipcMain.handle('settings:get-storage-stats', () => {
+    return getStorageStats()
+  })
 }

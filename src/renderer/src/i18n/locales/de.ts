@@ -70,6 +70,13 @@ export const de = {
   'settings.workersCount': '{{count}} Worker',
   'settings.concurrentDownloadsHelp':
     'Legt fest, wie viele Tracks einer Playliste gleichzeitig heruntergeladen werden (1 bis 12).',
+  'settings.storageSectionLabel': 'Speicherplatz',
+  'settings.storageDownloadsLabel': 'Heruntergeladene Tracks',
+  'settings.storageDownloadsValue': '{{count}} Tracks · {{size}}',
+  'settings.storageCacheLabel': 'Cache (Cover-Bilder)',
+  'settings.storageCacheValue': '{{size}}',
+  'settings.storageHelp':
+    'Zeigt, wie viel Speicherplatz deine heruntergeladenen Tracks und der Cover-Bild-Cache aktuell belegen.',
   'settings.languageLabel': 'Sprache',
   'settings.close': 'Schließen',
   'settings.errorChangePath': 'Fehler beim Ändern des Speicherorts.',

@@ -68,6 +68,13 @@ export const es = {
   'settings.workersCount': '{{count}} Workers',
   'settings.concurrentDownloadsHelp':
     'Establece cuántos temas de una playlist se descargan a la vez (1 a 12).',
+  'settings.storageSectionLabel': 'Almacenamiento',
+  'settings.storageDownloadsLabel': 'Temas descargados',
+  'settings.storageDownloadsValue': '{{count}} temas · {{size}}',
+  'settings.storageCacheLabel': 'Caché (portadas)',
+  'settings.storageCacheValue': '{{size}}',
+  'settings.storageHelp':
+    'Muestra cuánto espacio en disco ocupan actualmente tus temas descargados y la caché de portadas.',
   'settings.languageLabel': 'Idioma',
   'settings.close': 'Cerrar',
   'settings.errorChangePath': 'Error al cambiar la carpeta.',

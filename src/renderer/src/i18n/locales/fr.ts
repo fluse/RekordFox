@@ -70,6 +70,13 @@ export const fr = {
   'settings.workersCount': '{{count}} Workers',
   'settings.concurrentDownloadsHelp':
     "Définit le nombre de pistes d'une playlist téléchargées simultanément (1 à 12).",
+  'settings.storageSectionLabel': 'Stockage',
+  'settings.storageDownloadsLabel': 'Titres téléchargés',
+  'settings.storageDownloadsValue': '{{count}} titres · {{size}}',
+  'settings.storageCacheLabel': 'Cache (pochettes)',
+  'settings.storageCacheValue': '{{size}}',
+  'settings.storageHelp':
+    "Indique l'espace disque actuellement utilisé par vos titres téléchargés et le cache des pochettes.",
   'settings.languageLabel': 'Langue',
   'settings.close': 'Fermer',
   'settings.errorChangePath': "Erreur lors de la modification de l'emplacement.",
