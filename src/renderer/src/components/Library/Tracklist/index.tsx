@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Play, ListPlus, Search, Disc3, SquarePlay } from 'lucide-react'
+import { Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink } from 'lucide-react'
 import type { Playlist, Track } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import { useTrackScanner } from '@renderer/hooks/useTrackScanner'
@@ -8,7 +8,8 @@ import { isTrackPlayable } from '@renderer/utils/harmonicChaining'
 import {
   openDiscogsArtistSearch,
   openBandcampArtistSearch,
-  openYoutubeArtistSearch
+  openYoutubeArtistSearch,
+  openYoutubeVideo
 } from '@renderer/utils/artistSearch'
 import { UsbExportModal, PioneerExportModal } from '@renderer/components/Export'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
@@ -251,11 +252,17 @@ export default function Tracklist({
               onClick: () => handleAddToQueue(contextMenu.track)
             },
             {
+              key: 'openYoutubeVideo',
+              label: t('contextMenu.openYoutubeVideo'),
+              icon: <ExternalLink className="h-3.5 w-3.5" />,
+              onClick: () => openYoutubeVideo(contextMenu.track.id),
+              divider: true
+            },
+            {
               key: 'searchDiscogs',
               label: t('contextMenu.searchDiscogs'),
               icon: <Search className="h-3.5 w-3.5" />,
-              onClick: () => openDiscogsArtistSearch(contextMenu.track.artist),
-              divider: true
+              onClick: () => openDiscogsArtistSearch(contextMenu.track.artist)
             },
             {
               key: 'searchBandcamp',

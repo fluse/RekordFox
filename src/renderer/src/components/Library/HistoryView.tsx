@@ -1,12 +1,13 @@
 import React from 'react'
-import { Music, Play, ListPlus, Search, Disc3, SquarePlay } from 'lucide-react'
+import { Music, Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink } from 'lucide-react'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { useLanguage } from '@renderer/i18n'
 import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import {
   openDiscogsArtistSearch,
   openBandcampArtistSearch,
-  openYoutubeArtistSearch
+  openYoutubeArtistSearch,
+  openYoutubeVideo
 } from '@renderer/utils/artistSearch'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
 import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
@@ -93,11 +94,17 @@ export default function HistoryView(): React.JSX.Element {
               onClick: () => addToQueue(contextMenu.track)
             },
             {
+              key: 'openYoutubeVideo',
+              label: t('contextMenu.openYoutubeVideo'),
+              icon: <ExternalLink className="h-3.5 w-3.5" />,
+              onClick: () => openYoutubeVideo(contextMenu.track.id),
+              divider: true
+            },
+            {
               key: 'searchDiscogs',
               label: t('contextMenu.searchDiscogs'),
               icon: <Search className="h-3.5 w-3.5" />,
-              onClick: () => openDiscogsArtistSearch(contextMenu.track.artist),
-              divider: true
+              onClick: () => openDiscogsArtistSearch(contextMenu.track.artist)
             },
             {
               key: 'searchBandcamp',

@@ -218,6 +218,7 @@ export const es = {
   'contextMenu.searchDiscogs': 'Buscar artista en Discogs',
   'contextMenu.searchBandcamp': 'Buscar artista en Bandcamp',
   'contextMenu.searchYoutube': 'Buscar artista en YouTube',
+  'contextMenu.openYoutubeVideo': 'Abrir vídeo de YouTube',
 
   // History
   'sidebar.history': 'Recientes',

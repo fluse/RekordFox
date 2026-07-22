@@ -17,3 +17,7 @@ export function openYoutubeArtistSearch(artist: string): void {
   const url = `https://www.youtube.com/results?search_query=${encodeSpaceAsPlus(artist)}`
   window.open(url, '_blank')
 }
+
+export function openYoutubeVideo(videoId: string): void {
+  window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank')
+}

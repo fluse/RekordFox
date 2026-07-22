@@ -247,7 +247,8 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
           const tags: Parameters<typeof nodeId3.write>[0] = {
             title,
             artist,
-            album: ytPlaylist.title
+            album: ytPlaylist.title,
+            audioSourceUrl: `https://www.youtube.com/watch?v=${ytTrack.id}`
           }
           if (existsSync(coverPath)) {
             tags.image = {

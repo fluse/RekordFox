@@ -222,6 +222,7 @@ export const fr = {
   'contextMenu.searchDiscogs': "Rechercher l'artiste sur Discogs",
   'contextMenu.searchBandcamp': "Rechercher l'artiste sur Bandcamp",
   'contextMenu.searchYoutube': "Rechercher l'artiste sur YouTube",
+  'contextMenu.openYoutubeVideo': 'Ouvrir la vidéo YouTube',
 
   // History
   'sidebar.history': 'Écoutés récemment',

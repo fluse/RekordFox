@@ -267,6 +267,19 @@ export function initDb(): void {
                 }
               }
 
+              // 1b. If the YouTube source URL is missing from ID3 tags, update the tag
+              const youtubeUrl = `https://www.youtube.com/watch?v=${track.id}`
+              if (currentTags && currentTags.audioSourceUrl !== youtubeUrl) {
+                try {
+                  nodeId3.update({ audioSourceUrl: youtubeUrl }, track.filepath)
+                } catch (urlErr) {
+                  console.error(
+                    `Failed to update YouTube URL ID3 tag for track ${track.id}:`,
+                    urlErr
+                  )
+                }
+              }
+
               // 2. If cover image is missing, write the whole set of tags
               if (!currentTags || !currentTags.image) {
                 if (existsSync(track.coverPath)) {
@@ -277,6 +290,7 @@ export function initDb(): void {
                     artist: track.artist,
                     album: albumName,
                     bpm: track.bpm > 0 ? track.bpm.toString() : undefined,
+                    audioSourceUrl: youtubeUrl,
                     popularimeter:
                       track.rating > 0
                         ? {

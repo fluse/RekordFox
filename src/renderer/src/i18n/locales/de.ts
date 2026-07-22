@@ -219,6 +219,7 @@ export const de = {
   'contextMenu.searchDiscogs': 'Interpret auf Discogs suchen',
   'contextMenu.searchBandcamp': 'Interpret auf Bandcamp suchen',
   'contextMenu.searchYoutube': 'Interpret auf YouTube suchen',
+  'contextMenu.openYoutubeVideo': 'YouTube Video öffnen',
 
   // History
   'sidebar.history': 'Zuletzt abgespielt',

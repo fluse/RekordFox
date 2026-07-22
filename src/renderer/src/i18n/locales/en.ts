@@ -217,6 +217,7 @@ export const en = {
   'contextMenu.searchDiscogs': 'Search Artist on Discogs',
   'contextMenu.searchBandcamp': 'Search Artist on Bandcamp',
   'contextMenu.searchYoutube': 'Search Artist on YouTube',
+  'contextMenu.openYoutubeVideo': 'Open YouTube Video',
 
   // History
   'sidebar.history': 'Recently Played',
