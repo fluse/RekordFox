@@ -206,9 +206,11 @@ export async function importYoutubePlaylist(
   addPlaylist(newPlaylist)
   win.webContents.send('sync-status-changed', newPlaylist.id, 'syncing')
 
+  let items: RemotePlaylistItem[]
+  let durations: Map<string, number>
   try {
-    const items = await fetchAllPlaylistItems(youtube, remotePlaylistId)
-    const durations = await fetchDurations(
+    items = await fetchAllPlaylistItems(youtube, remotePlaylistId)
+    durations = await fetchDurations(
       youtube,
       items.map((i) => i.videoId)
     )
@@ -237,7 +239,33 @@ export async function importYoutubePlaylist(
       })
     }
     win.webContents.send('sync-status-changed', newPlaylist.id, 'syncing')
+  } catch (err) {
+    updatePlaylistStatus(remotePlaylistId, 'error')
+    win.webContents.send('sync-status-changed', remotePlaylistId, 'error')
+    throw err
+  }
 
+  // The playlist and its full (placeholder) tracklist already exist — return now so the
+  // renderer can show them immediately, same as the "add by URL" flow in ipc/playlists.ts.
+  // Track audio downloads continue in the background and report via the same
+  // sync-status-changed/download-progress events the renderer already listens for.
+  downloadYoutubePlaylistTracks(newPlaylist, remoteTitle, items, durations, win).catch((err) => {
+    console.error(`Failed to download tracks for YouTube OAuth playlist ${remotePlaylistId}:`, err)
+  })
+
+  return newPlaylist
+}
+
+async function downloadYoutubePlaylistTracks(
+  newPlaylist: Playlist,
+  remoteTitle: string,
+  items: RemotePlaylistItem[],
+  durations: Map<string, number>,
+  win: BrowserWindow
+): Promise<void> {
+  const remotePlaylistId = newPlaylist.id
+
+  try {
     const settings = getSettings()
     const maxWorkers = Math.max(1, Math.min(12, settings.maxWorkers || 1))
     const downloadsDir = getDownloadsDir()
@@ -367,8 +395,6 @@ export async function importYoutubePlaylist(
     const now = new Date().toISOString()
     updatePlaylistStatus(remotePlaylistId, 'idle', now)
     win.webContents.send('sync-status-changed', remotePlaylistId, 'idle', now)
-
-    return { ...newPlaylist, syncStatus: 'idle', lastSync: now }
   } catch (err) {
     updatePlaylistStatus(remotePlaylistId, 'error')
     win.webContents.send('sync-status-changed', remotePlaylistId, 'error')

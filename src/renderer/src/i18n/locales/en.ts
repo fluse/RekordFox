@@ -168,6 +168,7 @@ export const en = {
   'connections.disconnectButton': 'Disconnect',
   'connections.noAccounts': 'No YouTube account connected yet.',
   'connections.importPlaylistsTitle': 'Import Playlist',
+  'connections.loadPlaylistsButton': 'Refresh',
   'connections.importButton': 'Import',
   'connections.importing': 'Importing playlist...',
   'connections.noRemotePlaylists': 'No playlists found in this YouTube account.',
@@ -196,15 +197,18 @@ export const en = {
     'Open the YouTube Data API v3 in your project\'s API library and click "Enable".',
   'oauthGuide.step3.title': '3. Set up the OAuth consent screen',
   'oauthGuide.step3.description':
-    'Choose "External" as the user type, give it an app name and your email as contact. Under "Scopes", add the .../auth/youtube scope and save.',
-  'oauthGuide.step4.title': '4. Important: add yourself as a test user',
+    'Choose "External" as the user type, give it an app name and your email as contact. Save and continue to the "Scopes" section.',
+  'oauthGuide.step4.title': '4. Add the required scopes',
   'oauthGuide.step4.description':
-    'Since the app isn\'t verified by Google, sign-in only works for accounts explicitly listed as "Test users". On the same page, add your own Google email under "Test users" — otherwise sign-in will fail with "This app has not been verified".',
-  'oauthGuide.step5.title': '5. Create the OAuth Client ID',
+    'Click "Add or remove scopes" and enable exactly these three scopes:\n\n• .../auth/userinfo.email (non-sensitive)\n• .../auth/userinfo.profile (non-sensitive)\n• .../auth/youtube (sensitive, "Manage your YouTube account")\n\nOther YouTube scopes such as readonly, force-ssl, or download aren\'t needed by RekordFox — leave them unchecked. Click "Update", then save.',
+  'oauthGuide.step5.title': '5. Important: add yourself as a test user',
   'oauthGuide.step5.description':
-    'Click "Create Credentials" → "OAuth client ID". Make sure to choose "Desktop app" as the application type — only this type lets RekordFox sign in locally without a fixed redirect URI.',
-  'oauthGuide.step6.title': '6. Copy the Client ID & Secret',
+    'Since the app isn\'t verified by Google, sign-in only works for accounts explicitly listed as "Test users". On the same page, add your own Google email under "Test users" — otherwise sign-in will fail with "This app has not been verified".',
+  'oauthGuide.step6.title': '6. Create the OAuth Client ID',
   'oauthGuide.step6.description':
+    'Click "Create Credentials" → "OAuth client ID". Make sure to choose "Desktop app" as the application type — only this type lets RekordFox sign in locally without a fixed redirect URI.',
+  'oauthGuide.step7.title': '7. Copy the Client ID & Secret',
+  'oauthGuide.step7.description':
     'Google now shows you the Client ID and Client Secret. Copy both values and enter them above in RekordFox.',
 
   // YouTube Onboarding Modal

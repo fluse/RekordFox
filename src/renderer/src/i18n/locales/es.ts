@@ -169,6 +169,7 @@ export const es = {
   'connections.disconnectButton': 'Desconectar',
   'connections.noAccounts': 'Todavía no hay ninguna cuenta de YouTube conectada.',
   'connections.importPlaylistsTitle': 'Importar playlist',
+  'connections.loadPlaylistsButton': 'Actualizar',
   'connections.importButton': 'Importar',
   'connections.importing': 'Importando playlist...',
   'connections.noRemotePlaylists': 'No se encontraron playlists en esta cuenta de YouTube.',
@@ -197,15 +198,18 @@ export const es = {
     'Abre la API de YouTube Data v3 en la biblioteca de API de tu proyecto y haz clic en "Habilitar".',
   'oauthGuide.step3.title': '3. Configurar la pantalla de consentimiento de OAuth',
   'oauthGuide.step3.description':
-    'Elige "Externo" como tipo de usuario, indica un nombre de aplicación y tu correo como contacto. En "Permisos" (Scopes), añade el permiso .../auth/youtube y guarda.',
-  'oauthGuide.step4.title': '4. Importante: añádete como usuario de prueba',
+    'Elige "Externo" como tipo de usuario, indica un nombre de aplicación y tu correo como contacto. Guarda y continúa a la sección "Permisos" (Scopes).',
+  'oauthGuide.step4.title': '4. Añadir los permisos necesarios (Scopes)',
   'oauthGuide.step4.description':
-    'Como la app no está verificada por Google, el inicio de sesión solo funciona con cuentas indicadas explícitamente como "Usuarios de prueba". En la misma página, añade tu propio correo de Google en "Usuarios de prueba" — si no, el inicio de sesión fallará con "Esta app no ha sido verificada".',
-  'oauthGuide.step5.title': '5. Crear el ID de cliente OAuth',
+    'Haz clic en "Añadir o quitar permisos" y activa exactamente estos tres permisos:\n\n• .../auth/userinfo.email (no sensible)\n• .../auth/userinfo.profile (no sensible)\n• .../auth/youtube (sensible, "Administrar tu cuenta de YouTube")\n\nOtros permisos de YouTube como readonly, force-ssl o download no son necesarios para RekordFox — déjalos sin marcar. Haz clic en "Actualizar" y luego guarda.',
+  'oauthGuide.step5.title': '5. Importante: añádete como usuario de prueba',
   'oauthGuide.step5.description':
-    'Haz clic en "Crear credenciales" → "ID de cliente de OAuth". Elige "Aplicación de escritorio" como tipo de aplicación — solo este tipo permite que RekordFox inicie sesión localmente sin un URI de redirección fijo.',
-  'oauthGuide.step6.title': '6. Copiar el ID de cliente y el secreto',
+    'Como la app no está verificada por Google, el inicio de sesión solo funciona con cuentas indicadas explícitamente como "Usuarios de prueba". En la misma página, añade tu propio correo de Google en "Usuarios de prueba" — si no, el inicio de sesión fallará con "Esta app no ha sido verificada".',
+  'oauthGuide.step6.title': '6. Crear el ID de cliente OAuth',
   'oauthGuide.step6.description':
+    'Haz clic en "Crear credenciales" → "ID de cliente de OAuth". Elige "Aplicación de escritorio" como tipo de aplicación — solo este tipo permite que RekordFox inicie sesión localmente sin un URI de redirección fijo.',
+  'oauthGuide.step7.title': '7. Copiar el ID de cliente y el secreto',
+  'oauthGuide.step7.description':
     'Google te mostrará ahora el ID de cliente y el secreto de cliente. Copia ambos valores e introdúcelos arriba en RekordFox.',
 
   // YouTube Onboarding Modal

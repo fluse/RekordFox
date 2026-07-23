@@ -173,6 +173,7 @@ export const fr = {
   'connections.disconnectButton': 'Déconnecter',
   'connections.noAccounts': 'Aucun compte YouTube connecté pour le moment.',
   'connections.importPlaylistsTitle': 'Importer une playlist',
+  'connections.loadPlaylistsButton': 'Actualiser',
   'connections.importButton': 'Importer',
   'connections.importing': 'Importation de la playlist...',
   'connections.noRemotePlaylists': 'Aucune playlist trouvée dans ce compte YouTube.',
@@ -201,15 +202,18 @@ export const fr = {
     "Ouvrez l'API YouTube Data v3 dans la bibliothèque d'API de votre projet et cliquez sur « Activer ».",
   'oauthGuide.step3.title': "3. Configurer l'écran de consentement OAuth",
   'oauthGuide.step3.description':
-    "Choisissez « Externe » comme type d'utilisateur, donnez un nom à l'application et votre e-mail comme contact. Sous « Champs d'application » (Scopes), ajoutez le champ .../auth/youtube et enregistrez.",
-  'oauthGuide.step4.title': '4. Important : ajoutez-vous comme testeur',
+    "Choisissez « Externe » comme type d'utilisateur, donnez un nom à l'application et votre e-mail comme contact. Enregistrez et passez à la section « Champs d'application » (Scopes).",
+  'oauthGuide.step4.title': '4. Ajouter les champs requis (Scopes)',
   'oauthGuide.step4.description':
-    "Comme l'application n'est pas vérifiée par Google, la connexion ne fonctionne que pour les comptes explicitement listés comme « Utilisateurs test ». Sur la même page, ajoutez votre propre adresse Gmail sous « Utilisateurs test » — sinon la connexion échouera avec « Cette application n'a pas été vérifiée ».",
-  'oauthGuide.step5.title': "5. Créer l'ID client OAuth",
+    "Cliquez sur « Ajouter ou supprimer des champs d'application » et activez exactement ces trois champs :\n\n• .../auth/userinfo.email (non sensible)\n• .../auth/userinfo.profile (non sensible)\n• .../auth/youtube (sensible, « Gérer votre compte YouTube »)\n\nLes autres champs YouTube comme readonly, force-ssl ou download ne sont pas nécessaires pour RekordFox — laissez-les décochés. Cliquez ensuite sur « Mettre à jour », puis enregistrez.",
+  'oauthGuide.step5.title': '5. Important : ajoutez-vous comme testeur',
   'oauthGuide.step5.description':
-    "Cliquez sur « Créer des identifiants » → « ID client OAuth ». Choisissez bien « Application de bureau » comme type d'application — seul ce type permet à RekordFox de se connecter localement sans URI de redirection fixe.",
-  'oauthGuide.step6.title': "6. Copier l'ID client et le secret",
+    "Comme l'application n'est pas vérifiée par Google, la connexion ne fonctionne que pour les comptes explicitement listés comme « Utilisateurs test ». Sur la même page, ajoutez votre propre adresse Gmail sous « Utilisateurs test » — sinon la connexion échouera avec « Cette application n'a pas été vérifiée ».",
+  'oauthGuide.step6.title': "6. Créer l'ID client OAuth",
   'oauthGuide.step6.description':
+    "Cliquez sur « Créer des identifiants » → « ID client OAuth ». Choisissez bien « Application de bureau » comme type d'application — seul ce type permet à RekordFox de se connecter localement sans URI de redirection fixe.",
+  'oauthGuide.step7.title': "7. Copier l'ID client et le secret",
+  'oauthGuide.step7.description':
     "Google affiche maintenant l'ID client et le secret client. Copiez les deux valeurs et saisissez-les ci-dessus dans RekordFox.",
 
   // YouTube Onboarding Modal

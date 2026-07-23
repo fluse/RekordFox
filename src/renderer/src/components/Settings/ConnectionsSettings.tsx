@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Loader2,
   Trash2,
@@ -24,6 +24,23 @@ import SettingsSection from './SettingsSection'
 
 type PublicOAuthAccount = Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'>
 
+const REMOTE_PLAYLISTS_CACHE_PREFIX = 'rekordfox.remoteYoutubePlaylists.'
+
+// Lets the last-known list of a connected account's YouTube playlists show up instantly, before
+// the fresh (and much slower) list comes back from the API and silently replaces it.
+function loadCachedRemotePlaylists(accountId: string): RemotePlaylistSummary[] {
+  try {
+    const raw = localStorage.getItem(`${REMOTE_PLAYLISTS_CACHE_PREFIX}${accountId}`)
+    return raw ? (JSON.parse(raw) as RemotePlaylistSummary[]) : []
+  } catch {
+    return []
+  }
+}
+
+function cacheRemotePlaylists(accountId: string, playlists: RemotePlaylistSummary[]): void {
+  localStorage.setItem(`${REMOTE_PLAYLISTS_CACHE_PREFIX}${accountId}`, JSON.stringify(playlists))
+}
+
 interface ConnectionsSettingsProps {
   settings: AppSettings
   onUpdateSettings: (settings: Partial<AppSettings>) => Promise<void>
@@ -47,22 +64,42 @@ export default function ConnectionsSettings({
   const [isGuideOpen, setIsGuideOpen] = useState(false)
   const [reconcilingId, setReconcilingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    window.api.getYoutubeAccounts().then(setAccounts).catch(console.error)
-  }, [])
-
-  const loadRemotePlaylists = async (accountId: string): Promise<void> => {
-    try {
-      const res = await window.api.listMyYoutubePlaylists(accountId)
-      if (res.success && res.playlists) {
-        setRemotePlaylistsByAccount((prev) => ({ ...prev, [accountId]: res.playlists! }))
-      } else {
-        toast.error(t('connections.errorLoadPlaylists', { error: res.error || '' }))
+  const loadRemotePlaylists = useCallback(
+    async (accountId: string): Promise<void> => {
+      try {
+        const res = await window.api.listMyYoutubePlaylists(accountId)
+        if (res.success && res.playlists) {
+          setRemotePlaylistsByAccount((prev) => ({ ...prev, [accountId]: res.playlists! }))
+          cacheRemotePlaylists(accountId, res.playlists)
+        } else {
+          toast.error(t('connections.errorLoadPlaylists', { error: res.error || '' }))
+        }
+      } catch (err) {
+        toast.error(t('connections.errorLoadPlaylists', { error: String(err) }))
       }
-    } catch (err) {
-      toast.error(t('connections.errorLoadPlaylists', { error: String(err) }))
-    }
-  }
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    window.api
+      .getYoutubeAccounts()
+      .then((accs) => {
+        setAccounts(accs)
+        // Show each account's last-cached playlists right away, then quietly refresh them.
+        setRemotePlaylistsByAccount((prev) => {
+          const next = { ...prev }
+          for (const account of accs) {
+            if (!(account.id in next)) next[account.id] = loadCachedRemotePlaylists(account.id)
+          }
+          return next
+        })
+        for (const account of accs) {
+          loadRemotePlaylists(account.id)
+        }
+      })
+      .catch(console.error)
+  }, [loadRemotePlaylists])
 
   const handleSaveCredentials = async (): Promise<void> => {
     await onUpdateSettings({
@@ -351,7 +388,7 @@ export default function ConnectionsSettings({
                       size="sm"
                       onClick={() => loadRemotePlaylists(account.id)}
                     >
-                      {t('connections.importButton')}
+                      {t('connections.loadPlaylistsButton')}
                     </Button>
                   </div>
                   {(remotePlaylistsByAccount[account.id] || []).length === 0 ? (
@@ -359,7 +396,7 @@ export default function ConnectionsSettings({
                       {t('connections.noRemotePlaylists')}
                     </p>
                   ) : (
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    <div className="space-y-1.5 max-h-96 overflow-y-auto">
                       {remotePlaylistsByAccount[account.id].map((remote) => (
                         <div
                           key={remote.id}

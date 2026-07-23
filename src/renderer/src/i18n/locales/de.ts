@@ -172,6 +172,7 @@ export const de = {
   'connections.disconnectButton': 'Trennen',
   'connections.noAccounts': 'Noch kein YouTube-Konto verbunden.',
   'connections.importPlaylistsTitle': 'Playlist importieren',
+  'connections.loadPlaylistsButton': 'Aktualisieren',
   'connections.importButton': 'Importieren',
   'connections.importing': 'Importiere Playlist...',
   'connections.noRemotePlaylists': 'Keine Playlists in diesem YouTube-Konto gefunden.',
@@ -201,15 +202,18 @@ export const de = {
     'Öffne die YouTube Data API v3 in der API-Bibliothek deines Projekts und klicke auf „Aktivieren".',
   'oauthGuide.step3.title': '3. OAuth-Zustimmungsbildschirm einrichten',
   'oauthGuide.step3.description':
-    'Wähle als Nutzertyp „Extern", vergib einen App-Namen und deine E-Mail-Adresse als Kontakt. Füge unter „Bereiche" (Scopes) den Bereich .../auth/youtube hinzu und speichere.',
-  'oauthGuide.step4.title': '4. Wichtig: Dich selbst als Testnutzer eintragen',
+    'Wähle als Nutzertyp „Extern" und vergib einen App-Namen und deine E-Mail-Adresse als Kontakt. Speichere und gehe weiter zum Abschnitt „Bereiche" (Scopes).',
+  'oauthGuide.step4.title': '4. Benötigte Bereiche (Scopes) hinzufügen',
   'oauthGuide.step4.description':
-    'Da die App von Google nicht verifiziert ist, funktioniert die Anmeldung nur mit Konten, die explizit als „Testnutzer" hinterlegt sind. Trage auf derselben Seite unter „Testnutzer" deine eigene Google-Mail-Adresse ein — sonst schlägt die Anmeldung mit „Diese App wurde nicht verifiziert" fehl.',
-  'oauthGuide.step5.title': '5. OAuth-Client-ID erstellen',
+    'Klicke auf „Bereiche hinzufügen oder entfernen" und aktiviere genau diese drei Bereiche:\n\n• .../auth/userinfo.email (nicht sensibel)\n• .../auth/userinfo.profile (nicht sensibel)\n• .../auth/youtube (sensibel, „YouTube-Konto verwalten")\n\nWeitere YouTube-Bereiche wie readonly, force-ssl oder download werden von RekordFox nicht benötigt — lasse sie deaktiviert. Klicke danach auf „Aktualisieren" und speichere.',
+  'oauthGuide.step5.title': '5. Wichtig: Dich selbst als Testnutzer eintragen',
   'oauthGuide.step5.description':
-    'Klicke auf „Anmeldedaten erstellen" → „OAuth-Client-ID". Wähle als Anwendungstyp unbedingt „Desktop-App" — nur dieser Typ erlaubt RekordFox die lokale Anmeldung ohne feste Redirect-URI.',
-  'oauthGuide.step6.title': '6. Client-ID & Secret übernehmen',
+    'Da die App von Google nicht verifiziert ist, funktioniert die Anmeldung nur mit Konten, die explizit als „Testnutzer" hinterlegt sind. Trage auf derselben Seite unter „Testnutzer" deine eigene Google-Mail-Adresse ein — sonst schlägt die Anmeldung mit „Diese App wurde nicht verifiziert" fehl.',
+  'oauthGuide.step6.title': '6. OAuth-Client-ID erstellen',
   'oauthGuide.step6.description':
+    'Klicke auf „Anmeldedaten erstellen" → „OAuth-Client-ID". Wähle als Anwendungstyp unbedingt „Desktop-App" — nur dieser Typ erlaubt RekordFox die lokale Anmeldung ohne feste Redirect-URI.',
+  'oauthGuide.step7.title': '7. Client-ID & Secret übernehmen',
+  'oauthGuide.step7.description':
     'Google zeigt dir jetzt Client-ID und Client-Secret an. Kopiere beide Werte und trage sie oben in RekordFox ein.',
 
   // YouTube Onboarding Modal

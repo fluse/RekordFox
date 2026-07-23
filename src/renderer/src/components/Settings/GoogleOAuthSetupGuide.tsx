@@ -30,17 +30,22 @@ const STEPS: GuideStep[] = [
   {
     titleKey: 'oauthGuide.step4.title',
     descriptionKey: 'oauthGuide.step4.description',
-    linkUrl: 'https://console.cloud.google.com/apis/credentials/consent',
-    warning: true
+    linkUrl: 'https://console.cloud.google.com/apis/credentials/consent'
   },
   {
     titleKey: 'oauthGuide.step5.title',
     descriptionKey: 'oauthGuide.step5.description',
-    linkUrl: 'https://console.cloud.google.com/apis/credentials'
+    linkUrl: 'https://console.cloud.google.com/apis/credentials/consent',
+    warning: true
   },
   {
     titleKey: 'oauthGuide.step6.title',
-    descriptionKey: 'oauthGuide.step6.description'
+    descriptionKey: 'oauthGuide.step6.description',
+    linkUrl: 'https://console.cloud.google.com/apis/credentials'
+  },
+  {
+    titleKey: 'oauthGuide.step7.title',
+    descriptionKey: 'oauthGuide.step7.description'
   }
 ]
 
