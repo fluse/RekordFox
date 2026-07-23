@@ -35,6 +35,8 @@ interface TracklistProps {
   onUpdateKey: (trackId: string, key: string) => void
   onUpdateRating: (trackId: string, rating: number) => void
   onReorderTracks: (playlistId: string, trackIds: string[]) => Promise<void>
+  onSyncToYoutube: (playlistId: string, trackIds: string[]) => Promise<void>
+  isSyncingToYoutube: boolean
   onFindSimilarTrack?: (track: Track) => void
   currentTrackA: Track | null
   currentTrackB: Track | null
@@ -51,6 +53,8 @@ export default function Tracklist({
   onUpdateKey,
   onUpdateRating,
   onReorderTracks,
+  onSyncToYoutube,
+  isSyncingToYoutube,
   onFindSimilarTrack,
   currentTrackA,
   currentTrackB,
@@ -78,10 +82,18 @@ export default function Tracklist({
   })
 
   const isReorderEnabled = !isSearching && sortField === 'position'
+  const playlist = playlists.find((p) => p.id === playlistId)
 
   const filteredAndSortedTracks = useMemo((): Track[] => {
     return sortTracks(tracks, sortField, sortOrder)
   }, [tracks, sortField, sortOrder])
+
+  const handleSyncToYoutube = async (): Promise<void> => {
+    const orderedIds = [...tracks]
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map((track) => track.id)
+    await onSyncToYoutube(playlistId, orderedIds)
+  }
 
   const handleSearchResultRating = (trackId: string, rating: number): void => {
     onUpdateRating(trackId, rating)
@@ -149,6 +161,10 @@ export default function Tracklist({
         search={search}
         onSearchChange={setSearch}
         onExportClick={(): void => setIsExportModalOpen(true)}
+        isYoutubeOauth={playlist?.source === 'youtube-oauth'}
+        pendingRemoteChanges={!!playlist?.pendingRemoteChanges}
+        isSyncingToYoutube={isSyncingToYoutube}
+        onSyncToYoutube={handleSyncToYoutube}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
       />

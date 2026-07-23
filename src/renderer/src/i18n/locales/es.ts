@@ -23,6 +23,14 @@ export const es = {
   'sidebar.addNow': 'Añadir ahora',
   'sidebar.settings': 'Ajustes',
   'sidebar.discover': 'Descubrir',
+  'sidebar.dropBlockedYoutube': 'No se pueden arrastrar temas locales a una playlist de YouTube.',
+  'sidebar.trackAddedToPlaylist': 'Tema añadido a la playlist.',
+  'sidebar.trackAlreadyInPlaylist': 'Este tema ya está en la playlist.',
+  'sidebar.trackAddFailed': 'Error al añadir el tema: {{error}}',
+  'sidebar.connectYoutubeTooltip': 'Conectar cuenta de YouTube',
+  'sidebar.youtubeSourceTooltip': 'Importado desde YouTube (OAuth)',
+  'sidebar.pushSyncedTooltip': 'Sincronizado con YouTube',
+  'sidebar.pushPendingTooltip': 'Cambios sin guardar — aún no sincronizados con YouTube',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Añadir playlist de YouTube',
@@ -41,6 +49,7 @@ export const es = {
   'settings.categoryLibrary': 'Biblioteca',
   'settings.categoryDownloads': 'Descargas',
   'settings.categoryShortcuts': 'Atajos',
+  'settings.categoryConnections': 'Conexiones',
   'settings.saved': 'Configuración guardada',
   'settings.appearanceMode': 'Apariencia',
   'settings.themeDark': 'Oscuro',
@@ -124,6 +133,73 @@ export const es = {
   'settings.shortcuts.pressKey': 'Pulsa una tecla... (Esc para cancelar)',
   'settings.shortcuts.conflict': 'Ya asignado a "{{action}}"',
 
+  // Connections Settings (YouTube OAuth)
+  'connections.title': 'Conexiones',
+  'connections.subtitle':
+    'Conecta tu cuenta de YouTube para importar tus playlists, ordenarlas armónicamente y volver a sincronizar el nuevo orden.',
+  'connections.clientIdLabel': 'ID de cliente OAuth de Google',
+  'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
+  'connections.clientSecretLabel': 'Secreto de cliente OAuth de Google',
+  'connections.clientSecretPlaceholder': 'GOCSPX-...',
+  'connections.credentialsHelp':
+    'Crea un cliente OAuth en Google Cloud Console (tipo "Aplicación de escritorio") con acceso a la API de YouTube Data v3 e introduce aquí las credenciales.',
+  'connections.connectButton': 'Conectar con Google',
+  'connections.connecting': 'Esperando el inicio de sesión en el navegador...',
+  'connections.copyLink': 'Copiar enlace',
+  'connections.copyLinkTooltip':
+    'Copia el enlace de inicio de sesión al portapapeles para abrirlo en cualquier navegador/perfil',
+  'connections.linkCopied': 'Enlace de inicio de sesión copiado al portapapeles.',
+  'connections.missingCredentials': 'Introduce primero el ID y el secreto de cliente.',
+  'connections.connectedAccountsTitle': 'Cuentas conectadas',
+  'connections.disconnectButton': 'Desconectar',
+  'connections.noAccounts': 'Todavía no hay ninguna cuenta de YouTube conectada.',
+  'connections.importPlaylistsTitle': 'Importar playlist',
+  'connections.importButton': 'Importar',
+  'connections.importing': 'Importando playlist...',
+  'connections.noRemotePlaylists': 'No se encontraron playlists en esta cuenta de YouTube.',
+  'connections.errorConnect': 'Error al conectar con YouTube: {{error}}',
+  'connections.errorDisconnect': 'Error al desconectar la cuenta: {{error}}',
+  'connections.errorLoadPlaylists': 'Error al cargar las playlists de YouTube: {{error}}',
+  'connections.errorImport': 'Error al importar la playlist: {{error}}',
+  'connections.playlistsLinked':
+    '{{count}} playlist(s) existentes pertenecen a esta cuenta y se han vinculado.',
+  'connections.noNewPlaylistsLinked': 'No se encontraron más playlists que se puedan vincular.',
+  'connections.reconcileButton': 'Comprobar playlists existentes con esta cuenta',
+  'connections.errorReconcile': 'Error al comprobar las playlists: {{error}}',
+
+  // Google OAuth Setup Guide (Connections)
+  'oauthGuide.toggle': 'Guía: configurar Google OAuth',
+  'oauthGuide.stepIndicator': 'Paso {{current}} de {{total}}',
+  'oauthGuide.openLink': 'Abrir en Google Cloud Console',
+  'oauthGuide.back': 'Atrás',
+  'oauthGuide.next': 'Siguiente',
+  'oauthGuide.finish': 'Listo — empezar de nuevo',
+  'oauthGuide.step1.title': '1. Crear un proyecto de Google Cloud',
+  'oauthGuide.step1.description':
+    'Crea un nuevo proyecto de Google Cloud gratuito (no se necesita tarjeta de crédito para la API de YouTube). Dale el nombre que quieras, por ejemplo "RekordFox".',
+  'oauthGuide.step2.title': '2. Activar la API de YouTube Data v3',
+  'oauthGuide.step2.description':
+    'Abre la API de YouTube Data v3 en la biblioteca de API de tu proyecto y haz clic en "Habilitar".',
+  'oauthGuide.step3.title': '3. Configurar la pantalla de consentimiento de OAuth',
+  'oauthGuide.step3.description':
+    'Elige "Externo" como tipo de usuario, indica un nombre de aplicación y tu correo como contacto. En "Permisos" (Scopes), añade el permiso .../auth/youtube y guarda.',
+  'oauthGuide.step4.title': '4. Importante: añádete como usuario de prueba',
+  'oauthGuide.step4.description':
+    'Como la app no está verificada por Google, el inicio de sesión solo funciona con cuentas indicadas explícitamente como "Usuarios de prueba". En la misma página, añade tu propio correo de Google en "Usuarios de prueba" — si no, el inicio de sesión fallará con "Esta app no ha sido verificada".',
+  'oauthGuide.step5.title': '5. Crear el ID de cliente OAuth',
+  'oauthGuide.step5.description':
+    'Haz clic en "Crear credenciales" → "ID de cliente de OAuth". Elige "Aplicación de escritorio" como tipo de aplicación — solo este tipo permite que RekordFox inicie sesión localmente sin un URI de redirección fijo.',
+  'oauthGuide.step6.title': '6. Copiar el ID de cliente y el secreto',
+  'oauthGuide.step6.description':
+    'Google te mostrará ahora el ID de cliente y el secreto de cliente. Copia ambos valores e introdúcelos arriba en RekordFox.',
+
+  // YouTube Onboarding Modal
+  'youtubeConnect.title': 'Conectar con YouTube',
+  'youtubeConnect.benefit1': 'Ordena tus sets de YouTube perfectamente con Smart Mode.',
+  'youtubeConnect.benefit2': 'Sincroniza el nuevo orden de temas de vuelta a YouTube.',
+  'youtubeConnect.cta': 'Ir a ajustes de conexiones',
+  'youtubeConnect.close': 'Más tarde',
+
   // Deck
   'deck.loadingWaveform': 'Decodificando forma de onda...',
   'deck.noTrackLoaded': 'Ningún tema cargado',
@@ -155,6 +231,10 @@ export const es = {
   'tracklist.colLoadDeck': 'Cargar en Deck',
   'tracklist.noTracksFound': 'No se encontraron temas',
   'tracklist.customizeColumns': 'Personalizar columnas',
+  'tracklist.syncToYoutube': 'Sincronizar con YouTube',
+  'tracklist.syncingToYoutube': 'Sincronizando...',
+  'tracklist.syncToYoutubeSuccess': 'Orden sincronizado correctamente con YouTube.',
+  'tracklist.syncToYoutubeError': 'Error al sincronizar con YouTube: {{error}}',
 
   // USB Export Modal
   'usbExport.title': 'Exportar USB',

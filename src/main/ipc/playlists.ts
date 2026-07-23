@@ -26,7 +26,8 @@ export function registerPlaylistsIpc(): void {
           title: ytInfo.title,
           url: url,
           syncStatus: 'idle',
-          lastSync: ''
+          lastSync: '',
+          source: 'local'
         }
         addPlaylistToDb(newPlaylist)
 

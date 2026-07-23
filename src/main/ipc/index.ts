@@ -8,6 +8,7 @@ import { registerUsbIpc } from './usb'
 import { registerPioneerExportIpc } from './pioneerExport'
 import { registerSystemIpc } from './system'
 import { registerExploreIpc } from './explore'
+import { registerYoutubeAuthIpc } from './youtubeAuth'
 
 export function registerIpcHandlers(exportQueueManager: ExportQueueManager): void {
   registerPlaylistsIpc()
@@ -19,4 +20,5 @@ export function registerIpcHandlers(exportQueueManager: ExportQueueManager): voi
   registerPioneerExportIpc(exportQueueManager)
   registerSystemIpc()
   registerExploreIpc()
+  registerYoutubeAuthIpc()
 }

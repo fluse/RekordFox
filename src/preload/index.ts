@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import type { AppSettings } from '@main/db'
+import { contextBridge, ipcRenderer, clipboard } from 'electron'
+import type { AppSettings, Playlist } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 import type { RecommendedTrack } from '@main/explore'
 
@@ -21,6 +21,45 @@ const api = {
     ipcRenderer.invoke('tracks:update-played', trackId, playlistId, played),
   reorderTracks: (playlistId: string, trackIds: string[]) =>
     ipcRenderer.invoke('tracks:reorder', playlistId, trackIds),
+  addTrackToPlaylist: (trackId: string, targetPlaylistId: string) =>
+    ipcRenderer.invoke('tracks:add-to-playlist', trackId, targetPlaylistId),
+
+  getYoutubeAccounts: () => ipcRenderer.invoke('youtube-oauth:get-accounts'),
+  connectYoutubeAccount: (openBrowser?: boolean) =>
+    ipcRenderer.invoke('youtube-oauth:connect', openBrowser),
+  onYoutubeAuthUrlReady: (callback: (url: string) => void): (() => void) => {
+    const subscription = (_event: unknown, url: string): void => callback(url)
+    ipcRenderer.on('youtube-oauth:auth-url', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('youtube-oauth:auth-url', subscription)
+    }
+  },
+  disconnectYoutubeAccount: (accountId: string) =>
+    ipcRenderer.invoke('youtube-oauth:disconnect', accountId),
+  listMyYoutubePlaylists: (accountId: string) =>
+    ipcRenderer.invoke('youtube-oauth:list-my-playlists', accountId),
+  importYoutubePlaylist: (accountId: string, remotePlaylistId: string) =>
+    ipcRenderer.invoke('youtube-oauth:import-playlist', accountId, remotePlaylistId),
+  syncPlaylistOrderToYoutube: (playlistId: string, orderedTrackIds: string[]) =>
+    ipcRenderer.invoke('youtube-oauth:sync-order', playlistId, orderedTrackIds),
+  reconcileYoutubePlaylists: (accountId: string) =>
+    ipcRenderer.invoke('youtube-oauth:reconcile-playlists', accountId),
+  onYoutubePlaylistsLinked: (callback: (linkedPlaylists: Playlist[]) => void): (() => void) => {
+    const subscription = (_event: unknown, linkedPlaylists: Playlist[]): void =>
+      callback(linkedPlaylists)
+    ipcRenderer.on('youtube-oauth:playlists-linked', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('youtube-oauth:playlists-linked', subscription)
+    }
+  },
+
+  // Uses Electron's native clipboard module (via preload) rather than navigator.clipboard —
+  // the web Clipboard API frequently throws "Document is not focused" in Electron renderers,
+  // especially after an async gap (like waiting on an IPC round trip) between the click and the
+  // write, which is exactly the case here.
+  copyToClipboard: (text: string): void => {
+    clipboard.writeText(text)
+  },
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (settings: Partial<AppSettings>) =>
     ipcRenderer.invoke('settings:update', settings),

@@ -5,7 +5,8 @@ import {
   updateTrackBpm,
   updateTrackRating,
   updateTrackPlayed,
-  updateTrackPositions
+  updateTrackPositions,
+  addTrackToPlaylist
 } from '../db'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../trackAnalysis'
 import { ipcTry } from '../errors'
@@ -68,6 +69,13 @@ export function registerTracksIpc(): void {
         sendToRenderer('tracks-filepath-changed', changes)
       }
       return {}
+    })
+  )
+
+  ipcMain.handle('tracks:add-to-playlist', (_, trackId: string, targetPlaylistId: string) =>
+    ipcTry(() => {
+      const track = addTrackToPlaylist(trackId, targetPlaylistId)
+      return { track }
     })
   )
 }

@@ -39,6 +39,10 @@ export interface UseAppReturn {
   handleUpdateKeyInState: (trackId: string, key: string) => void
   handleUpdateRatingInState: (trackId: string, rating: number) => void
   handleReorderTracks: (playlistId: string, trackIds: string[]) => Promise<void>
+  handleDropTrackToPlaylist: (track: Track, targetPlaylistId: string) => Promise<void>
+  handlePlaylistImported: (playlist: Playlist) => void
+  handleSyncToYoutube: (playlistId: string, trackIds: string[]) => Promise<void>
+  syncingToYoutubeId: string | null
   handleUpdateSettings: (newSettings: Partial<AppSettings>) => Promise<void>
   handleMigrate: (newPath: string, moveFiles: boolean) => Promise<void>
   handleMouseDownSplitter: (e: React.MouseEvent) => void
@@ -165,7 +169,18 @@ export function useApp(): UseAppReturn {
 
       try {
         const res = await window.api.reorderTracks(playlistId, trackIds)
-        if (!res.success) {
+        if (res.success) {
+          // The reordered playlist may be a 'youtube-oauth' one — the main process already marked
+          // it dirty in the DB, so reflect that locally to enable the "Sync to YouTube" button
+          // without a full playlists refetch.
+          setPlaylists((prev) =>
+            prev.map((p) =>
+              p.id === playlistId && p.source === 'youtube-oauth'
+                ? { ...p, pendingRemoteChanges: true }
+                : p
+            )
+          )
+        } else {
           alert(t('actions.errorReorderTracks', { error: res.error || '' }))
           // Re-fetch to revert to actual db state
           const list = await window.api.getTracks(playlistId)
@@ -176,6 +191,61 @@ export function useApp(): UseAppReturn {
         alert(t('actions.errorReorderTracks', { error: String(err) }))
         const list = await window.api.getTracks(playlistId)
         setTracks(list)
+      }
+    },
+    [t]
+  )
+
+  const [syncingToYoutubeId, setSyncingToYoutubeId] = useState<string | null>(null)
+
+  const handleSyncToYoutube = useCallback(
+    async (playlistId: string, trackIds: string[]): Promise<void> => {
+      setSyncingToYoutubeId(playlistId)
+      try {
+        const res = await window.api.syncPlaylistOrderToYoutube(playlistId, trackIds)
+        if (res.success) {
+          const now = new Date().toISOString()
+          setPlaylists((prev) =>
+            prev.map((p) =>
+              p.id === playlistId
+                ? { ...p, pendingRemoteChanges: false, lastPushToYoutube: now }
+                : p
+            )
+          )
+          toast.success(t('tracklist.syncToYoutubeSuccess'))
+        } else {
+          toast.error(t('tracklist.syncToYoutubeError', { error: res.error || '' }))
+        }
+      } catch (err) {
+        console.error('Failed to sync playlist order to YouTube:', err)
+        toast.error(t('tracklist.syncToYoutubeError', { error: String(err) }))
+      } finally {
+        setSyncingToYoutubeId(null)
+      }
+    },
+    [t]
+  )
+
+  const handleDropTrackToPlaylist = useCallback(
+    async (track: Track, targetPlaylistId: string): Promise<void> => {
+      try {
+        const res = await window.api.addTrackToPlaylist(track.id, targetPlaylistId)
+        if (res.success && res.track) {
+          toast.success(t('sidebar.trackAddedToPlaylist'))
+          setSelectedPlaylistId((currentId) => {
+            if (currentId === targetPlaylistId) {
+              window.api.getTracks(targetPlaylistId).then(setTracks).catch(console.error)
+            }
+            return currentId
+          })
+        } else if (res.success && !res.track) {
+          toast.error(t('sidebar.trackAlreadyInPlaylist'))
+        } else {
+          toast.error(t('sidebar.trackAddFailed', { error: res.error || '' }))
+        }
+      } catch (err) {
+        console.error('Failed to add track to playlist:', err)
+        toast.error(t('sidebar.trackAddFailed', { error: String(err) }))
       }
     },
     [t]
@@ -214,6 +284,11 @@ export function useApp(): UseAppReturn {
     } else {
       throw new Error(res.error || 'Failed to add playlist')
     }
+  }, [])
+
+  const handlePlaylistImported = useCallback((playlist: Playlist): void => {
+    setPlaylists((prev) => [...prev.filter((p) => p.id !== playlist.id), playlist])
+    setSelectedPlaylistId(playlist.id)
   }, [])
 
   const handleDeletePlaylist = useCallback(
@@ -538,6 +613,19 @@ export function useApp(): UseAppReturn {
       }
     })
 
+    // Listen for local playlists the main process discovered belong to a connected YouTube
+    // account (checked on app startup, in case the account was already connected before those
+    // playlists existed or before this reconciliation feature shipped) and upgrades them.
+    const cleanupPlaylistsLinked = window.api.onYoutubePlaylistsLinked((linkedPlaylists) => {
+      for (const playlist of linkedPlaylists) {
+        handlePlaylistImported(playlist)
+      }
+      if (selectedPlaylistId && linkedPlaylists.some((p) => p.id === selectedPlaylistId)) {
+        window.api.getTracks(selectedPlaylistId).then(setTracks).catch(console.error)
+      }
+      toast.success(t('connections.playlistsLinked', { count: String(linkedPlaylists.length) }))
+    })
+
     return (): void => {
       cleanupSyncStatus()
       cleanupDownloadProgress()
@@ -546,12 +634,15 @@ export function useApp(): UseAppReturn {
       cleanupRenamingStatus()
       cleanupFilepathChanged()
       cleanupTracksUpdated()
+      cleanupPlaylistsLinked()
     }
   }, [
     selectedPlaylistId,
     handleUpdateBpmInState,
     handleUpdateKeyInState,
-    handleUpdateFilepathsInState
+    handleUpdateFilepathsInState,
+    handlePlaylistImported,
+    t
   ])
 
   return {
@@ -573,6 +664,10 @@ export function useApp(): UseAppReturn {
     handleUpdateKeyInState,
     handleUpdateRatingInState,
     handleReorderTracks,
+    handleDropTrackToPlaylist,
+    handlePlaylistImported,
+    handleSyncToYoutube,
+    syncingToYoutubeId,
     handleUpdateSettings,
     handleMigrate,
     handleMouseDownSplitter,

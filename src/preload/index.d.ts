@@ -1,7 +1,10 @@
 import type { ElectronAPI } from '@electron-toolkit/preload'
-import { Playlist, Track, AppSettings, StorageStats } from '@main/db'
+import { Playlist, Track, AppSettings, StorageStats, OAuthAccount } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 import type { RecommendedTrack } from '@main/explore'
+import type { RemotePlaylistSummary } from '@main/youtubeSync'
+
+type PublicOAuthAccount = Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'>
 
 declare global {
   interface Window {
@@ -37,6 +40,35 @@ declare global {
         playlistId: string,
         trackIds: string[]
       ) => Promise<{ success: boolean; error?: string }>
+      addTrackToPlaylist: (
+        trackId: string,
+        targetPlaylistId: string
+      ) => Promise<{ success: boolean; track?: Track | null; error?: string }>
+      getYoutubeAccounts: () => Promise<PublicOAuthAccount[]>
+      connectYoutubeAccount: (openBrowser?: boolean) => Promise<{
+        success: boolean
+        account?: PublicOAuthAccount
+        linkedPlaylists?: Playlist[]
+        error?: string
+      }>
+      onYoutubeAuthUrlReady: (callback: (url: string) => void) => () => void
+      disconnectYoutubeAccount: (accountId: string) => Promise<{ success: boolean; error?: string }>
+      listMyYoutubePlaylists: (
+        accountId: string
+      ) => Promise<{ success: boolean; playlists?: RemotePlaylistSummary[]; error?: string }>
+      importYoutubePlaylist: (
+        accountId: string,
+        remotePlaylistId: string
+      ) => Promise<{ success: boolean; playlist?: Playlist; error?: string }>
+      syncPlaylistOrderToYoutube: (
+        playlistId: string,
+        orderedTrackIds: string[]
+      ) => Promise<{ success: boolean; error?: string }>
+      reconcileYoutubePlaylists: (
+        accountId: string
+      ) => Promise<{ success: boolean; linkedPlaylists?: Playlist[]; error?: string }>
+      onYoutubePlaylistsLinked: (callback: (linkedPlaylists: Playlist[]) => void) => () => void
+      copyToClipboard: (text: string) => void
       getSettings: () => Promise<AppSettings>
       updateSettings: (
         settings: Partial<AppSettings>

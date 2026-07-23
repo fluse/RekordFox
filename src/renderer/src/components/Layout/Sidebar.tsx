@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'sonner'
 import {
   Plus,
   RefreshCw,
@@ -11,10 +12,12 @@ import {
   History,
   Compass
 } from 'lucide-react'
-import type { Playlist } from '@main/db'
+import type { Playlist, Track } from '@main/db'
 import logo from '@renderer/assets/logo-rekordfox.svg'
 import logoLight from '@renderer/assets/logo-rekordfox-light.svg'
 import { useLanguage } from '@renderer/i18n'
+import { canDropTrack } from '@renderer/utils/playlistSource'
+import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 
 interface SidebarProps {
   playlists: Playlist[]
@@ -29,6 +32,8 @@ interface SidebarProps {
   onRenamePlaylist: (id: string, newTitle: string) => void
   onOpenAddModal: () => void
   onOpenSettings: () => void
+  onOpenYoutubeConnect: () => void
+  onDropTrackToPlaylist: (track: Track, targetPlaylistId: string) => void
   isSettingsSelected: boolean
   activeSyncs: Record<
     string,
@@ -61,6 +66,8 @@ export default function Sidebar({
   onRenamePlaylist,
   onOpenAddModal,
   onOpenSettings,
+  onOpenYoutubeConnect,
+  onDropTrackToPlaylist,
   isSettingsSelected,
   activeSyncs,
   width,
@@ -70,6 +77,33 @@ export default function Sidebar({
   const { t } = useLanguage()
   const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState<string>('')
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null)
+
+  const handleTrackDragOver = (e: React.DragEvent, playlistId: string): void => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setDropTargetId(playlistId)
+  }
+
+  const handleTrackDrop = (e: React.DragEvent, targetPlaylist: Playlist): void => {
+    e.preventDefault()
+    setDropTargetId(null)
+    const raw = e.dataTransfer.getData('text/plain')
+    if (!raw) return
+    let track: Track
+    try {
+      track = JSON.parse(raw)
+    } catch {
+      return
+    }
+    const sourcePlaylist = playlists.find((p) => p.id === track.playlistId)
+    if (!canDropTrack(sourcePlaylist, targetPlaylist)) {
+      toast.error(t('sidebar.dropBlockedYoutube'))
+      return
+    }
+    if (track.playlistId === targetPlaylist.id) return
+    onDropTrackToPlaylist(track, targetPlaylist.id)
+  }
 
   const startEditing = (playlist: Playlist): void => {
     setEditingPlaylistId(playlist.id)
@@ -132,12 +166,21 @@ export default function Sidebar({
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             {t('sidebar.playlists')}
           </span>
-          <button
-            onClick={onOpenAddModal}
-            className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={onOpenYoutubeConnect}
+              title={t('sidebar.connectYoutubeTooltip')}
+              className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 opacity-70 hover:opacity-100"
+            >
+              <YoutubeIcon className="h-4 w-4" />
+            </button>
+            <button
+              onClick={onOpenAddModal}
+              className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -153,10 +196,15 @@ export default function Sidebar({
               <div
                 key={playlist.id}
                 onClick={() => onSelectPlaylist(playlist.id)}
+                onDragOver={(e) => handleTrackDragOver(e, playlist.id)}
+                onDragLeave={() => setDropTargetId((prev) => (prev === playlist.id ? null : prev))}
+                onDrop={(e) => handleTrackDrop(e, playlist)}
                 className={`group relative flex flex-col rounded-lg px-3 py-2.5 transition cursor-pointer ${
-                  isSelected
-                    ? 'bg-zinc-900 text-zinc-100'
-                    : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
+                  dropTargetId === playlist.id
+                    ? 'bg-primary/15 ring-1 ring-primary/60'
+                    : isSelected
+                      ? 'bg-zinc-900 text-zinc-100'
+                      : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
                 }`}
               >
                 <div className="flex items-center justify-between w-full">
@@ -179,19 +227,42 @@ export default function Sidebar({
                     />
                   ) : (
                     <div
-                      className="truncate pr-8 font-medium text-sm"
+                      className="flex items-center gap-1.5 truncate pr-14 font-medium text-sm"
                       onDoubleClick={(e) => {
                         e.stopPropagation()
                         startEditing(playlist)
                       }}
                     >
-                      {playlist.title}
+                      {playlist.source === 'youtube-oauth' && (
+                        <span
+                          className="flex-shrink-0 flex items-center"
+                          title={t('sidebar.youtubeSourceTooltip')}
+                        >
+                          <YoutubeIcon className="h-3 w-3" />
+                        </span>
+                      )}
+                      <span className="truncate">{playlist.title}</span>
                     </div>
                   )}
 
                   {/* Status Indicator */}
                   {editingPlaylistId !== playlist.id && (
                     <div className="absolute right-3 top-3 flex items-center gap-1.5">
+                      {playlist.source === 'youtube-oauth' &&
+                        syncState.status !== 'syncing' &&
+                        (playlist.pendingRemoteChanges ? (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-amber-500"
+                            title={t('sidebar.pushPendingTooltip')}
+                          />
+                        ) : playlist.lastPushToYoutube ? (
+                          <span
+                            title={t('sidebar.pushSyncedTooltip')}
+                            className="flex items-center"
+                          >
+                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                          </span>
+                        ) : null)}
                       {syncState.status === 'syncing' ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                       ) : syncState.status === 'error' ? (

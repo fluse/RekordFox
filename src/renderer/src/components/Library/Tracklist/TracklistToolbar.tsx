@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Search, X, HardDrive, SlidersHorizontal } from 'lucide-react'
+import { Search, X, HardDrive, SlidersHorizontal, Loader2 } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
+import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 import { COLUMN_DEFS } from './columns'
 
 interface TracklistToolbarProps {
@@ -8,6 +9,10 @@ interface TracklistToolbarProps {
   search: string
   onSearchChange: (value: string) => void
   onExportClick: () => void
+  isYoutubeOauth: boolean
+  pendingRemoteChanges: boolean
+  isSyncingToYoutube: boolean
+  onSyncToYoutube: () => void
   visibleColumns: string[]
   onToggleColumn: (colId: string) => void
 }
@@ -17,6 +22,10 @@ export default function TracklistToolbar({
   search,
   onSearchChange,
   onExportClick,
+  isYoutubeOauth,
+  pendingRemoteChanges,
+  isSyncingToYoutube,
+  onSyncToYoutube,
   visibleColumns,
   onToggleColumn
 }: TracklistToolbarProps): React.JSX.Element {
@@ -27,6 +36,23 @@ export default function TracklistToolbar({
     <div className="flex h-16 items-center justify-between border-b border-zinc-900 px-6">
       <h1 className="text-lg font-bold text-zinc-200 truncate max-w-[300px]">{playlistTitle}</h1>
       <div className="flex items-center gap-3">
+        {isYoutubeOauth && (
+          <button
+            onClick={onSyncToYoutube}
+            disabled={!pendingRemoteChanges || isSyncingToYoutube}
+            className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-4 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-900 hover:text-zinc-100 hover:border-primary/55 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-zinc-950 disabled:hover:border-zinc-800"
+          >
+            {isSyncingToYoutube ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <YoutubeIcon className="h-3.5 w-3.5" />
+            )}
+            <span>
+              {isSyncingToYoutube ? t('tracklist.syncingToYoutube') : t('tracklist.syncToYoutube')}
+            </span>
+          </button>
+        )}
+
         <button
           onClick={onExportClick}
           className="flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-4 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-900 hover:text-zinc-100 hover:border-primary/55 cursor-pointer"

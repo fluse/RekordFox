@@ -14,12 +14,31 @@ import {
 import nodeId3 from 'node-id3'
 import { writeRekordboxXml } from './export/rekordbox/rekordboxXmlExporter'
 
+export type PlaylistSource = 'local' | 'youtube-oauth' | 'soundcloud'
+
 export interface Playlist {
   id: string // YouTube playlist ID
   title: string
   url: string
   syncStatus: 'idle' | 'syncing' | 'error'
   lastSync: string
+  // 'local': today's behavior — added via public URL, scraped with yt-dlp, download-only, no
+  // write-back. 'youtube-oauth': imported from the user's own YouTube account via OAuth2;
+  // supports pushing the local track order back to YouTube. 'soundcloud' reserved for future use.
+  source: PlaylistSource
+  oauthAccountId?: string // links a 'youtube-oauth' playlist to the OAuthAccount used to import it
+  pendingRemoteChanges?: boolean // true once the local order diverges from the last YouTube push
+  lastPushToYoutube?: string
+}
+
+export interface OAuthAccount {
+  id: string
+  provider: 'google'
+  label: string // display name shown in the UI — the account's YouTube channel title
+  accessTokenEnc: string // encrypted with Electron safeStorage, base64-encoded
+  refreshTokenEnc: string
+  expiresAt: number
+  scope: string
 }
 
 export interface Track {
@@ -43,7 +62,10 @@ export interface Track {
   // Present (and always 'discover') for tracks added via the Discover feature rather than
   // found in the actual remote YouTube playlist. Sync must never delete these based on the
   // playlist diff, since they will never appear in the remote playlist's entries.
-  source?: 'discover'
+  source?: 'discover' | 'youtube-oauth'
+  // The YouTube playlistItem ID (distinct from the video ID) — required to push reordering
+  // back via playlistItems.update. Only present for tracks in a 'youtube-oauth' playlist.
+  youtubePlaylistItemId?: string
 }
 
 export function getPlaylistFolderName(playlist: Playlist): string {
@@ -67,6 +89,8 @@ export interface AppSettings {
   rekordboxXmlPath?: string
   historyLimit?: number
   appShortcuts?: Record<string, string>
+  youtubeClientId?: string
+  youtubeClientSecret?: string
 }
 
 interface DatabaseSchema {
@@ -76,6 +100,7 @@ interface DatabaseSchema {
   // Video IDs the user marked as "not interested" from the Discover feature — excluded from
   // all future recommendations.
   discoverBlacklist?: string[]
+  oauthAccounts?: OAuthAccount[]
 }
 
 let dbPath = ''
@@ -133,6 +158,7 @@ export function initDb(): void {
       if (!dbData.playlists) dbData.playlists = []
       if (!dbData.tracks) dbData.tracks = []
       if (!dbData.discoverBlacklist) dbData.discoverBlacklist = []
+      if (!dbData.oauthAccounts) dbData.oauthAccounts = []
 
       // Ensure settings exist with defaults
       if (!dbData.settings) {
@@ -159,6 +185,15 @@ export function initDb(): void {
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
       let dbUpdated = false
+
+      // Every playlist created before source management existed was added via a public URL
+      // scrape (yt-dlp), so it becomes 'local' by definition.
+      for (const playlist of dbData.playlists) {
+        if (!playlist.source) {
+          playlist.source = 'local'
+          dbUpdated = true
+        }
+      }
 
       // Assign position sequences to existing tracks if they don't have them
       if (dbData.tracks && Array.isArray(dbData.tracks)) {
@@ -479,6 +514,82 @@ export function updatePlaylistStatus(
   }
 }
 
+export function markPlaylistDirty(playlistId: string): void {
+  const playlist = dbData.playlists.find((p) => p.id === playlistId)
+  if (playlist && playlist.source === 'youtube-oauth' && !playlist.pendingRemoteChanges) {
+    playlist.pendingRemoteChanges = true
+    saveDb()
+  }
+}
+
+export function clearPlaylistDirty(playlistId: string, timestamp: string): void {
+  const playlist = dbData.playlists.find((p) => p.id === playlistId)
+  if (playlist) {
+    playlist.pendingRemoteChanges = false
+    playlist.lastPushToYoutube = timestamp
+    saveDb()
+  }
+}
+
+// Upgrades a 'local' (public-URL, download-only) playlist to 'youtube-oauth' once it's been
+// confirmed to actually belong to the connected account, unlocking write-back support.
+export function linkPlaylistToOauthAccount(playlistId: string, accountId: string): void {
+  const playlist = dbData.playlists.find((p) => p.id === playlistId)
+  if (playlist) {
+    playlist.source = 'youtube-oauth'
+    playlist.oauthAccountId = accountId
+    saveDb()
+  }
+}
+
+// Attaches the remote playlistItem ID a track needs for reorder push-back, once its parent
+// playlist has been confirmed to belong to the connected account.
+export function linkTrackToYoutubePlaylistItem(
+  trackId: string,
+  playlistId: string,
+  youtubePlaylistItemId: string
+): void {
+  const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
+  if (track) {
+    track.source = 'youtube-oauth'
+    track.youtubePlaylistItemId = youtubePlaylistItemId
+    saveDb()
+  }
+}
+
+export function getOAuthAccounts(): OAuthAccount[] {
+  return dbData.oauthAccounts || []
+}
+
+export function addOAuthAccount(account: OAuthAccount): void {
+  if (!dbData.oauthAccounts) dbData.oauthAccounts = []
+  const index = dbData.oauthAccounts.findIndex((a) => a.id === account.id)
+  if (index !== -1) {
+    dbData.oauthAccounts[index] = account
+  } else {
+    dbData.oauthAccounts.push(account)
+  }
+  saveDb()
+}
+
+export function updateOAuthAccountTokens(
+  accountId: string,
+  tokens: { accessTokenEnc: string; refreshTokenEnc?: string; expiresAt: number }
+): void {
+  const account = (dbData.oauthAccounts || []).find((a) => a.id === accountId)
+  if (account) {
+    account.accessTokenEnc = tokens.accessTokenEnc
+    if (tokens.refreshTokenEnc) account.refreshTokenEnc = tokens.refreshTokenEnc
+    account.expiresAt = tokens.expiresAt
+    saveDb()
+  }
+}
+
+export function removeOAuthAccount(accountId: string): void {
+  dbData.oauthAccounts = (dbData.oauthAccounts || []).filter((a) => a.id !== accountId)
+  saveDb()
+}
+
 export function deletePlaylist(playlistId: string): void {
   const tracksToDelete = dbData.tracks.filter((t) => t.playlistId === playlistId)
   dbData.playlists = dbData.playlists.filter((p) => p.id !== playlistId)
@@ -526,6 +637,77 @@ export function addTrack(track: Track): void {
   saveDb()
 }
 
+// Copies a track (metadata + physical mp3/cover files) into another playlist, appended at the
+// end. Used by the sidebar drag & drop feature — callers must gate this with canDropTrack first.
+export function addTrackToPlaylist(sourceTrackId: string, targetPlaylistId: string): Track | null {
+  const sourceTrack = dbData.tracks.find((t) => t.id === sourceTrackId)
+  const targetPlaylist = dbData.playlists.find((p) => p.id === targetPlaylistId)
+  if (!sourceTrack || !targetPlaylist) return null
+
+  if (dbData.tracks.some((t) => t.id === sourceTrackId && t.playlistId === targetPlaylistId)) {
+    return null // already present
+  }
+
+  const settings = getSettings()
+  const targetFolder = getPlaylistFolderName(targetPlaylist)
+  const targetDir = join(getDownloadsDir(), targetFolder)
+  if (!existsSync(targetDir)) {
+    mkdirSync(targetDir, { recursive: true })
+  }
+
+  const targetTracks = dbData.tracks.filter((t) => t.playlistId === targetPlaylistId)
+  const maxPos = targetTracks.reduce(
+    (max, t) => (t.position !== undefined && t.position > max ? t.position : max),
+    0
+  )
+  const newPosition = maxPos + 1
+
+  let newFilepath = ''
+  if (sourceTrack.filepath && existsSync(sourceTrack.filepath)) {
+    const filename = getTrackFilename(
+      targetPlaylistId,
+      sourceTrack.id,
+      sourceTrack.artist,
+      sourceTrack.title,
+      newPosition,
+      sourceTrack.bpm || 0,
+      settings.filenameTemplate || 'default'
+    )
+    newFilepath = join(targetDir, filename)
+    try {
+      copyFileSync(sourceTrack.filepath, newFilepath)
+    } catch (e) {
+      console.error(`Failed to copy track file ${sourceTrack.id} into target playlist:`, e)
+      newFilepath = ''
+    }
+  }
+
+  let newCoverPath = ''
+  if (sourceTrack.coverPath && existsSync(sourceTrack.coverPath)) {
+    newCoverPath = join(getCoversDir(), `${targetPlaylistId}_${sourceTrack.id}.jpg`)
+    try {
+      copyFileSync(sourceTrack.coverPath, newCoverPath)
+    } catch (e) {
+      console.error(`Failed to copy cover for track ${sourceTrack.id} into target playlist:`, e)
+    }
+  }
+
+  const newTrack: Track = {
+    ...sourceTrack,
+    playlistId: targetPlaylistId,
+    filepath: newFilepath,
+    coverPath: newCoverPath,
+    position: newPosition,
+    dateAdded: new Date().toISOString(),
+    played: false,
+    source: undefined,
+    youtubePlaylistItemId: undefined
+  }
+  dbData.tracks.push(newTrack)
+  saveDb()
+  return newTrack
+}
+
 export interface FilepathChange {
   id: string
   filepath: string
@@ -535,6 +717,7 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
   const settings = getSettings()
   const playlistTracks = dbData.tracks.filter((t) => t.playlistId === playlistId)
   const changes: FilepathChange[] = []
+  let anyPositionChanged = false
 
   for (const track of playlistTracks) {
     const oldPosition = track.position
@@ -542,6 +725,7 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
     const newPosition = newIdx !== -1 ? newIdx + 1 : trackIds.length + 1
 
     if (oldPosition !== newPosition) {
+      anyPositionChanged = true
       const oldFilepath = track.filepath
       track.position = newPosition
 
@@ -577,6 +761,9 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
         }
       }
     }
+  }
+  if (anyPositionChanged) {
+    markPlaylistDirty(playlistId)
   }
   saveDb()
   return changes

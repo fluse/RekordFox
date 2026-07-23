@@ -23,6 +23,14 @@ export const en = {
   'sidebar.addNow': 'Add now',
   'sidebar.settings': 'Settings',
   'sidebar.discover': 'Discover',
+  'sidebar.dropBlockedYoutube': 'Local tracks cannot be dropped into a YouTube playlist.',
+  'sidebar.trackAddedToPlaylist': 'Track added to playlist.',
+  'sidebar.trackAlreadyInPlaylist': 'This track is already in the playlist.',
+  'sidebar.trackAddFailed': 'Error adding track: {{error}}',
+  'sidebar.connectYoutubeTooltip': 'Connect YouTube account',
+  'sidebar.youtubeSourceTooltip': 'Imported from YouTube (OAuth)',
+  'sidebar.pushSyncedTooltip': 'Synced with YouTube',
+  'sidebar.pushPendingTooltip': 'Unsaved changes — not yet synced to YouTube',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Add YouTube Playlist',
@@ -41,6 +49,7 @@ export const en = {
   'settings.categoryLibrary': 'Library',
   'settings.categoryDownloads': 'Downloads & Sync',
   'settings.categoryShortcuts': 'Shortcuts',
+  'settings.categoryConnections': 'Connections',
   'settings.saved': 'Setting saved',
   'settings.appearanceMode': 'Appearance',
   'settings.themeDark': 'Dark',
@@ -124,6 +133,73 @@ export const en = {
   'settings.shortcuts.pressKey': 'Press a key... (Esc to cancel)',
   'settings.shortcuts.conflict': 'Already assigned to "{{action}}"',
 
+  // Connections Settings (YouTube OAuth)
+  'connections.title': 'Connections',
+  'connections.subtitle':
+    'Connect your YouTube account to import your own playlists, sort them harmonically, and sync the new order back.',
+  'connections.clientIdLabel': 'Google OAuth Client ID',
+  'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
+  'connections.clientSecretLabel': 'Google OAuth Client Secret',
+  'connections.clientSecretPlaceholder': 'GOCSPX-...',
+  'connections.credentialsHelp':
+    'Create an OAuth client in the Google Cloud Console (type "Desktop app") with access to the YouTube Data API v3 and enter the credentials here.',
+  'connections.connectButton': 'Connect with Google',
+  'connections.connecting': 'Waiting for sign-in in the browser...',
+  'connections.copyLink': 'Copy link',
+  'connections.copyLinkTooltip':
+    'Copy the sign-in link to your clipboard to open it in any browser/profile',
+  'connections.linkCopied': 'Sign-in link copied to clipboard.',
+  'connections.missingCredentials': 'Please enter a Client ID and Client Secret first.',
+  'connections.connectedAccountsTitle': 'Connected Accounts',
+  'connections.disconnectButton': 'Disconnect',
+  'connections.noAccounts': 'No YouTube account connected yet.',
+  'connections.importPlaylistsTitle': 'Import Playlist',
+  'connections.importButton': 'Import',
+  'connections.importing': 'Importing playlist...',
+  'connections.noRemotePlaylists': 'No playlists found in this YouTube account.',
+  'connections.errorConnect': 'Error connecting to YouTube: {{error}}',
+  'connections.errorDisconnect': 'Error disconnecting account: {{error}}',
+  'connections.errorLoadPlaylists': 'Error loading YouTube playlists: {{error}}',
+  'connections.errorImport': 'Error importing playlist: {{error}}',
+  'connections.playlistsLinked':
+    '{{count}} existing playlist(s) belong to this account and were linked.',
+  'connections.noNewPlaylistsLinked': 'No additional playlists found that could be linked.',
+  'connections.reconcileButton': 'Check existing playlists against this account',
+  'connections.errorReconcile': 'Error reconciling playlists: {{error}}',
+
+  // Google OAuth Setup Guide (Connections)
+  'oauthGuide.toggle': 'Guide: Set up Google OAuth',
+  'oauthGuide.stepIndicator': 'Step {{current}} of {{total}}',
+  'oauthGuide.openLink': 'Open in Google Cloud Console',
+  'oauthGuide.back': 'Back',
+  'oauthGuide.next': 'Next',
+  'oauthGuide.finish': 'Done — start over',
+  'oauthGuide.step1.title': '1. Create a Google Cloud project',
+  'oauthGuide.step1.description':
+    'Create a new, free Google Cloud project (no credit card needed for the YouTube API). Give it any name, e.g. "RekordFox".',
+  'oauthGuide.step2.title': '2. Enable the YouTube Data API v3',
+  'oauthGuide.step2.description':
+    'Open the YouTube Data API v3 in your project\'s API library and click "Enable".',
+  'oauthGuide.step3.title': '3. Set up the OAuth consent screen',
+  'oauthGuide.step3.description':
+    'Choose "External" as the user type, give it an app name and your email as contact. Under "Scopes", add the .../auth/youtube scope and save.',
+  'oauthGuide.step4.title': '4. Important: add yourself as a test user',
+  'oauthGuide.step4.description':
+    'Since the app isn\'t verified by Google, sign-in only works for accounts explicitly listed as "Test users". On the same page, add your own Google email under "Test users" — otherwise sign-in will fail with "This app has not been verified".',
+  'oauthGuide.step5.title': '5. Create the OAuth Client ID',
+  'oauthGuide.step5.description':
+    'Click "Create Credentials" → "OAuth client ID". Make sure to choose "Desktop app" as the application type — only this type lets RekordFox sign in locally without a fixed redirect URI.',
+  'oauthGuide.step6.title': '6. Copy the Client ID & Secret',
+  'oauthGuide.step6.description':
+    'Google now shows you the Client ID and Client Secret. Copy both values and enter them above in RekordFox.',
+
+  // YouTube Onboarding Modal
+  'youtubeConnect.title': 'Connect with YouTube',
+  'youtubeConnect.benefit1': 'Sort your YouTube sets perfectly with Smart Mode.',
+  'youtubeConnect.benefit2': 'Sync the new track order back to YouTube.',
+  'youtubeConnect.cta': 'Go to Connections settings',
+  'youtubeConnect.close': 'Later',
+
   // Deck
   'deck.loadingWaveform': 'Decoding waveform...',
   'deck.noTrackLoaded': 'No track loaded',
@@ -155,6 +231,10 @@ export const en = {
   'tracklist.colLoadDeck': 'Load into Deck',
   'tracklist.noTracksFound': 'No tracks found',
   'tracklist.customizeColumns': 'Customize columns',
+  'tracklist.syncToYoutube': 'Sync to YouTube',
+  'tracklist.syncingToYoutube': 'Syncing...',
+  'tracklist.syncToYoutubeSuccess': 'Order successfully synced to YouTube.',
+  'tracklist.syncToYoutubeError': 'Error syncing to YouTube: {{error}}',
 
   // USB Export Modal
   'usbExport.title': 'USB Export',

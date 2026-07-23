@@ -1,21 +1,25 @@
 import React, { useState } from 'react'
 import { Palette, Music, Download, Keyboard, type LucideIcon } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
-import type { AppSettings } from '@main/db'
+import type { AppSettings, Playlist } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import { resolveAppShortcuts } from '@renderer/utils/appShortcuts'
 import GeneralSettings from './GeneralSettings'
 import LibrarySettings from './LibrarySettings'
 import DownloadsSettings from './DownloadsSettings'
 import AppShortcutsSettings from './AppShortcutsSettings'
+import ConnectionsSettings from './ConnectionsSettings'
+import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 
-type SettingsCategory = 'general' | 'library' | 'downloads' | 'shortcuts'
+type SettingsCategory = 'general' | 'library' | 'downloads' | 'shortcuts' | 'connections'
 
 interface SettingsViewProps {
   settings: AppSettings
   onUpdateSettings: (settings: Partial<AppSettings>) => Promise<void>
   onMigrate: (newPath: string, moveFiles: boolean) => Promise<void>
+  onPlaylistImported: (playlist: Playlist) => void
   isSyncing: boolean
+  initialCategory?: SettingsCategory
   renamingStatus?: {
     active: boolean
     current: number
@@ -27,16 +31,23 @@ export default function SettingsView({
   settings,
   onUpdateSettings,
   onMigrate,
+  onPlaylistImported,
   isSyncing,
+  initialCategory,
   renamingStatus
 }: SettingsViewProps): React.JSX.Element {
-  const [category, setCategory] = useState<SettingsCategory>('general')
+  const [category, setCategory] = useState<SettingsCategory>(initialCategory || 'general')
   const { t } = useLanguage()
 
-  const categories: { key: SettingsCategory; label: string; icon: LucideIcon }[] = [
+  const categories: {
+    key: SettingsCategory
+    label: string
+    icon: LucideIcon | typeof YoutubeIcon
+  }[] = [
     { key: 'general', label: t('settings.categoryGeneral'), icon: Palette },
     { key: 'library', label: t('settings.categoryLibrary'), icon: Music },
     { key: 'downloads', label: t('settings.categoryDownloads'), icon: Download },
+    { key: 'connections', label: t('settings.categoryConnections'), icon: YoutubeIcon },
     { key: 'shortcuts', label: t('settings.categoryShortcuts'), icon: Keyboard }
   ]
 
@@ -86,6 +97,13 @@ export default function SettingsView({
             <AppShortcutsSettings
               shortcuts={resolveAppShortcuts(settings.appShortcuts)}
               onChange={(appShortcuts) => onUpdateSettings({ appShortcuts })}
+            />
+          )}
+          {category === 'connections' && (
+            <ConnectionsSettings
+              settings={settings}
+              onUpdateSettings={onUpdateSettings}
+              onPlaylistImported={onPlaylistImported}
             />
           )}
         </div>

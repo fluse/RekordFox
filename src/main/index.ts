@@ -10,6 +10,7 @@ import { createWindow, getMainWindow, setupActivateHandler } from './window'
 import { createTray } from './tray'
 import { registerIpcHandlers } from './ipc'
 import { scheduleStartupAnalysis } from './backgroundAnalysis'
+import { reconcileAllConnectedAccounts } from './youtubeSync'
 
 app.setName('RekordFox')
 
@@ -67,6 +68,13 @@ app.whenReady().then(async () => {
   const mainWindow = getMainWindow()
   if (mainWindow) {
     startBackgroundSync(mainWindow)
+
+    // Fire-and-forget: don't block startup on YouTube API round trips. Catches accounts that
+    // connected in a previous session and any 'local' playlists reconciliation on connect never
+    // saw at the time.
+    reconcileAllConnectedAccounts(mainWindow).catch((err) => {
+      console.error('Failed to reconcile YouTube playlists on startup:', err)
+    })
   }
 
   scheduleStartupAnalysis()

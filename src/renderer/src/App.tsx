@@ -8,6 +8,7 @@ import {
 } from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
 import SettingsView from '@renderer/components/Settings'
+import YoutubeConnectModal from '@renderer/components/Integrations/YoutubeConnectModal'
 import { DiscoverView, type DiscoverContext } from '@renderer/components/Discover'
 import { Toaster } from '@renderer/components/ui/sonner'
 import { ChevronDown } from 'lucide-react'
@@ -21,10 +22,12 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const { t } = useLanguage()
   const [showSplash, setShowSplash] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isYoutubeConnectModalOpen, setIsYoutubeConnectModalOpen] = useState(false)
   const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
   const [viewMode, setViewMode] = useState<'library' | 'history' | 'settings' | 'discover'>(
     'library'
   )
+  const [settingsCategory, setSettingsCategory] = useState<'general' | 'connections'>('general')
   const [discoverContext, setDiscoverContext] = useState<DiscoverContext | null>(null)
 
   const handleFindSimilarTrack = (track: Track): void => {
@@ -54,6 +57,10 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
     handleUpdateKeyInState,
     handleUpdateRatingInState,
     handleReorderTracks,
+    handleDropTrackToPlaylist,
+    handlePlaylistImported,
+    handleSyncToYoutube,
+    syncingToYoutubeId,
     handleUpdateSettings,
     handleMigrate,
     handleMouseDownSplitter,
@@ -111,7 +118,12 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           onSyncPlaylist={handleSyncPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
           onOpenAddModal={() => setIsAddModalOpen(true)}
-          onOpenSettings={() => setViewMode('settings')}
+          onOpenSettings={() => {
+            setSettingsCategory('general')
+            setViewMode('settings')
+          }}
+          onOpenYoutubeConnect={() => setIsYoutubeConnectModalOpen(true)}
+          onDropTrackToPlaylist={handleDropTrackToPlaylist}
           isSettingsSelected={viewMode === 'settings'}
           activeSyncs={activeSyncs}
           width={sidebarWidth}
@@ -133,7 +145,12 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             settings={settings}
             onUpdateSettings={handleUpdateSettings}
             onMigrate={handleMigrate}
+            onPlaylistImported={(playlist) => {
+              handlePlaylistImported(playlist)
+              setViewMode('library')
+            }}
             isSyncing={Object.keys(activeSyncs).length > 0}
+            initialCategory={settingsCategory}
             renamingStatus={renamingStatus}
           />
         ) : viewMode === 'history' ? (
@@ -155,6 +172,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             onUpdateKey={handleUpdateKeyInState}
             onUpdateRating={handleUpdateRatingInState}
             onReorderTracks={handleReorderTracks}
+            onSyncToYoutube={handleSyncToYoutube}
+            isSyncingToYoutube={syncingToYoutubeId === selectedPlaylistId}
             onFindSimilarTrack={handleFindSimilarTrack}
             currentTrackA={loadedTrackA}
             currentTrackB={loadedTrackB}
@@ -174,6 +193,15 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddPlaylist}
+      />
+
+      <YoutubeConnectModal
+        isOpen={isYoutubeConnectModalOpen}
+        onClose={() => setIsYoutubeConnectModalOpen(false)}
+        onGoToConnections={() => {
+          setSettingsCategory('connections')
+          setViewMode('settings')
+        }}
       />
 
       <Toaster
