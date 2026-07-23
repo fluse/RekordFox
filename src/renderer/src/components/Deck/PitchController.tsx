@@ -1,6 +1,8 @@
 import React from 'react'
 import { Lock, Unlock } from 'lucide-react'
 import type { Track } from '@main/db'
+import { useLanguage } from '@renderer/i18n'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface PitchControllerProps {
   track: Track | null
@@ -27,6 +29,7 @@ export const PitchController: React.FC<PitchControllerProps> = ({
   startNudge,
   stopNudge
 }) => {
+  const { t } = useLanguage()
   const pitchPercent = ((pitch - 1.0) * 100).toFixed(2)
   const pitchDisplay = pitchPercent.startsWith('-') ? `${pitchPercent}%` : `+${pitchPercent}%`
 
@@ -37,33 +40,22 @@ export const PitchController: React.FC<PitchControllerProps> = ({
       {/* Pitch Slider & Nudge Buttons */}
       <div className="flex-1 flex flex-col items-center justify-between w-full relative min-h-[150px] py-1 bg-zinc-950/40 rounded-lg border border-zinc-900/50">
         {/* Nudge Up Button */}
-        <button
-          onMouseDown={() => {
-            console.log('[PitchController] Nudge Up clicked')
-            startNudge('up')
-          }}
-          onMouseUp={() => {
-            console.log('[PitchController] Nudge Up released')
-            stopNudge()
-          }}
-          onMouseLeave={() => {
-            console.log('[PitchController] Nudge Up mouse leave')
-            stopNudge()
-          }}
-          onTouchStart={() => {
-            console.log('[PitchController] Nudge Up touch start')
-            startNudge('up')
-          }}
-          onTouchEnd={() => {
-            console.log('[PitchController] Nudge Up touch end')
-            stopNudge()
-          }}
-          disabled={!track || !filterLowNode}
-          className="relative z-10 w-7 h-6 flex items-center justify-center rounded bg-zinc-900 hover:bg-zinc-800 active:bg-primary active:text-white text-zinc-400 text-xs font-bold transition disabled:opacity-20 cursor-pointer shadow-sm border border-zinc-800/40"
-          title="Pitch Bend +"
-        >
-          +
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onMouseDown={() => startNudge('up')}
+              onMouseUp={stopNudge}
+              onMouseLeave={stopNudge}
+              onTouchStart={() => startNudge('up')}
+              onTouchEnd={stopNudge}
+              disabled={!track || !filterLowNode}
+              className="relative z-10 w-7 h-6 flex items-center justify-center rounded bg-zinc-900 hover:bg-zinc-800 active:bg-primary active:text-white text-zinc-400 text-xs font-bold transition disabled:opacity-20 cursor-pointer shadow-sm border border-zinc-800/40"
+            >
+              +
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('deck.pitchBendUpTooltip')}</TooltipContent>
+        </Tooltip>
 
         {/* Pitch Slider with center detent notch */}
         <div className="relative flex-1 flex items-center justify-center w-full h-[90px]">
@@ -83,33 +75,22 @@ export const PitchController: React.FC<PitchControllerProps> = ({
         </div>
 
         {/* Nudge Down Button */}
-        <button
-          onMouseDown={() => {
-            console.log('[PitchController] Nudge Down clicked')
-            startNudge('down')
-          }}
-          onMouseUp={() => {
-            console.log('[PitchController] Nudge Down released')
-            stopNudge()
-          }}
-          onMouseLeave={() => {
-            console.log('[PitchController] Nudge Down mouse leave')
-            stopNudge()
-          }}
-          onTouchStart={() => {
-            console.log('[PitchController] Nudge Down touch start')
-            startNudge('down')
-          }}
-          onTouchEnd={() => {
-            console.log('[PitchController] Nudge Down touch end')
-            stopNudge()
-          }}
-          disabled={!track || !filterLowNode}
-          className="relative z-10 w-7 h-6 flex items-center justify-center rounded bg-zinc-900 hover:bg-zinc-800 active:bg-primary active:text-white text-zinc-400 text-xs font-bold transition disabled:opacity-20 cursor-pointer shadow-sm border border-zinc-800/40"
-          title="Pitch Bend -"
-        >
-          -
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onMouseDown={() => startNudge('down')}
+              onMouseUp={stopNudge}
+              onMouseLeave={stopNudge}
+              onTouchStart={() => startNudge('down')}
+              onTouchEnd={stopNudge}
+              disabled={!track || !filterLowNode}
+              className="relative z-10 w-7 h-6 flex items-center justify-center rounded bg-zinc-900 hover:bg-zinc-800 active:bg-primary active:text-white text-zinc-400 text-xs font-bold transition disabled:opacity-20 cursor-pointer shadow-sm border border-zinc-800/40"
+            >
+              -
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('deck.pitchBendDownTooltip')}</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Pitch percentage text */}
@@ -140,23 +121,33 @@ export const PitchController: React.FC<PitchControllerProps> = ({
 
       {/* Key Shift Transpose Widget */}
       <div className="w-full flex items-center justify-between mt-1.5 px-1 bg-zinc-950 rounded border border-zinc-900 text-[9px] h-6">
-        <button
-          onClick={() => handleKeyShiftChange(keyShift - 1)}
-          disabled={!track || !filterLowNode || keyShift <= -12}
-          className="w-4 h-4 flex items-center justify-center rounded text-zinc-500 hover:text-white disabled:opacity-20 font-bold transition"
-        >
-          ◀
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => handleKeyShiftChange(keyShift - 1)}
+              disabled={!track || !filterLowNode || keyShift <= -12}
+              className="w-4 h-4 flex items-center justify-center rounded text-zinc-500 hover:text-white disabled:opacity-20 font-bold transition"
+            >
+              ◀
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('deck.keyShiftDownTooltip')}</TooltipContent>
+        </Tooltip>
         <span className="font-mono text-[9px] text-zinc-400 font-bold">
           KEY: {keyShift > 0 ? `+${keyShift}` : keyShift}
         </span>
-        <button
-          onClick={() => handleKeyShiftChange(keyShift + 1)}
-          disabled={!track || !filterLowNode || keyShift >= 12}
-          className="w-4 h-4 flex items-center justify-center rounded text-zinc-500 hover:text-white disabled:opacity-20 font-bold transition"
-        >
-          ▶
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => handleKeyShiftChange(keyShift + 1)}
+              disabled={!track || !filterLowNode || keyShift >= 12}
+              className="w-4 h-4 flex items-center justify-center rounded text-zinc-500 hover:text-white disabled:opacity-20 font-bold transition"
+            >
+              ▶
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('deck.keyShiftUpTooltip')}</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   )

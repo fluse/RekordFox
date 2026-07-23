@@ -7,6 +7,7 @@ import { useLanguage } from '@renderer/i18n'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { getYoutubeStreamUrl } from '@renderer/utils/audio'
 import { Button } from '@renderer/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import DiscoverTrackCard from './DiscoverTrackCard'
 
 export interface DiscoverContext {
@@ -262,14 +263,20 @@ export default function DiscoverView({
             <span className="max-w-[220px] truncate">
               {t('discover.seedTrackLabel', { title: seedTrack.title })}
             </span>
-            <button
-              type="button"
-              onClick={() => activePlaylistId && onContextChange({ playlistId: activePlaylistId })}
-              className="cursor-pointer text-primary/70 hover:text-primary"
-              title={t('discover.clearSeedTrack')}
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() =>
+                    activePlaylistId && onContextChange({ playlistId: activePlaylistId })
+                  }
+                  className="cursor-pointer text-primary/70 hover:text-primary"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('discover.clearSeedTrack')}</TooltipContent>
+            </Tooltip>
           </div>
         ) : (
           <span className="text-xs text-muted-foreground">{t('discover.basedOnArtists')}</span>

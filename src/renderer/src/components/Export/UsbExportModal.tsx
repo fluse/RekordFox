@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { HardDrive, X, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface UsbDrive {
   name: string
@@ -122,12 +123,17 @@ export default function UsbExportModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
         {step !== 'exporting' && (
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t('usbExport.closeTooltip')}</TooltipContent>
+          </Tooltip>
         )}
 
         <div className="mb-4 flex items-center gap-2.5">

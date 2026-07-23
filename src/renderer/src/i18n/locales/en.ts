@@ -31,6 +31,10 @@ export const en = {
   'sidebar.youtubeSourceTooltip': 'Imported from YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Synced with YouTube',
   'sidebar.pushPendingTooltip': 'Unsaved changes — not yet synced to YouTube',
+  'sidebar.addPlaylistTooltip': 'Add playlist',
+  'sidebar.renamePlaylistTooltip': 'Rename playlist',
+  'sidebar.syncPlaylistTooltip': 'Sync playlist',
+  'sidebar.deletePlaylistTooltip': 'Delete playlist',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Add YouTube Playlist',
@@ -42,6 +46,7 @@ export const en = {
   'addPlaylist.cancel': 'Cancel',
   'addPlaylist.add': 'Add',
   'addPlaylist.loading': 'Loading...',
+  'addPlaylist.closeTooltip': 'Close',
 
   // Settings Modal
   'settings.title': 'Settings',
@@ -52,6 +57,7 @@ export const en = {
   'settings.categoryConnections': 'Connections',
   'settings.saved': 'Setting saved',
   'settings.appearanceMode': 'Appearance',
+  'settings.themeModeLabel': 'Mode',
   'settings.themeDark': 'Dark',
   'settings.themeLight': 'Light',
   'settings.colorScheme': 'Color Scheme',
@@ -85,6 +91,13 @@ export const en = {
   'settings.storageHelp':
     'Shows how much disk space your downloaded tracks and the cover art cache currently use.',
   'settings.languageLabel': 'Language',
+  'settings.sectionTooltips': 'Tooltips',
+  'settings.tooltipsEnabledLabel': 'Show tooltips',
+  'settings.tooltipsEnabledHelp': 'Shows hints when you hover over buttons and icons.',
+  'settings.errorChangeTooltipsEnabled': 'Error changing tooltip setting.',
+  'settings.tooltipDelayLabel': 'Tooltip delay',
+  'settings.tooltipDelayMs': '{{count}} ms',
+  'settings.errorChangeTooltipDelay': 'Error changing tooltip delay.',
   'settings.close': 'Close',
   'settings.errorChangePath': 'Error changing storage location.',
   'settings.errorChangeTheme': 'Error changing theme.',
@@ -137,6 +150,7 @@ export const en = {
   'connections.title': 'Connections',
   'connections.subtitle':
     'Connect your YouTube account to import your own playlists, sort them harmonically, and sync the new order back.',
+  'connections.credentialsTitle': 'Google OAuth Credentials',
   'connections.clientIdLabel': 'Google OAuth Client ID',
   'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
   'connections.clientSecretLabel': 'Google OAuth Client Secret',
@@ -205,6 +219,10 @@ export const en = {
   'deck.noTrackLoaded': 'No track loaded',
   'deck.setCueTooltip': 'Set current position as Cue',
   'deck.autoloop': 'Autoloop (Beats)',
+  'deck.pitchBendUpTooltip': 'Pitch Bend +',
+  'deck.pitchBendDownTooltip': 'Pitch Bend -',
+  'deck.keyShiftUpTooltip': 'Shift key up a semitone',
+  'deck.keyShiftDownTooltip': 'Shift key down a semitone',
 
   // Track Row
   'track.waiting': 'Waiting...',
@@ -235,6 +253,10 @@ export const en = {
   'tracklist.syncingToYoutube': 'Syncing...',
   'tracklist.syncToYoutubeSuccess': 'Order successfully synced to YouTube.',
   'tracklist.syncToYoutubeError': 'Error syncing to YouTube: {{error}}',
+  'tracklist.previewPlayTooltip': 'Play track',
+  'tracklist.previewStopTooltip': 'Stop playback',
+  'tracklist.rateTooltip': 'Rate {{count}} stars',
+  'tracklist.loadDeckTooltip': 'Load into Deck {{deck}}',
 
   // USB Export Modal
   'usbExport.title': 'USB Export',
@@ -263,6 +285,7 @@ export const en = {
   'usbExport.closeBtn': 'Close',
   'usbExport.tryAgainBtn': 'Try again',
   'usbExport.errorScanDrives': 'Error scanning USB drives.',
+  'usbExport.closeTooltip': 'Close',
   'usbExport.notInitializedWarning':
     '⚠️ This drive has not been initialized with Rekordbox yet. The export will still work (music files will be copied), but waveforms will not load on CDJs until the drive is prepared in Rekordbox.',
 
@@ -287,6 +310,10 @@ export const en = {
   'preview.controls.next': 'Next',
   'preview.controls.smartModeEnable': 'Enable smart mode (order by BPM & key)',
   'preview.controls.smartModeDisable': 'Disable smart mode',
+  'preview.controls.play': 'Play',
+  'preview.controls.pause': 'Pause',
+  'preview.controls.mute': 'Mute',
+  'preview.controls.unmute': 'Unmute',
   'preview.smartMode.bpmTolerance.label': 'BPM tolerance',
   'preview.smartMode.bpmTolerance.strict': 'Strict',
   'preview.smartMode.bpmTolerance.normal': 'Normal',
@@ -306,6 +333,7 @@ export const en = {
   'preview.queue.fallback': 'Then',
   'preview.queue.fallbackHint': 'auto-generated',
   'preview.queue.empty': 'Queue is empty. Drag tracks here.',
+  'preview.queue.removeTooltip': 'Remove from queue',
 
   // Context Menu
   'contextMenu.playNow': 'Play Now',

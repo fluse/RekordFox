@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Search, X, HardDrive, SlidersHorizontal, Loader2 } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import { COLUMN_DEFS } from './columns'
 
 interface TracklistToolbarProps {
@@ -71,27 +72,35 @@ export default function TracklistToolbar({
             className="w-full rounded-full border border-zinc-800 bg-zinc-950 py-1.5 pl-9 pr-8 text-xs text-zinc-300 outline-none transition focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
           />
           {search && (
-            <button
-              type="button"
-              onClick={() => onSearchChange('')}
-              title={t('tracklist.clearSearch')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center text-zinc-500 hover:text-zinc-200 cursor-pointer"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center text-zinc-500 hover:text-zinc-200 cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('tracklist.clearSearch')}</TooltipContent>
+            </Tooltip>
           )}
         </div>
 
         <div className="relative">
-          <button
-            onClick={(): void => setIsColMenuOpen(!isColMenuOpen)}
-            className={`flex items-center justify-center h-8 w-8 rounded-full border border-zinc-800 bg-zinc-950 text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-100 hover:border-primary/55 cursor-pointer ${
-              isColMenuOpen ? 'border-primary/50 text-primary bg-zinc-900' : ''
-            }`}
-            title={t('tracklist.customizeColumns')}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={(): void => setIsColMenuOpen(!isColMenuOpen)}
+                className={`flex items-center justify-center h-8 w-8 rounded-full border border-zinc-800 bg-zinc-950 text-zinc-400 transition hover:bg-zinc-900 hover:text-zinc-100 hover:border-primary/55 cursor-pointer ${
+                  isColMenuOpen ? 'border-primary/50 text-primary bg-zinc-900' : ''
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{t('tracklist.customizeColumns')}</TooltipContent>
+          </Tooltip>
 
           {isColMenuOpen && (
             <>

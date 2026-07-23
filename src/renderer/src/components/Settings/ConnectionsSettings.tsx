@@ -14,11 +14,13 @@ import { toast } from 'sonner'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Label } from '@renderer/components/ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import type { AppSettings, Playlist, OAuthAccount } from '@main/db'
 import type { RemotePlaylistSummary } from '@main/youtubeSync'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 import GoogleOAuthSetupGuide from './GoogleOAuthSetupGuide'
+import SettingsSection from './SettingsSection'
 
 type PublicOAuthAccount = Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'>
 
@@ -199,7 +201,7 @@ export default function ConnectionsSettings({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h2 className="mb-1 flex items-center gap-2 text-base font-semibold text-foreground">
           <YoutubeIcon className="h-4 w-4" />
@@ -208,89 +210,92 @@ export default function ConnectionsSettings({
         <p className="text-xs text-muted-foreground">{t('connections.subtitle')}</p>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-border p-3">
-        <div>
-          <Label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            {t('connections.clientIdLabel')}
-          </Label>
-          <Input
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            onBlur={handleSaveCredentials}
-            placeholder={t('connections.clientIdPlaceholder')}
-            className="h-8 text-xs"
-          />
-        </div>
-        <div>
-          <Label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            {t('connections.clientSecretLabel')}
-          </Label>
-          <Input
-            type="password"
-            value={clientSecret}
-            onChange={(e) => setClientSecret(e.target.value)}
-            onBlur={handleSaveCredentials}
-            placeholder={t('connections.clientSecretPlaceholder')}
-            className="h-8 text-xs"
-          />
-        </div>
-        <p className="text-[10px] text-muted-foreground">{t('connections.credentialsHelp')}</p>
+      <SettingsSection title={t('connections.credentialsTitle')}>
+        <div className="space-y-3 rounded-lg border border-border p-3">
+          <div>
+            <Label className="mb-1.5 block text-sm font-medium text-muted-foreground">
+              {t('connections.clientIdLabel')}
+            </Label>
+            <Input
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              onBlur={handleSaveCredentials}
+              placeholder={t('connections.clientIdPlaceholder')}
+              className="h-8 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="mb-1.5 block text-sm font-medium text-muted-foreground">
+              {t('connections.clientSecretLabel')}
+            </Label>
+            <Input
+              type="password"
+              value={clientSecret}
+              onChange={(e) => setClientSecret(e.target.value)}
+              onBlur={handleSaveCredentials}
+              placeholder={t('connections.clientSecretPlaceholder')}
+              className="h-8 text-xs"
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground">{t('connections.credentialsHelp')}</p>
 
-        <button
-          type="button"
-          onClick={() => setIsGuideOpen((prev) => !prev)}
-          className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer"
-        >
-          <HelpCircle className="h-3.5 w-3.5" />
-          {t('oauthGuide.toggle')}
-          {isGuideOpen ? (
-            <ChevronUp className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )}
-        </button>
-        {isGuideOpen && <GoogleOAuthSetupGuide />}
-
-        <div className="flex items-center gap-2">
-          <Button
+          <button
             type="button"
-            size="sm"
-            onClick={handleConnect}
-            disabled={activeAction !== null}
-            className="gap-2"
+            onClick={() => setIsGuideOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer"
           >
-            {activeAction === 'connect' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+            <HelpCircle className="h-3.5 w-3.5" />
+            {t('oauthGuide.toggle')}
+            {isGuideOpen ? (
+              <ChevronUp className="h-3.5 w-3.5" />
             ) : (
-              <LogIn className="h-4 w-4" />
+              <ChevronDown className="h-3.5 w-3.5" />
             )}
-            {activeAction === 'connect'
-              ? t('connections.connecting')
-              : t('connections.connectButton')}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleCopyLink}
-            disabled={activeAction !== null}
-            title={t('connections.copyLinkTooltip')}
-            className="gap-2"
-          >
-            {activeAction === 'copy' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-            {t('connections.copyLink')}
-          </Button>
-        </div>
-      </div>
+          </button>
+          {isGuideOpen && <GoogleOAuthSetupGuide />}
 
-      <div>
-        <Label className="mb-2 block text-sm font-medium text-muted-foreground">
-          {t('connections.connectedAccountsTitle')}
-        </Label>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleConnect}
+              disabled={activeAction !== null}
+              className="gap-2"
+            >
+              {activeAction === 'connect' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogIn className="h-4 w-4" />
+              )}
+              {activeAction === 'connect'
+                ? t('connections.connecting')
+                : t('connections.connectButton')}
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  disabled={activeAction !== null}
+                  className="gap-2"
+                >
+                  {activeAction === 'copy' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {t('connections.copyLink')}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('connections.copyLinkTooltip')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title={t('connections.connectedAccountsTitle')}>
         {accounts.length === 0 ? (
           <p className="text-xs text-muted-foreground">{t('connections.noAccounts')}</p>
         ) : (
@@ -300,30 +305,38 @@ export default function ConnectionsSettings({
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">{account.label}</span>
                   <div className="flex items-center gap-1.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-sm"
-                      onClick={() => handleReconcile(account.id)}
-                      disabled={reconcilingId === account.id}
-                      title={t('connections.reconcileButton')}
-                    >
-                      {reconcilingId === account.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-sm"
-                      onClick={() => handleDisconnect(account.id)}
-                      title={t('connections.disconnectButton')}
-                      className="hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => handleReconcile(account.id)}
+                          disabled={reconcilingId === account.id}
+                        >
+                          {reconcilingId === account.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('connections.reconcileButton')}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => handleDisconnect(account.id)}
+                          className="hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('connections.disconnectButton')}</TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -356,20 +369,24 @@ export default function ConnectionsSettings({
                             {remote.title}{' '}
                             <span className="text-muted-foreground">({remote.itemCount})</span>
                           </span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            onClick={() => handleImport(account.id, remote.id)}
-                            disabled={importingId === remote.id}
-                            title={t('connections.importButton')}
-                          >
-                            {importingId === remote.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Download className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => handleImport(account.id, remote.id)}
+                                disabled={importingId === remote.id}
+                              >
+                                {importingId === remote.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Download className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('connections.importButton')}</TooltipContent>
+                          </Tooltip>
                         </div>
                       ))}
                     </div>
@@ -379,7 +396,7 @@ export default function ConnectionsSettings({
             ))}
           </div>
         )}
-      </div>
+      </SettingsSection>
     </div>
   )
 }

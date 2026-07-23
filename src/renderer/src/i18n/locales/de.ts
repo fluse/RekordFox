@@ -33,6 +33,10 @@ export const de = {
   'sidebar.youtubeSourceTooltip': 'Importiert von YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Mit YouTube synchronisiert',
   'sidebar.pushPendingTooltip': 'Ungespeicherte Änderungen — noch nicht zu YouTube synchronisiert',
+  'sidebar.addPlaylistTooltip': 'Playlist hinzufügen',
+  'sidebar.renamePlaylistTooltip': 'Playlist umbenennen',
+  'sidebar.syncPlaylistTooltip': 'Playlist synchronisieren',
+  'sidebar.deletePlaylistTooltip': 'Playlist löschen',
 
   // Add Playlist Modal
   'addPlaylist.title': 'YouTube Playlist hinzufügen',
@@ -44,6 +48,7 @@ export const de = {
   'addPlaylist.cancel': 'Abbrechen',
   'addPlaylist.add': 'Hinzufügen',
   'addPlaylist.loading': 'Wird geladen...',
+  'addPlaylist.closeTooltip': 'Schließen',
 
   // Settings Modal
   'settings.title': 'Einstellungen',
@@ -54,6 +59,7 @@ export const de = {
   'settings.categoryConnections': 'Verbindungen',
   'settings.saved': 'Einstellung gespeichert',
   'settings.appearanceMode': 'Erscheinungsbild',
+  'settings.themeModeLabel': 'Modus',
   'settings.themeDark': 'Dunkel',
   'settings.themeLight': 'Hell',
   'settings.colorScheme': 'Farbschema',
@@ -88,6 +94,14 @@ export const de = {
   'settings.storageHelp':
     'Zeigt, wie viel Speicherplatz deine heruntergeladenen Tracks und der Cover-Bild-Cache aktuell belegen.',
   'settings.languageLabel': 'Sprache',
+  'settings.sectionTooltips': 'Tooltips',
+  'settings.tooltipsEnabledLabel': 'Tooltips anzeigen',
+  'settings.tooltipsEnabledHelp':
+    'Zeigt Hinweistexte an, wenn du mit der Maus über Buttons und Icons fährst.',
+  'settings.errorChangeTooltipsEnabled': 'Fehler beim Ändern der Tooltip-Einstellung.',
+  'settings.tooltipDelayLabel': 'Tooltip-Verzögerung',
+  'settings.tooltipDelayMs': '{{count}} ms',
+  'settings.errorChangeTooltipDelay': 'Fehler beim Ändern der Tooltip-Verzögerung.',
   'settings.close': 'Schließen',
   'settings.errorChangePath': 'Fehler beim Ändern des Speicherorts.',
   'settings.errorChangeTheme': 'Fehler beim Ändern des Themes.',
@@ -140,6 +154,7 @@ export const de = {
   'connections.title': 'Verbindungen',
   'connections.subtitle':
     'Verbinde dein YouTube-Konto, um eigene Playlists zu importieren, harmonisch zu sortieren und die neue Reihenfolge zurück zu synchronisieren.',
+  'connections.credentialsTitle': 'Google OAuth Zugangsdaten',
   'connections.clientIdLabel': 'Google OAuth Client-ID',
   'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
   'connections.clientSecretLabel': 'Google OAuth Client-Secret',
@@ -209,6 +224,10 @@ export const de = {
   'deck.noTrackLoaded': 'Kein Track geladen',
   'deck.setCueTooltip': 'Aktuelle Position als Cue setzen',
   'deck.autoloop': 'Autoloop (Beats)',
+  'deck.pitchBendUpTooltip': 'Pitch Bend +',
+  'deck.pitchBendDownTooltip': 'Pitch Bend -',
+  'deck.keyShiftUpTooltip': 'Tonart einen Halbton höher',
+  'deck.keyShiftDownTooltip': 'Tonart einen Halbton tiefer',
 
   // Track Row
   'track.waiting': 'Warte...',
@@ -239,6 +258,10 @@ export const de = {
   'tracklist.syncingToYoutube': 'Synchronisiere...',
   'tracklist.syncToYoutubeSuccess': 'Reihenfolge erfolgreich zu YouTube synchronisiert.',
   'tracklist.syncToYoutubeError': 'Fehler beim Synchronisieren zu YouTube: {{error}}',
+  'tracklist.previewPlayTooltip': 'Track abspielen',
+  'tracklist.previewStopTooltip': 'Wiedergabe stoppen',
+  'tracklist.rateTooltip': '{{count}} Sterne vergeben',
+  'tracklist.loadDeckTooltip': 'In Deck {{deck}} laden',
 
   // USB Export Modal
   'usbExport.title': 'USB-Export',
@@ -267,6 +290,7 @@ export const de = {
   'usbExport.closeBtn': 'Schließen',
   'usbExport.tryAgainBtn': 'Erneut versuchen',
   'usbExport.errorScanDrives': 'Fehler beim Scannen der USB-Sticks.',
+  'usbExport.closeTooltip': 'Schließen',
   'usbExport.notInitializedWarning':
     '⚠️ Dieser Stick wurde noch nicht mit Rekordbox initialisiert. Der Export funktioniert (Musikdateien werden kopiert), aber die Waveforms können auf CDJs erst nach einer Rekordbox-Vorbereitung geladen werden.',
 
@@ -291,6 +315,10 @@ export const de = {
   'preview.controls.next': 'Nächster Titel',
   'preview.controls.smartModeEnable': 'Smart-Modus aktivieren (nach BPM & Tonart sortieren)',
   'preview.controls.smartModeDisable': 'Smart-Modus deaktivieren',
+  'preview.controls.play': 'Abspielen',
+  'preview.controls.pause': 'Pause',
+  'preview.controls.mute': 'Stumm schalten',
+  'preview.controls.unmute': 'Stummschaltung aufheben',
   'preview.smartMode.bpmTolerance.label': 'BPM-Toleranz',
   'preview.smartMode.bpmTolerance.strict': 'Streng',
   'preview.smartMode.bpmTolerance.normal': 'Normal',
@@ -310,6 +338,7 @@ export const de = {
   'preview.queue.fallback': 'Danach',
   'preview.queue.fallbackHint': 'automatisch erstellt',
   'preview.queue.empty': 'Warteschlange ist leer. Ziehe Tracks hierher.',
+  'preview.queue.removeTooltip': 'Aus Warteschlange entfernen',
 
   // Context Menu
   'contextMenu.playNow': 'Track abspielen',

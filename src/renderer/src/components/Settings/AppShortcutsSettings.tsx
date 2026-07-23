@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
-import { Label } from '@renderer/components/ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
+import SettingsSection from './SettingsSection'
 import { useLanguage, type TranslationKey } from '@renderer/i18n'
 import {
   APP_SHORTCUT_ACTIONS,
@@ -89,11 +90,9 @@ export default function AppShortcutsSettings({
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <Label className="block text-sm font-medium text-muted-foreground">
-          {t('settings.shortcuts.title')}
-        </Label>
+    <SettingsSection
+      title={t('settings.shortcuts.title')}
+      headerRight={
         <Button
           type="button"
           variant="ghost"
@@ -104,55 +103,62 @@ export default function AppShortcutsSettings({
           <RotateCcw className="h-3 w-3" />
           {t('settings.shortcuts.resetAll')}
         </Button>
-      </div>
-      <p className="mb-3 text-[10px] text-muted-foreground">{t('settings.shortcuts.help')}</p>
+      }
+    >
+      <div>
+        <p className="mb-3 text-[10px] text-muted-foreground">{t('settings.shortcuts.help')}</p>
 
-      <div className="flex flex-col gap-1.5">
-        {APP_SHORTCUT_ACTIONS.map((action) => {
-          const isRecording = recordingAction === action
-          const hasConflict = conflict?.action === action
+        <div className="flex flex-col gap-1.5">
+          {APP_SHORTCUT_ACTIONS.map((action) => {
+            const isRecording = recordingAction === action
+            const hasConflict = conflict?.action === action
 
-          return (
-            <div key={action} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
-                <span className="text-xs text-foreground/80">{t(ACTION_LABEL_KEYS[action])}</span>
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    type="button"
-                    variant={isRecording ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => {
-                      setConflict(null)
-                      setRecordingAction(action)
-                    }}
-                    className={`min-w-[110px] font-mono ${isRecording ? 'animate-pulse' : ''}`}
-                  >
-                    {isRecording
-                      ? t('settings.shortcuts.pressKey')
-                      : formatCombo(shortcuts[action])}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleReset(action)}
-                    title={t('settings.shortcuts.reset')}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                  </Button>
+            return (
+              <div key={action} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+                  <span className="text-xs text-foreground/80">{t(ACTION_LABEL_KEYS[action])}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant={isRecording ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setConflict(null)
+                        setRecordingAction(action)
+                      }}
+                      className={`min-w-[110px] font-mono ${isRecording ? 'animate-pulse' : ''}`}
+                    >
+                      {isRecording
+                        ? t('settings.shortcuts.pressKey')
+                        : formatCombo(shortcuts[action])}
+                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleReset(action)}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('settings.shortcuts.reset')}</TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
+                {hasConflict && (
+                  <p className="text-[10px] font-semibold text-destructive bg-destructive/10 border border-destructive/20 rounded px-2 py-1">
+                    {t('settings.shortcuts.conflict', {
+                      action: t(ACTION_LABEL_KEYS[conflict.withAction])
+                    })}
+                  </p>
+                )}
               </div>
-              {hasConflict && (
-                <p className="text-[10px] font-semibold text-destructive bg-destructive/10 border border-destructive/20 rounded px-2 py-1">
-                  {t('settings.shortcuts.conflict', {
-                    action: t(ACTION_LABEL_KEYS[conflict.withAction])
-                  })}
-                </p>
-              )}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
-    </div>
+    </SettingsSection>
   )
 }

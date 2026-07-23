@@ -1,5 +1,6 @@
 import React from 'react'
 import { Pause, Play, SkipBack, SkipForward, Sparkles, Volume2, VolumeX } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface PreviewPlayerControlsProps {
   isPlaying: boolean
@@ -8,10 +9,14 @@ interface PreviewPlayerControlsProps {
   onNext: () => void
   previousLabel: string
   nextLabel: string
+  playLabel: string
+  pauseLabel: string
   volume: number
   isMuted: boolean
   onVolumeChange: (volume: number) => void
   onToggleMute: () => void
+  muteLabel: string
+  unmuteLabel: string
   smartMode: boolean
   onToggleSmartMode: () => void
   smartModeEnableLabel: string
@@ -25,10 +30,14 @@ export const PreviewPlayerControls: React.FC<PreviewPlayerControlsProps> = ({
   onNext,
   previousLabel,
   nextLabel,
+  playLabel,
+  pauseLabel,
   volume,
   isMuted,
   onVolumeChange,
   onToggleMute,
+  muteLabel,
+  unmuteLabel,
   smartMode,
   onToggleSmartMode,
   smartModeEnableLabel,
@@ -39,56 +48,80 @@ export const PreviewPlayerControls: React.FC<PreviewPlayerControlsProps> = ({
   return (
     <div className="flex items-center justify-between mt-1">
       <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={onToggleSmartMode}
-          title={smartMode ? smartModeDisableLabel : smartModeEnableLabel}
-          aria-pressed={smartMode}
-          className={`flex h-7 w-7 items-center justify-center rounded-full transition active:scale-95 cursor-pointer ${
-            smartMode
-              ? 'bg-primary/20 text-primary hover:bg-primary/30'
-              : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
-          }`}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-        </button>
-        <button
-          type="button"
-          onClick={onPrevious}
-          title={previousLabel}
-          className="flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 active:scale-95 transition cursor-pointer"
-        >
-          <SkipBack className="h-3.5 w-3.5 fill-current" />
-        </button>
-        <button
-          type="button"
-          onClick={onTogglePlay}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 transition cursor-pointer shadow-lg shadow-primary/20"
-        >
-          {isPlaying ? (
-            <Pause className="h-4.5 w-4.5 fill-current" />
-          ) : (
-            <Play className="h-4.5 w-4.5 fill-current ml-0.5" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          title={nextLabel}
-          className="flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 active:scale-95 transition cursor-pointer"
-        >
-          <SkipForward className="h-3.5 w-3.5 fill-current" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggleSmartMode}
+              aria-pressed={smartMode}
+              className={`flex h-7 w-7 items-center justify-center rounded-full transition active:scale-95 cursor-pointer ${
+                smartMode
+                  ? 'bg-primary/20 text-primary hover:bg-primary/30'
+                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {smartMode ? smartModeDisableLabel : smartModeEnableLabel}
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onPrevious}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 active:scale-95 transition cursor-pointer"
+            >
+              <SkipBack className="h-3.5 w-3.5 fill-current" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{previousLabel}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onTogglePlay}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 transition cursor-pointer shadow-lg shadow-primary/20"
+            >
+              {isPlaying ? (
+                <Pause className="h-4.5 w-4.5 fill-current" />
+              ) : (
+                <Play className="h-4.5 w-4.5 fill-current ml-0.5" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{isPlaying ? pauseLabel : playLabel}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onNext}
+              className="flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 active:scale-95 transition cursor-pointer"
+            >
+              <SkipForward className="h-3.5 w-3.5 fill-current" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{nextLabel}</TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="flex items-center gap-2 group/volume w-32">
-        <button
-          type="button"
-          onClick={onToggleMute}
-          className="text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
-        >
-          {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggleMute}
+              className="text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{isMuted ? unmuteLabel : muteLabel}</TooltipContent>
+        </Tooltip>
         <input
           type="range"
           min={0}

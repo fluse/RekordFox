@@ -2,6 +2,7 @@ import React from 'react'
 import { X, Sparkles, RefreshCw } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface YoutubeConnectModalProps {
   isOpen: boolean
@@ -21,12 +22,17 @@ export default function YoutubeConnectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute cursor-pointer top-4 right-4 text-zinc-400 hover:text-zinc-200"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onClose}
+              className="absolute cursor-pointer top-4 right-4 text-zinc-400 hover:text-zinc-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('youtubeConnect.close')}</TooltipContent>
+        </Tooltip>
 
         <div className="mb-4 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10">

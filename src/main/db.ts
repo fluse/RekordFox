@@ -91,6 +91,8 @@ export interface AppSettings {
   appShortcuts?: Record<string, string>
   youtubeClientId?: string
   youtubeClientSecret?: string
+  tooltipsEnabled?: boolean
+  tooltipDelay?: number
 }
 
 interface DatabaseSchema {
@@ -119,7 +121,9 @@ let dbData: DatabaseSchema = {
     maxWorkers: 1,
     language: 'de',
     filenameTemplate: 'default',
-    historyLimit: 50
+    historyLimit: 50,
+    tooltipsEnabled: true,
+    tooltipDelay: 200
   }
 }
 
@@ -147,7 +151,9 @@ export function initDb(): void {
       maxWorkers: 3,
       language: 'de',
       rekordboxXmlPath: '',
-      historyLimit: 50
+      historyLimit: 50,
+      tooltipsEnabled: true,
+      tooltipDelay: 200
     }
     saveDb()
   } else {
@@ -170,7 +176,9 @@ export function initDb(): void {
           maxWorkers: 3,
           language: 'de',
           filenameTemplate: 'default',
-          rekordboxXmlPath: ''
+          rekordboxXmlPath: '',
+          tooltipsEnabled: true,
+          tooltipDelay: 200
         }
       } else {
         if (!dbData.settings.theme) dbData.settings.theme = 'dark'
@@ -181,6 +189,8 @@ export function initDb(): void {
         if (!dbData.settings.language) dbData.settings.language = 'de'
         if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'default'
         if (dbData.settings.rekordboxXmlPath === undefined) dbData.settings.rekordboxXmlPath = ''
+        if (dbData.settings.tooltipsEnabled === undefined) dbData.settings.tooltipsEnabled = true
+        if (dbData.settings.tooltipDelay === undefined) dbData.settings.tooltipDelay = 200
       }
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
@@ -914,7 +924,9 @@ export function getSettings(): AppSettings {
       sidebarWidth: 256,
       maxWorkers: 3,
       language: 'de',
-      historyLimit: 50
+      historyLimit: 50,
+      tooltipsEnabled: true,
+      tooltipDelay: 200
     }
   )
 }

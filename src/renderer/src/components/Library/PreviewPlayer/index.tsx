@@ -166,6 +166,7 @@ export default function PreviewPlayer({
           title={t('preview.title')}
           onDragStart={isDocked ? () => {} : handleMouseDown}
           onClose={stopTrack}
+          closeLabel={t('preview.close')}
           isQueueOpen={isQueuePanelOpen}
           onToggleQueue={toggleQueuePanel}
           queueToggleLabel={t('preview.queue.toggle')}
@@ -190,10 +191,14 @@ export default function PreviewPlayer({
             onNext={advance}
             previousLabel={t('preview.controls.previous')}
             nextLabel={t('preview.controls.next')}
+            playLabel={t('preview.controls.play')}
+            pauseLabel={t('preview.controls.pause')}
             volume={volume}
             isMuted={isMuted}
             onVolumeChange={handleVolumeChange}
             onToggleMute={toggleMute}
+            muteLabel={t('preview.controls.mute')}
+            unmuteLabel={t('preview.controls.unmute')}
             smartMode={smartMode}
             onToggleSmartMode={toggleSmartMode}
             smartModeEnableLabel={t('preview.controls.smartModeEnable')}

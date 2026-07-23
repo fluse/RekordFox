@@ -31,6 +31,10 @@ export const es = {
   'sidebar.youtubeSourceTooltip': 'Importado desde YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Sincronizado con YouTube',
   'sidebar.pushPendingTooltip': 'Cambios sin guardar — aún no sincronizados con YouTube',
+  'sidebar.addPlaylistTooltip': 'Añadir playlist',
+  'sidebar.renamePlaylistTooltip': 'Renombrar playlist',
+  'sidebar.syncPlaylistTooltip': 'Sincronizar playlist',
+  'sidebar.deletePlaylistTooltip': 'Eliminar playlist',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Añadir playlist de YouTube',
@@ -42,6 +46,7 @@ export const es = {
   'addPlaylist.cancel': 'Cancelar',
   'addPlaylist.add': 'Añadir',
   'addPlaylist.loading': 'Cargando...',
+  'addPlaylist.closeTooltip': 'Cerrar',
 
   // Settings Modal
   'settings.title': 'Ajustes',
@@ -52,6 +57,7 @@ export const es = {
   'settings.categoryConnections': 'Conexiones',
   'settings.saved': 'Configuración guardada',
   'settings.appearanceMode': 'Apariencia',
+  'settings.themeModeLabel': 'Modo',
   'settings.themeDark': 'Oscuro',
   'settings.themeLight': 'Claro',
   'settings.colorScheme': 'Esquema de color',
@@ -85,6 +91,14 @@ export const es = {
   'settings.storageHelp':
     'Muestra cuánto espacio en disco ocupan actualmente tus temas descargados y la caché de portadas.',
   'settings.languageLabel': 'Idioma',
+  'settings.sectionTooltips': 'Tooltips',
+  'settings.tooltipsEnabledLabel': 'Mostrar tooltips',
+  'settings.tooltipsEnabledHelp':
+    'Muestra pistas al pasar el ratón por encima de botones e iconos.',
+  'settings.errorChangeTooltipsEnabled': 'Error al cambiar la configuración de tooltips.',
+  'settings.tooltipDelayLabel': 'Retraso de los tooltips',
+  'settings.tooltipDelayMs': '{{count}} ms',
+  'settings.errorChangeTooltipDelay': 'Error al cambiar el retraso de los tooltips.',
   'settings.close': 'Cerrar',
   'settings.errorChangePath': 'Error al cambiar la carpeta.',
   'settings.errorChangeTheme': 'Error al cambiar el tema.',
@@ -137,6 +151,7 @@ export const es = {
   'connections.title': 'Conexiones',
   'connections.subtitle':
     'Conecta tu cuenta de YouTube para importar tus playlists, ordenarlas armónicamente y volver a sincronizar el nuevo orden.',
+  'connections.credentialsTitle': 'Credenciales de Google OAuth',
   'connections.clientIdLabel': 'ID de cliente OAuth de Google',
   'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
   'connections.clientSecretLabel': 'Secreto de cliente OAuth de Google',
@@ -205,6 +220,10 @@ export const es = {
   'deck.noTrackLoaded': 'Ningún tema cargado',
   'deck.setCueTooltip': 'Establecer posición actual como Cue',
   'deck.autoloop': 'Autoloop (Beats)',
+  'deck.pitchBendUpTooltip': 'Pitch Bend +',
+  'deck.pitchBendDownTooltip': 'Pitch Bend -',
+  'deck.keyShiftUpTooltip': 'Subir la tonalidad un semitono',
+  'deck.keyShiftDownTooltip': 'Bajar la tonalidad un semitono',
 
   // Track Row
   'track.waiting': 'Esperando...',
@@ -235,6 +254,10 @@ export const es = {
   'tracklist.syncingToYoutube': 'Sincronizando...',
   'tracklist.syncToYoutubeSuccess': 'Orden sincronizado correctamente con YouTube.',
   'tracklist.syncToYoutubeError': 'Error al sincronizar con YouTube: {{error}}',
+  'tracklist.previewPlayTooltip': 'Reproducir tema',
+  'tracklist.previewStopTooltip': 'Detener reproducción',
+  'tracklist.rateTooltip': 'Valorar con {{count}} estrellas',
+  'tracklist.loadDeckTooltip': 'Cargar en Deck {{deck}}',
 
   // USB Export Modal
   'usbExport.title': 'Exportar USB',
@@ -264,6 +287,7 @@ export const es = {
   'usbExport.closeBtn': 'Cerrar',
   'usbExport.tryAgainBtn': 'Reintentar',
   'usbExport.errorScanDrives': 'Error al buscar memorias USB.',
+  'usbExport.closeTooltip': 'Cerrar',
   'usbExport.notInitializedWarning':
     '⚠️ Esta unidad no ha sido inicializada con Rekordbox todavía. La exportación funcionará (los archivos se copiarán), pero las formas de onda no se cargarán en los CDJ hasta que prepares la unidad en Rekordbox.',
 
@@ -288,6 +312,10 @@ export const es = {
   'preview.controls.next': 'Siguiente',
   'preview.controls.smartModeEnable': 'Activar modo inteligente (ordenar por BPM y tonalidad)',
   'preview.controls.smartModeDisable': 'Desactivar modo inteligente',
+  'preview.controls.play': 'Reproducir',
+  'preview.controls.pause': 'Pausar',
+  'preview.controls.mute': 'Silenciar',
+  'preview.controls.unmute': 'Quitar silencio',
   'preview.smartMode.bpmTolerance.label': 'Tolerancia de BPM',
   'preview.smartMode.bpmTolerance.strict': 'Estricta',
   'preview.smartMode.bpmTolerance.normal': 'Normal',
@@ -307,6 +335,7 @@ export const es = {
   'preview.queue.fallback': 'Después',
   'preview.queue.fallbackHint': 'generado automáticamente',
   'preview.queue.empty': 'La cola está vacía. Arrastra pistas aquí.',
+  'preview.queue.removeTooltip': 'Quitar de la cola',
 
   // Context Menu
   'contextMenu.playNow': 'Reproducir ahora',

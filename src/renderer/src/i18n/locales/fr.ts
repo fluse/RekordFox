@@ -34,6 +34,10 @@ export const fr = {
   'sidebar.pushSyncedTooltip': 'Synchronisé avec YouTube',
   'sidebar.pushPendingTooltip':
     'Modifications non enregistrées — pas encore synchronisées avec YouTube',
+  'sidebar.addPlaylistTooltip': 'Ajouter une playlist',
+  'sidebar.renamePlaylistTooltip': 'Renommer la playlist',
+  'sidebar.syncPlaylistTooltip': 'Synchroniser la playlist',
+  'sidebar.deletePlaylistTooltip': 'Supprimer la playlist',
 
   // Add Playlist Modal
   'addPlaylist.title': 'Ajouter une playlist YouTube',
@@ -45,6 +49,7 @@ export const fr = {
   'addPlaylist.cancel': 'Annuler',
   'addPlaylist.add': 'Ajouter',
   'addPlaylist.loading': 'Chargement...',
+  'addPlaylist.closeTooltip': 'Fermer',
 
   // Settings Modal
   'settings.title': 'Paramètres',
@@ -55,6 +60,7 @@ export const fr = {
   'settings.categoryConnections': 'Connexions',
   'settings.saved': 'Paramètre enregistré',
   'settings.appearanceMode': 'Apparence',
+  'settings.themeModeLabel': 'Mode',
   'settings.themeDark': 'Sombre',
   'settings.themeLight': 'Clair',
   'settings.colorScheme': 'Schéma de couleurs',
@@ -89,6 +95,13 @@ export const fr = {
   'settings.storageHelp':
     "Indique l'espace disque actuellement utilisé par vos titres téléchargés et le cache des pochettes.",
   'settings.languageLabel': 'Langue',
+  'settings.sectionTooltips': 'Info-bulles',
+  'settings.tooltipsEnabledLabel': 'Afficher les info-bulles',
+  'settings.tooltipsEnabledHelp': 'Affiche des info-bulles au survol des boutons et des icônes.',
+  'settings.errorChangeTooltipsEnabled': "Erreur lors du changement du paramètre d'info-bulles.",
+  'settings.tooltipDelayLabel': "Délai d'apparition des info-bulles",
+  'settings.tooltipDelayMs': '{{count}} ms',
+  'settings.errorChangeTooltipDelay': "Erreur lors du changement du délai d'info-bulles.",
   'settings.close': 'Fermer',
   'settings.errorChangePath': "Erreur lors de la modification de l'emplacement.",
   'settings.errorChangeTheme': 'Erreur lors du changement de thème.',
@@ -142,6 +155,7 @@ export const fr = {
   'connections.title': 'Connexions',
   'connections.subtitle':
     'Connectez votre compte YouTube pour importer vos playlists, les trier harmoniquement et resynchroniser le nouvel ordre.',
+  'connections.credentialsTitle': 'Identifiants Google OAuth',
   'connections.clientIdLabel': 'ID client OAuth Google',
   'connections.clientIdPlaceholder': 'xxxxxxxx.apps.googleusercontent.com',
   'connections.clientSecretLabel': 'Secret client OAuth Google',
@@ -210,6 +224,10 @@ export const fr = {
   'deck.noTrackLoaded': 'Aucune piste chargée',
   'deck.setCueTooltip': 'Définir la position actuelle comme Cue',
   'deck.autoloop': 'Autoloop (Beats)',
+  'deck.pitchBendUpTooltip': 'Pitch Bend +',
+  'deck.pitchBendDownTooltip': 'Pitch Bend -',
+  'deck.keyShiftUpTooltip': "Monter la tonalité d'un demi-ton",
+  'deck.keyShiftDownTooltip': "Descendre la tonalité d'un demi-ton",
 
   // Track Row
   'track.waiting': 'Attente...',
@@ -240,6 +258,10 @@ export const fr = {
   'tracklist.syncingToYoutube': 'Synchronisation...',
   'tracklist.syncToYoutubeSuccess': 'Ordre synchronisé avec succès vers YouTube.',
   'tracklist.syncToYoutubeError': 'Erreur de synchronisation vers YouTube : {{error}}',
+  'tracklist.previewPlayTooltip': 'Lire le titre',
+  'tracklist.previewStopTooltip': 'Arrêter la lecture',
+  'tracklist.rateTooltip': 'Noter {{count}} étoiles',
+  'tracklist.loadDeckTooltip': 'Charger dans le Deck {{deck}}',
 
   // USB Export Modal
   'usbExport.title': 'Export USB',
@@ -269,6 +291,7 @@ export const fr = {
   'usbExport.closeBtn': 'Fermer',
   'usbExport.tryAgainBtn': 'Réessayer',
   'usbExport.errorScanDrives': 'Erreur lors de la recherche des clés USB.',
+  'usbExport.closeTooltip': 'Fermer',
   'usbExport.notInitializedWarning':
     "⚠️ Ce lecteur n'a pas encore été initialisé avec Rekordbox. L'exportation fonctionnera toujours (les fichiers musicaux seront copiés), mais les formes d'onde ne se chargeront pas sur les CDJ tant que le lecteur ne sera pas préparé dans Rekordbox.",
 
@@ -294,6 +317,10 @@ export const fr = {
   'preview.controls.next': 'Suivant',
   'preview.controls.smartModeEnable': 'Activer le mode intelligent (trier par BPM et tonalité)',
   'preview.controls.smartModeDisable': 'Désactiver le mode intelligent',
+  'preview.controls.play': 'Lecture',
+  'preview.controls.pause': 'Pause',
+  'preview.controls.mute': 'Couper le son',
+  'preview.controls.unmute': 'Réactiver le son',
   'preview.smartMode.bpmTolerance.label': 'Tolérance BPM',
   'preview.smartMode.bpmTolerance.strict': 'Stricte',
   'preview.smartMode.bpmTolerance.normal': 'Normale',
@@ -313,6 +340,7 @@ export const fr = {
   'preview.queue.fallback': 'Ensuite',
   'preview.queue.fallbackHint': 'généré automatiquement',
   'preview.queue.empty': "La file d'attente est vide. Glissez des titres ici.",
+  'preview.queue.removeTooltip': "Retirer de la file d'attente",
 
   // Context Menu
   'contextMenu.playNow': 'Lire maintenant',

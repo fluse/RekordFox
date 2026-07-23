@@ -5,6 +5,7 @@ import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { camelotColor, camelotTextColor } from '@renderer/utils/camelot'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '---'
@@ -196,28 +197,37 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                       )}
 
                       {!isPlaceholder && (
-                        <button
-                          type="button"
-                          onClick={(e): void => {
-                            e.stopPropagation()
-                            if (isCurrentlyPlaying) {
-                              stopTrack()
-                            } else {
-                              onPlayNow(track)
-                            }
-                          }}
-                          className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer ${
-                            isCurrentlyPlaying
-                              ? 'opacity-100 text-primary'
-                              : 'opacity-0 group-hover:opacity-100 text-zinc-100 hover:text-primary hover:scale-105'
-                          }`}
-                        >
-                          {isCurrentlyPlaying ? (
-                            <Pause className="h-5 w-5 fill-primary text-primary" />
-                          ) : (
-                            <Play className="h-5 w-5 fill-current" />
-                          )}
-                        </button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e): void => {
+                                e.stopPropagation()
+                                if (isCurrentlyPlaying) {
+                                  stopTrack()
+                                } else {
+                                  onPlayNow(track)
+                                }
+                              }}
+                              className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer ${
+                                isCurrentlyPlaying
+                                  ? 'opacity-100 text-primary'
+                                  : 'opacity-0 group-hover:opacity-100 text-zinc-100 hover:text-primary hover:scale-105'
+                              }`}
+                            >
+                              {isCurrentlyPlaying ? (
+                                <Pause className="h-5 w-5 fill-primary text-primary" />
+                              ) : (
+                                <Play className="h-5 w-5 fill-current" />
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {isCurrentlyPlaying
+                              ? t('tracklist.previewStopTooltip')
+                              : t('tracklist.previewPlayTooltip')}
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   </div>
@@ -244,27 +254,33 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                     {[1, 2, 3, 4, 5].map((starValue) => {
                       const isFilled = starValue <= (track.rating || 0)
                       return (
-                        <button
-                          key={starValue}
-                          type="button"
-                          onClick={(): Promise<void> => handleSetRating(starValue)}
-                          disabled={isPlaceholder}
-                          className={`transition-colors p-0.5 ${
-                            isPlaceholder
-                              ? 'text-zinc-800 cursor-not-allowed'
-                              : 'text-zinc-600 hover:text-amber-500'
-                          }`}
-                        >
-                          <Star
-                            className={`h-3.5 w-3.5 ${
-                              isFilled
-                                ? 'fill-amber-500 text-amber-500'
-                                : isPlaceholder
-                                  ? 'text-zinc-800'
-                                  : 'text-zinc-700 hover:text-amber-500'
-                            }`}
-                          />
-                        </button>
+                        <Tooltip key={starValue}>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(): Promise<void> => handleSetRating(starValue)}
+                              disabled={isPlaceholder}
+                              className={`transition-colors p-0.5 ${
+                                isPlaceholder
+                                  ? 'text-zinc-800 cursor-not-allowed'
+                                  : 'text-zinc-600 hover:text-amber-500'
+                              }`}
+                            >
+                              <Star
+                                className={`h-3.5 w-3.5 ${
+                                  isFilled
+                                    ? 'fill-amber-500 text-amber-500'
+                                    : isPlaceholder
+                                      ? 'text-zinc-800'
+                                      : 'text-zinc-700 hover:text-amber-500'
+                                }`}
+                              />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('tracklist.rateTooltip', { count: starValue })}
+                          </TooltipContent>
+                        </Tooltip>
                       )
                     })}
                   </div>
@@ -355,38 +371,52 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
               return (
                 <td key={colId} className="py-2.5 px-3">
                   <div className="flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(): void => {
-                        if (!isPlaceholder) onLoadTrack(track, 'A')
-                      }}
-                      disabled={isPlaceholder}
-                      className={`rounded px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
-                        isPlayingA
-                          ? 'bg-primary text-white'
-                          : isPlaceholder
-                            ? 'bg-zinc-950/40 text-zinc-700 cursor-not-allowed border border-zinc-900/60'
-                            : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
-                      }`}
-                    >
-                      A
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(): void => {
-                        if (!isPlaceholder) onLoadTrack(track, 'B')
-                      }}
-                      disabled={isPlaceholder}
-                      className={`rounded px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
-                        isPlayingB
-                          ? 'bg-primary text-white'
-                          : isPlaceholder
-                            ? 'bg-zinc-950/40 text-zinc-700 cursor-not-allowed border border-zinc-900/60'
-                            : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
-                      }`}
-                    >
-                      B
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(): void => {
+                            if (!isPlaceholder) onLoadTrack(track, 'A')
+                          }}
+                          disabled={isPlaceholder}
+                          className={`rounded px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                            isPlayingA
+                              ? 'bg-primary text-white'
+                              : isPlaceholder
+                                ? 'bg-zinc-950/40 text-zinc-700 cursor-not-allowed border border-zinc-900/60'
+                                : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
+                          }`}
+                        >
+                          A
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t('tracklist.loadDeckTooltip', { deck: 'A' })}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(): void => {
+                            if (!isPlaceholder) onLoadTrack(track, 'B')
+                          }}
+                          disabled={isPlaceholder}
+                          className={`rounded px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                            isPlayingB
+                              ? 'bg-primary text-white'
+                              : isPlaceholder
+                                ? 'bg-zinc-950/40 text-zinc-700 cursor-not-allowed border border-zinc-900/60'
+                                : 'bg-zinc-800 text-zinc-300 hover:bg-primary/20 hover:text-primary'
+                          }`}
+                        >
+                          B
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t('tracklist.loadDeckTooltip', { deck: 'B' })}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </td>
               )

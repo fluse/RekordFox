@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, Loader2, X } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface AddPlaylistModalProps {
   isOpen: boolean
@@ -48,12 +49,17 @@ export default function AddPlaylistModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute cursor-pointer top-4 right-4 text-zinc-400 hover:text-zinc-200"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onClose}
+              className="absolute cursor-pointer top-4 right-4 text-zinc-400 hover:text-zinc-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('addPlaylist.closeTooltip')}</TooltipContent>
+        </Tooltip>
 
         <h2 className="mb-4 text-xl font-bold text-zinc-100">{t('addPlaylist.title')}</h2>
 

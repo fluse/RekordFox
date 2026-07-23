@@ -18,6 +18,7 @@ import logoLight from '@renderer/assets/logo-rekordfox-light.svg'
 import { useLanguage } from '@renderer/i18n'
 import { canDropTrack } from '@renderer/utils/playlistSource'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface SidebarProps {
   playlists: Playlist[]
@@ -167,19 +168,28 @@ export default function Sidebar({
             {t('sidebar.playlists')}
           </span>
           <div className="flex items-center gap-0.5">
-            <button
-              onClick={onOpenYoutubeConnect}
-              title={t('sidebar.connectYoutubeTooltip')}
-              className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 opacity-70 hover:opacity-100"
-            >
-              <YoutubeIcon className="h-4 w-4" />
-            </button>
-            <button
-              onClick={onOpenAddModal}
-              className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onOpenYoutubeConnect}
+                  className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 opacity-70 hover:opacity-100"
+                >
+                  <YoutubeIcon className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.connectYoutubeTooltip')}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onOpenAddModal}
+                  className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.addPlaylistTooltip')}</TooltipContent>
+            </Tooltip>
           </div>
         </div>
 
@@ -234,12 +244,14 @@ export default function Sidebar({
                       }}
                     >
                       {playlist.source === 'youtube-oauth' && (
-                        <span
-                          className="flex-shrink-0 flex items-center"
-                          title={t('sidebar.youtubeSourceTooltip')}
-                        >
-                          <YoutubeIcon className="h-3 w-3" />
-                        </span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex-shrink-0 flex items-center">
+                              <YoutubeIcon className="h-3 w-3" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{t('sidebar.youtubeSourceTooltip')}</TooltipContent>
+                        </Tooltip>
                       )}
                       <span className="truncate">{playlist.title}</span>
                     </div>
@@ -251,17 +263,21 @@ export default function Sidebar({
                       {playlist.source === 'youtube-oauth' &&
                         syncState.status !== 'syncing' &&
                         (playlist.pendingRemoteChanges ? (
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-amber-500"
-                            title={t('sidebar.pushPendingTooltip')}
-                          />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>{t('sidebar.pushPendingTooltip')}</TooltipContent>
+                          </Tooltip>
                         ) : playlist.lastPushToYoutube ? (
-                          <span
-                            title={t('sidebar.pushSyncedTooltip')}
-                            className="flex items-center"
-                          >
-                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="flex items-center">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('sidebar.pushSyncedTooltip')}</TooltipContent>
+                          </Tooltip>
                         ) : null)}
                       {syncState.status === 'syncing' ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
@@ -356,34 +372,49 @@ export default function Sidebar({
                 {/* Hover Actions */}
                 {editingPlaylistId !== playlist.id && (
                   <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        startEditing(playlist)
-                      }}
-                      className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSyncPlaylist(playlist.id)
-                      }}
-                      disabled={syncState.status === 'syncing'}
-                      className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-50"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDeletePlaylist(playlist.id)
-                      }}
-                      className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            startEditing(playlist)
+                          }}
+                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('sidebar.renamePlaylistTooltip')}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onSyncPlaylist(playlist.id)
+                          }}
+                          disabled={syncState.status === 'syncing'}
+                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-50"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('sidebar.syncPlaylistTooltip')}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onDeletePlaylist(playlist.id)
+                          }}
+                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('sidebar.deletePlaylistTooltip')}</TooltipContent>
+                    </Tooltip>
                   </div>
                 )}
               </div>

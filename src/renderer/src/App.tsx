@@ -11,6 +11,7 @@ import SettingsView from '@renderer/components/Settings'
 import YoutubeConnectModal from '@renderer/components/Integrations/YoutubeConnectModal'
 import { DiscoverView, type DiscoverContext } from '@renderer/components/Discover'
 import { Toaster } from '@renderer/components/ui/sonner'
+import { TooltipProvider, TooltipSettingsProvider } from '@renderer/components/ui/tooltip'
 import { ChevronDown } from 'lucide-react'
 import type { Track } from '@main/db'
 import { useApp } from './hooks/useApp'
@@ -224,7 +225,11 @@ export default function App(): React.JSX.Element {
         await handleUpdateSettings({ language: lang })
       }}
     >
-      <AppContent appState={appState} />
+      <TooltipSettingsProvider enabled={settings.tooltipsEnabled ?? true}>
+        <TooltipProvider delayDuration={settings.tooltipDelay ?? 200}>
+          <AppContent appState={appState} />
+        </TooltipProvider>
+      </TooltipSettingsProvider>
     </LanguageProvider>
   )
 }

@@ -3,6 +3,7 @@ import { Ban, Check, Loader2, Music, Pause, Play, Plus } from 'lucide-react'
 import type { RecommendedTrack } from '@main/explore'
 import { useLanguage } from '@renderer/i18n'
 import { formatDuration } from '@renderer/utils/audio'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 interface DiscoverTrackCardProps {
   track: RecommendedTrack
@@ -36,29 +37,39 @@ export default function DiscoverTrackCard({
       }`}
     >
       {!isAdded && (
-        <button
-          type="button"
-          onClick={onToggleSelect}
-          className={`absolute left-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded border transition cursor-pointer ${
-            isSelected
-              ? 'border-primary bg-primary text-primary-foreground'
-              : 'border-border bg-background/80 text-transparent hover:border-primary'
-          }`}
-          title={isSelected ? t('discover.clearSelection') : t('discover.selectAll')}
-        >
-          <Check className="h-3 w-3" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggleSelect}
+              className={`absolute left-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded border transition cursor-pointer ${
+                isSelected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-background/80 text-transparent hover:border-primary'
+              }`}
+            >
+              <Check className="h-3 w-3" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isSelected ? t('discover.clearSelection') : t('discover.selectAll')}
+          </TooltipContent>
+        </Tooltip>
       )}
 
       {!isAdded && (
-        <button
-          type="button"
-          onClick={onBlacklist}
-          className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded border border-border bg-background/80 text-muted-foreground opacity-0 transition hover:border-red-500 hover:text-red-500 cursor-pointer group-hover:opacity-100"
-          title={t('discover.blacklistButton')}
-        >
-          <Ban className="h-3 w-3" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onBlacklist}
+              className="absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded border border-border bg-background/80 text-muted-foreground opacity-0 transition hover:border-red-500 hover:text-red-500 cursor-pointer group-hover:opacity-100"
+            >
+              <Ban className="h-3 w-3" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('discover.blacklistButton')}</TooltipContent>
+        </Tooltip>
       )}
 
       <div className="relative aspect-square w-full overflow-hidden bg-muted">
@@ -75,21 +86,30 @@ export default function DiscoverTrackCard({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={onTogglePreview}
-          className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer ${
-            isPreviewPlaying
-              ? 'opacity-100 text-primary'
-              : 'opacity-0 group-hover:opacity-100 text-white hover:text-primary hover:scale-105'
-          }`}
-        >
-          {isPreviewPlaying ? (
-            <Pause className="h-6 w-6 fill-current" />
-          ) : (
-            <Play className="h-6 w-6 fill-current" />
-          )}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onTogglePreview}
+              className={`absolute inset-0 flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer ${
+                isPreviewPlaying
+                  ? 'opacity-100 text-primary'
+                  : 'opacity-0 group-hover:opacity-100 text-white hover:text-primary hover:scale-105'
+              }`}
+            >
+              {isPreviewPlaying ? (
+                <Pause className="h-6 w-6 fill-current" />
+              ) : (
+                <Play className="h-6 w-6 fill-current" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isPreviewPlaying
+              ? t('tracklist.previewStopTooltip')
+              : t('tracklist.previewPlayTooltip')}
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">

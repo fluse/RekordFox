@@ -22,6 +22,7 @@ import {
 } from '@renderer/utils/artistSearch'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
 import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 export const QUEUE_ID_MIME = 'application/x-rekordfox-queue-id'
 const SWIPE_DELETE_THRESHOLD = 80
@@ -64,6 +65,7 @@ function QueueRowShell({
   muted = false,
   removable
 }: RowShellProps): React.JSX.Element {
+  const { t } = useLanguage()
   const [swipeX, setSwipeX] = useState(0)
   const touchStartX = React.useRef<number | null>(null)
   const coverUrl = track.coverPath ? getMediaUrl(track.coverPath) : ''
@@ -135,13 +137,18 @@ function QueueRowShell({
         )}
       </div>
       {removable && (
-        <button
-          type="button"
-          onClick={removable.onRemove}
-          className="flex-shrink-0 rounded p-1 text-zinc-600 opacity-0 transition hover:bg-zinc-800 hover:text-red-400 group-hover/row:opacity-100 cursor-pointer"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={removable.onRemove}
+              className="flex-shrink-0 rounded p-1 text-zinc-600 opacity-0 transition hover:bg-zinc-800 hover:text-red-400 group-hover/row:opacity-100 cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('preview.queue.removeTooltip')}</TooltipContent>
+        </Tooltip>
       )}
     </div>
   )
