@@ -184,11 +184,7 @@ export const en = {
 
   // Google OAuth Setup Guide (Connections)
   'oauthGuide.toggle': 'Guide: Set up Google OAuth',
-  'oauthGuide.stepIndicator': 'Step {{current}} of {{total}}',
   'oauthGuide.openLink': 'Open in Google Cloud Console',
-  'oauthGuide.back': 'Back',
-  'oauthGuide.next': 'Next',
-  'oauthGuide.finish': 'Done — start over',
   'oauthGuide.step1.title': '1. Create a Google Cloud project',
   'oauthGuide.step1.description':
     'Create a new, free Google Cloud project (no credit card needed for the YouTube API). Give it any name, e.g. "RekordFox".',
@@ -210,6 +206,33 @@ export const en = {
   'oauthGuide.step7.title': '7. Copy the Client ID & Secret',
   'oauthGuide.step7.description':
     'Google now shows you the Client ID and Client Secret. Copy both values and enter them above in RekordFox.',
+
+  // Generic Setup Guide Stepper (used by Google OAuth & Rekordbox XML guides)
+  'setupGuide.stepIndicator': 'Step {{current}} of {{total}}',
+  'setupGuide.back': 'Back',
+  'setupGuide.next': 'Next',
+  'setupGuide.finish': 'Done — start over',
+
+  // Rekordbox XML Setup Guide (Downloads)
+  'rekordboxGuide.toggle': 'Guide: Import the XML into rekordbox',
+  'rekordboxGuide.step1.title': '1. Open rekordbox preferences',
+  'rekordboxGuide.step1.description':
+    'Open rekordbox and go to "Preferences" via the rekordbox menu (or the gear icon).',
+  'rekordboxGuide.step2.title': '2. Switch to the "Advanced" → "Database" tab',
+  'rekordboxGuide.step2.description':
+    'In the preferences window, switch to the "Advanced" tab and select the "Database" section.',
+  'rekordboxGuide.step3.title': '3. Link the rekordbox xml file',
+  'rekordboxGuide.step3.description':
+    'Enable the "rekordbox xml" option and click "Browse" to select exactly the XML file RekordFox exports (you\'ll find the path above in these settings). Confirm with "OK".',
+  'rekordboxGuide.step4.title': '4. Find the playlists in the browser',
+  'rekordboxGuide.step4.description':
+    'In rekordbox\'s left browser panel, a "rekordbox xml" entry now appears with your exported playlists and tracks.',
+  'rekordboxGuide.step5.title': '5. Import into your own collection',
+  'rekordboxGuide.step5.description':
+    'Right-click a playlist under "rekordbox xml" → "Import To Collection" to actually copy the tracks and playlist structure into your rekordbox library.',
+  'rekordboxGuide.step6.title': '6. Important: refresh after every export',
+  'rekordboxGuide.step6.description':
+    'Once RekordFox exports the XML file again (e.g. via "Export now"), rekordbox shows the current state under "rekordbox xml". Already-imported playlists need to be imported again via "Import To Collection" for changes to reach your library.',
 
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Connect with YouTube',

@@ -189,11 +189,7 @@ export const de = {
 
   // Google OAuth Setup Guide (Connections)
   'oauthGuide.toggle': 'Anleitung: Google OAuth einrichten',
-  'oauthGuide.stepIndicator': 'Schritt {{current}} von {{total}}',
   'oauthGuide.openLink': 'In Google Cloud Console öffnen',
-  'oauthGuide.back': 'Zurück',
-  'oauthGuide.next': 'Weiter',
-  'oauthGuide.finish': 'Fertig — von vorne beginnen',
   'oauthGuide.step1.title': '1. Google-Cloud-Projekt erstellen',
   'oauthGuide.step1.description':
     'Lege ein neues, kostenloses Google-Cloud-Projekt an (keine Kreditkarte für die YouTube-API nötig). Gib ihm einen beliebigen Namen, z. B. „RekordFox".',
@@ -215,6 +211,33 @@ export const de = {
   'oauthGuide.step7.title': '7. Client-ID & Secret übernehmen',
   'oauthGuide.step7.description':
     'Google zeigt dir jetzt Client-ID und Client-Secret an. Kopiere beide Werte und trage sie oben in RekordFox ein.',
+
+  // Generic Setup Guide Stepper (used by Google OAuth & Rekordbox XML guides)
+  'setupGuide.stepIndicator': 'Schritt {{current}} von {{total}}',
+  'setupGuide.back': 'Zurück',
+  'setupGuide.next': 'Weiter',
+  'setupGuide.finish': 'Fertig — von vorne beginnen',
+
+  // Rekordbox XML Setup Guide (Downloads)
+  'rekordboxGuide.toggle': 'Anleitung: XML in rekordbox einbinden',
+  'rekordboxGuide.step1.title': '1. rekordbox-Einstellungen öffnen',
+  'rekordboxGuide.step1.description':
+    'Öffne rekordbox und gehe über das rekordbox-Menü (bzw. das Zahnrad-Symbol) zu „Einstellungen" (Preferences).',
+  'rekordboxGuide.step2.title': '2. Zum Reiter „Erweitert" → „Datenbank" wechseln',
+  'rekordboxGuide.step2.description':
+    'Wechsle im Einstellungsfenster zum Reiter „Erweitert" (Advanced) und wähle dort den Abschnitt „Datenbank" (Database).',
+  'rekordboxGuide.step3.title': '3. rekordbox-xml-Datei verknüpfen',
+  'rekordboxGuide.step3.description':
+    'Aktiviere die Option „rekordbox xml" und klicke auf „Durchsuchen", um genau die XML-Datei auszuwählen, die RekordFox exportiert (den Pfad findest du oben in diesen Einstellungen). Mit „OK" bestätigen.',
+  'rekordboxGuide.step4.title': '4. Playlists im Browser finden',
+  'rekordboxGuide.step4.description':
+    'Im linken Browserbereich von rekordbox erscheint jetzt der Eintrag „rekordbox xml" mit deinen exportierten Playlists und Tracks.',
+  'rekordboxGuide.step5.title': '5. In die eigene Sammlung übernehmen',
+  'rekordboxGuide.step5.description':
+    'Rechtsklick auf eine Playlist unter „rekordbox xml" → „Zur Sammlung hinzufügen" (Import To Collection), um Tracks und Playlist-Struktur wirklich in deine rekordbox-Bibliothek zu kopieren.',
+  'rekordboxGuide.step6.title': '6. Wichtig: nach jedem Export erneut aktualisieren',
+  'rekordboxGuide.step6.description':
+    'Sobald RekordFox die XML-Datei erneut exportiert (z. B. über „Jetzt exportieren"), zeigt rekordbox den aktuellen Stand unter „rekordbox xml" an. Bereits importierte Playlists musst du danach erneut per „Zur Sammlung hinzufügen" übernehmen, damit Änderungen in deine Bibliothek übernommen werden.',
 
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Mit YouTube verbinden',

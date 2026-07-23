@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react'
-import { Folder, FolderOpen, FileCode, Trash2, Loader2, HardDrive } from 'lucide-react'
+import {
+  Folder,
+  FolderOpen,
+  FileCode,
+  Trash2,
+  Loader2,
+  HardDrive,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { Slider } from '@renderer/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import SettingsSection from './SettingsSection'
+import RekordboxXmlSetupGuide from './RekordboxXmlSetupGuide'
 import type { AppSettings, StorageStats } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 
@@ -38,6 +49,7 @@ export default function DownloadsSettings({
   const [loading, setLoading] = useState(false)
   const [maxWorkers, setMaxWorkers] = useState(settings.maxWorkers || 3)
   const [storageStats, setStorageStats] = useState<StorageStats | null>(null)
+  const [isXmlGuideOpen, setIsXmlGuideOpen] = useState(false)
 
   useEffect(() => {
     window.api.getStorageStats().then(setStorageStats)
@@ -280,6 +292,21 @@ export default function DownloadsSettings({
             )}
           </div>
           <p className="text-[10px] text-muted-foreground">{t('settings.rekordboxXmlHelp')}</p>
+
+          <button
+            type="button"
+            onClick={() => setIsXmlGuideOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline cursor-pointer"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            {t('rekordboxGuide.toggle')}
+            {isXmlGuideOpen ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </button>
+          {isXmlGuideOpen && <RekordboxXmlSetupGuide />}
         </div>
       </SettingsSection>
 
