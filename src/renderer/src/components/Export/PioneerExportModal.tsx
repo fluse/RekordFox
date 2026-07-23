@@ -253,7 +253,7 @@ export default function PioneerExportModal({
             <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-center">
               <AlertCircle className="mx-auto h-7 w-7 text-red-500 mb-2" />
               <p className="text-sm font-medium text-zinc-200">Export failed</p>
-              <p className="text-xs text-red-400 mt-2.5 bg-red-500/10 p-3 rounded border border-red-500/20 text-left font-mono break-all max-h-24 overflow-y-auto leading-relaxed">
+              <p className="text-xs text-red-400 mt-2.5 bg-red-500/10 p-3 rounded border border-red-500/20 text-left whitespace-pre-line break-words max-h-52 overflow-y-auto leading-relaxed">
                 {errorMessage}
               </p>
             </div>

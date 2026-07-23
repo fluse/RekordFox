@@ -1,8 +1,9 @@
 import { existsSync } from 'fs'
-import { copyFile, mkdir, writeFile, rm } from 'fs/promises'
+import { mkdir, writeFile, rm } from 'fs/promises'
 import { join, extname } from 'path'
 import { BrowserWindow } from 'electron'
 import { getTracksForPlaylist, getPlaylists } from '../../db'
+import { copyFileData, ensureWritable } from '../fsCopy'
 
 export async function exportPlaylistToUsb(
   playlistId: string,
@@ -22,6 +23,10 @@ export async function exportPlaylistToUsb(
     if (tracks.length === 0) {
       return { success: false, error: 'Keine heruntergeladenen Titel in dieser Playlist vorhanden' }
     }
+
+    // Fail fast with a clear message if the volume isn't writable (read-only
+    // filesystem / macOS privacy block) instead of crashing mid-copy on EPERM.
+    await ensureWritable(usbPath)
 
     // Prepare paths
     const exportFolderBase = join(usbPath, 'RekordFox_Export')
@@ -72,10 +77,12 @@ export async function exportPlaylistToUsb(
       const sanitizedFilename = sanitizeFilename(`${track.artist} - ${track.title}`) + fileExt
       const targetFilePath = join(exportFolderPlaylist, sanitizedFilename)
 
-      // Copy file to USB. Async (fs/promises) so each slow USB write yields the
-      // main-process event loop instead of freezing the window ("Keine Rückmeldung").
+      // Copy file to USB. Stream-copy (data only) so it works on exFAT/FAT32/
+      // network USB volumes — fs.copyFile fails there with EPERM while trying to
+      // replicate macOS metadata/ACLs. Streaming also yields the main-process
+      // event loop instead of freezing the window ("Keine Rückmeldung").
       try {
-        await copyFile(track.filepath, targetFilePath)
+        await copyFileData(track.filepath, targetFilePath)
       } catch (copyErr: unknown) {
         console.error(`Failed to copy ${track.filepath} to ${targetFilePath}:`, copyErr)
         // Continue copying other tracks even if one fails

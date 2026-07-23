@@ -1,10 +1,11 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { existsSync, rmSync } from 'fs'
-import { copyFile, mkdir } from 'fs/promises'
+import { mkdir } from 'fs/promises'
 import { join, extname, dirname } from 'path'
 import { getTracksForPlaylist } from '../../db'
 import { AnlzBuilder } from './AnlzBuilder'
 import { PioneerDbUpdater } from './PioneerDbUpdater'
+import { copyFileData, ensureWritable } from '../fsCopy'
 
 export interface WaveformPeak {
   low: number
@@ -126,6 +127,10 @@ export class ExportQueueManager {
       const totalTracks = tracks.length
       console.log(`[ExportQueueManager] Starting export of ${totalTracks} tracks to ${usbPath}`)
 
+      // Fail fast with a clear message if the volume isn't writable (read-only
+      // filesystem / macOS privacy block) instead of crashing mid-copy on EPERM.
+      await ensureWritable(usbPath)
+
       // 2. Open SQLite database on the USB stick
       const pdbPath = join(usbPath, 'PIONEER', 'export.pdb')
       dbUpdater = new PioneerDbUpdater(pdbPath)
@@ -198,9 +203,11 @@ export class ExportQueueManager {
         await mkdir(dirname(absAudioPath), { recursive: true })
         await mkdir(dirname(absAnlzPath), { recursive: true })
 
-        // Copy audio file. Async (fs/promises) so the slow USB write yields the
-        // main-process event loop instead of freezing the window ("Keine Rückmeldung").
-        await copyFile(track.filepath, absAudioPath)
+        // Copy audio file. Stream-copy (data only) so it works on exFAT/FAT32/
+        // network USB volumes — fs.copyFile fails there with EPERM while trying
+        // to replicate macOS metadata/ACLs. Streaming also yields the event loop
+        // instead of freezing the window ("Keine Rückmeldung").
+        await copyFileData(track.filepath, absAudioPath)
 
         // 4. Build standard DAT (PMAI + PWV3 overview)
         const datBuilder = new AnlzBuilder(512)
