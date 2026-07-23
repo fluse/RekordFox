@@ -11,6 +11,8 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+  # ffmpeg ships as a native binary and must live outside the asar archive to be spawnable.
+  - node_modules/@ffmpeg-installer/**
 win:
   executableName: RekordFox
 nsis:

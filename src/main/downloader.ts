@@ -12,7 +12,10 @@ import {
 import { execFile, spawn } from 'child_process'
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
 
-const ffmpegPath = ffmpegInstaller.path
+// In a packaged app the ffmpeg binary ships inside app.asar, from where it can't be spawned. It's
+// unpacked to app.asar.unpacked (see asarUnpack in electron-builder.yml), so redirect the path
+// there. In dev the path contains no 'app.asar', making this a harmless no-op.
+const ffmpegPath = ffmpegInstaller.path.replace('app.asar', 'app.asar.unpacked')
 
 export function getBinDir(): string {
   const userData = app.getPath('userData')
@@ -23,8 +26,21 @@ export function getBinDir(): string {
   return binDir
 }
 
+// The yt-dlp release asset and local filename differ per platform: Windows needs the .exe (an
+// extensionless file isn't runnable via CreateProcess/PATHEXT), macOS/Linux use their own builds.
+function getYtdlpAsset(): { assetName: string; fileName: string } {
+  switch (process.platform) {
+    case 'win32':
+      return { assetName: 'yt-dlp.exe', fileName: 'yt-dlp.exe' }
+    case 'darwin':
+      return { assetName: 'yt-dlp_macos', fileName: 'yt-dlp' }
+    default:
+      return { assetName: 'yt-dlp_linux', fileName: 'yt-dlp' }
+  }
+}
+
 export function getYtdlpPath(): string {
-  return join(getBinDir(), 'yt-dlp')
+  return join(getBinDir(), getYtdlpAsset().fileName)
 }
 
 // Ensure yt-dlp is downloaded and executable
@@ -50,7 +66,8 @@ export async function ensureYtdlp(onProgress?: (msg: string) => void): Promise<s
     onProgress(exists ? 'yt-dlp wird aktualisiert...' : 'yt-dlp wird heruntergeladen...')
   }
 
-  const url = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos'
+  const { assetName } = getYtdlpAsset()
+  const url = `https://github.com/yt-dlp/yt-dlp/releases/latest/download/${assetName}`
   try {
     const response = await fetch(url)
     if (!response.ok) {
@@ -60,7 +77,10 @@ export async function ensureYtdlp(onProgress?: (msg: string) => void): Promise<s
     const arrayBuffer = await response.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     writeFileSync(ytdlpPath, buffer)
-    chmodSync(ytdlpPath, 0o755) // Make executable
+    // chmod is a no-op on Windows; only the Unix builds need the executable bit.
+    if (process.platform !== 'win32') {
+      chmodSync(ytdlpPath, 0o755)
+    }
 
     if (onProgress) {
       onProgress(exists ? 'yt-dlp erfolgreich aktualisiert.' : 'yt-dlp erfolgreich eingerichtet.')
