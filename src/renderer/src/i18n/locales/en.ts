@@ -237,6 +237,28 @@ export const en = {
   'rekordboxGuide.step6.description':
     'Once RekordFox exports the XML file again (e.g. via "Export now"), rekordbox shows the current state under "rekordbox xml". Already-imported playlists need to be imported again via "Import To Collection" for changes to reach your library.',
 
+  // Pioneer / CDJ USB drive initialization (guide)
+  'pioneerInitGuide.toggle': 'Guide: set up a USB drive for CDJs (one-time)',
+  'pioneerInitGuide.step1.title': '1. Format the USB drive as FAT32',
+  'pioneerInitGuide.step1.description':
+    'Pioneer CDJs only read USB drives formatted as FAT32 (or HFS+). Format the drive accordingly first. Warning: formatting erases everything on the drive — back up any existing files.',
+  'pioneerInitGuide.step2.title': '2. Open rekordbox and switch to "Export" mode',
+  'pioneerInitGuide.step2.description':
+    'Launch rekordbox on your computer. Set the mode switcher at the top left to "Export" (not "Performance"). USB drives can only be prepared for CDJs in Export mode.',
+  'pioneerInitGuide.step2.link': 'Download rekordbox',
+  'pioneerInitGuide.step3.title': '3. Connect the USB drive',
+  'pioneerInitGuide.step3.description':
+    'Plug in the drive. It appears in the left sidebar of rekordbox under "Devices", labelled with the drive name.',
+  'pioneerInitGuide.step4.title': '4. Analyze a track and export it to the device',
+  'pioneerInitGuide.step4.description':
+    'Drag any (analyzed) track or playlist from your rekordbox collection onto the device in the sidebar. rekordbox will create the "PIONEER" folder with the database once. Wait until the export finishes.',
+  'pioneerInitGuide.step5.title': '5. Safely eject the device',
+  'pioneerInitGuide.step5.description':
+    'Eject the drive safely via the eject icon next to the device in rekordbox (or in your operating system) so the database is written completely.',
+  'pioneerInitGuide.step6.title': '6. Back to RekordFox',
+  'pioneerInitGuide.step6.description':
+    'Plug the drive back in and select it here again. The notice disappears, and the Pioneer export now also writes the waveforms the CDJs display. This setup is only needed once per drive.',
+
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Connect with YouTube',
   'youtubeConnect.benefit1': 'Sort your YouTube sets perfectly with Smart Mode.',
@@ -316,6 +338,10 @@ export const en = {
   'usbExport.tryAgainBtn': 'Try again',
   'usbExport.errorScanDrives': 'Error scanning USB drives.',
   'usbExport.closeTooltip': 'Close',
+  'usbExport.refreshBtn': 'Refresh',
+  'usbExport.refreshTooltip': 'Scan for USB drives again',
+  'usbExport.checking': 'Scanning…',
+  'usbExport.autoDetectHint': 'Plug in a drive – it will be detected automatically.',
   'usbExport.notInitializedWarning':
     '⚠️ This drive has not been initialized with Rekordbox yet. The export will still work (music files will be copied), but waveforms will not load on CDJs until the drive is prepared in Rekordbox.',
 

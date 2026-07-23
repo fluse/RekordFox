@@ -243,6 +243,28 @@ export const de = {
   'rekordboxGuide.step6.description':
     'Sobald RekordFox die XML-Datei erneut exportiert (z. B. über „Jetzt exportieren"), zeigt rekordbox den aktuellen Stand unter „rekordbox xml" an. Bereits importierte Playlists musst du danach erneut per „Zur Sammlung hinzufügen" übernehmen, damit Änderungen in deine Bibliothek übernommen werden.',
 
+  // Pioneer / CDJ USB-Stick Initialisierung (Anleitung)
+  'pioneerInitGuide.toggle': 'Anleitung: USB-Stick einmalig für CDJs einrichten',
+  'pioneerInitGuide.step1.title': '1. USB-Stick als FAT32 formatieren',
+  'pioneerInitGuide.step1.description':
+    'Pioneer-CDJs lesen USB-Sticks nur im Dateisystem FAT32 (oder HFS+). Formatiere den Stick vorher entsprechend. Achtung: Beim Formatieren werden alle Daten auf dem Stick gelöscht – sichere ggf. vorhandene Dateien.',
+  'pioneerInitGuide.step2.title': '2. rekordbox öffnen und in den „Export"-Modus wechseln',
+  'pioneerInitGuide.step2.description':
+    'Starte rekordbox auf dem Computer. Stelle oben links den Modus-Umschalter auf „Export" (nicht „Performance"). Nur im Export-Modus lassen sich USB-Sticks für CDJs vorbereiten.',
+  'pioneerInitGuide.step2.link': 'rekordbox herunterladen',
+  'pioneerInitGuide.step3.title': '3. USB-Stick anschließen',
+  'pioneerInitGuide.step3.description':
+    'Stecke den Stick ein. Er erscheint in rekordbox in der linken Seitenleiste unter „Geräte" (Devices) mit dem Namen des Sticks.',
+  'pioneerInitGuide.step4.title': '4. Einen Titel analysieren und auf das Gerät exportieren',
+  'pioneerInitGuide.step4.description':
+    'Ziehe einen beliebigen (analysierten) Titel oder eine Playlist per Drag & Drop aus deiner rekordbox-Sammlung auf das Gerät in der Seitenleiste. rekordbox legt dabei einmalig den Ordner „PIONEER" mit der Datenbank an. Warte, bis der Export abgeschlossen ist.',
+  'pioneerInitGuide.step5.title': '5. Gerät sicher auswerfen',
+  'pioneerInitGuide.step5.description':
+    'Wirf den Stick in rekordbox über das Auswurf-Symbol neben dem Gerät (oder im Betriebssystem) sicher aus, damit die Datenbank vollständig geschrieben wird.',
+  'pioneerInitGuide.step6.title': '6. Zurück zu RekordFox',
+  'pioneerInitGuide.step6.description':
+    'Stecke den Stick wieder ein und wähle ihn hier erneut aus. Der Hinweis verschwindet nun, und beim Pioneer-Export werden auch die Waveforms geschrieben, die die CDJs anzeigen. Diese Einrichtung ist nur einmal pro Stick nötig.',
+
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Mit YouTube verbinden',
   'youtubeConnect.benefit1': 'Sortiere deine YouTube-Sets harmonisch perfekt mit Smart Mode.',
@@ -322,6 +344,10 @@ export const de = {
   'usbExport.tryAgainBtn': 'Erneut versuchen',
   'usbExport.errorScanDrives': 'Fehler beim Scannen der USB-Sticks.',
   'usbExport.closeTooltip': 'Schließen',
+  'usbExport.refreshBtn': 'Aktualisieren',
+  'usbExport.refreshTooltip': 'Erneut nach USB-Sticks suchen',
+  'usbExport.checking': 'Suche…',
+  'usbExport.autoDetectHint': 'Stick einstecken – wird automatisch erkannt.',
   'usbExport.notInitializedWarning':
     '⚠️ Dieser Stick wurde noch nicht mit Rekordbox initialisiert. Der Export funktioniert (Musikdateien werden kopiert), aber die Waveforms können auf CDJs erst nach einer Rekordbox-Vorbereitung geladen werden.',
 

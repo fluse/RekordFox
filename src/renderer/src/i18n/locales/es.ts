@@ -239,6 +239,28 @@ export const es = {
   'rekordboxGuide.step6.description':
     'En cuanto RekordFox vuelva a exportar el archivo XML (p. ej. mediante "Exportar ahora"), rekordbox mostrará el estado actual bajo "rekordbox xml". Las playlists ya importadas deben volver a importarse con "Importar a la colección" para que los cambios lleguen a tu biblioteca.',
 
+  // Inicialización de memoria USB Pioneer / CDJ (guía)
+  'pioneerInitGuide.toggle': 'Guía: preparar una memoria USB para CDJs (una sola vez)',
+  'pioneerInitGuide.step1.title': '1. Formatear la memoria USB como FAT32',
+  'pioneerInitGuide.step1.description':
+    'Los CDJ de Pioneer solo leen memorias USB con formato FAT32 (o HFS+). Formatea la memoria en consecuencia primero. Atención: al formatear se borran todos los datos de la memoria; haz una copia de seguridad de los archivos existentes.',
+  'pioneerInitGuide.step2.title': '2. Abrir rekordbox y cambiar al modo «Export»',
+  'pioneerInitGuide.step2.description':
+    'Inicia rekordbox en el ordenador. Coloca el selector de modo, arriba a la izquierda, en «Export» (no «Performance»). Las memorias USB solo se pueden preparar para CDJs en el modo Export.',
+  'pioneerInitGuide.step2.link': 'Descargar rekordbox',
+  'pioneerInitGuide.step3.title': '3. Conectar la memoria USB',
+  'pioneerInitGuide.step3.description':
+    'Conecta la memoria. Aparecerá en la barra lateral izquierda de rekordbox bajo «Dispositivos» (Devices), con el nombre de la memoria.',
+  'pioneerInitGuide.step4.title': '4. Analizar un tema y exportarlo al dispositivo',
+  'pioneerInitGuide.step4.description':
+    'Arrastra cualquier tema (ya analizado) o playlist de tu colección de rekordbox al dispositivo en la barra lateral. rekordbox creará una vez la carpeta «PIONEER» con la base de datos. Espera a que termine la exportación.',
+  'pioneerInitGuide.step5.title': '5. Expulsar el dispositivo de forma segura',
+  'pioneerInitGuide.step5.description':
+    'Expulsa la memoria de forma segura mediante el icono de expulsión junto al dispositivo en rekordbox (o en tu sistema operativo) para que la base de datos se escriba por completo.',
+  'pioneerInitGuide.step6.title': '6. Volver a RekordFox',
+  'pioneerInitGuide.step6.description':
+    'Vuelve a conectar la memoria y selecciónala aquí de nuevo. El aviso desaparece y la exportación Pioneer ahora también escribe las formas de onda que muestran los CDJ. Esta preparación solo es necesaria una vez por memoria.',
+
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Conectar con YouTube',
   'youtubeConnect.benefit1': 'Ordena tus sets de YouTube perfectamente con Smart Mode.',
@@ -319,6 +341,10 @@ export const es = {
   'usbExport.tryAgainBtn': 'Reintentar',
   'usbExport.errorScanDrives': 'Error al buscar memorias USB.',
   'usbExport.closeTooltip': 'Cerrar',
+  'usbExport.refreshBtn': 'Actualizar',
+  'usbExport.refreshTooltip': 'Buscar unidades USB de nuevo',
+  'usbExport.checking': 'Buscando…',
+  'usbExport.autoDetectHint': 'Conecta una unidad; se detectará automáticamente.',
   'usbExport.notInitializedWarning':
     '⚠️ Esta unidad no ha sido inicializada con Rekordbox todavía. La exportación funcionará (los archivos se copiarán), pero las formas de onda no se cargarán en los CDJ hasta que prepares la unidad en Rekordbox.',
 

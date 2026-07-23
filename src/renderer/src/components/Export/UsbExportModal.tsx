@@ -1,7 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { HardDrive, X, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  HardDrive,
+  X,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
+import PioneerInitGuide from './PioneerInitGuide'
 
 interface UsbDrive {
   name: string
@@ -36,34 +47,82 @@ export default function UsbExportModal({
     trackTitle: string
   } | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isInitGuideOpen, setIsInitGuideOpen] = useState(false)
   const { t } = useLanguage()
 
-  const scanDrives = useCallback(async (): Promise<void> => {
-    setStep('scanning')
-    setErrorMessage('')
-    try {
-      const detected = await window.api.getUsbDrives()
-      setDrives(detected)
-      if (detected.length === 0) {
-        setSelectedDrive(null)
-      } else {
-        setSelectedDrive(detected[0])
-      }
-      setStep('select')
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      setErrorMessage(msg || t('usbExport.errorScanDrives'))
-      setStep('error')
-    }
-  }, [t])
+  // Latest-scan guard so a slow in-flight scan can't overwrite a newer result,
+  // and so background refreshes never clobber the visible UI.
+  const scanTokenRef = useRef(0)
 
+  const fetchDrives = useCallback(
+    async (initial: boolean): Promise<void> => {
+      const token = ++scanTokenRef.current
+      if (initial) {
+        setStep('scanning')
+        setErrorMessage('')
+      } else {
+        setIsRefreshing(true)
+      }
+      try {
+        const detected = await window.api.getUsbDrives()
+        // A newer scan started while we were waiting — discard this result.
+        if (token !== scanTokenRef.current) return
+        setDrives(detected)
+        // Preserve the user's current selection across refreshes; only fall back
+        // to the first drive when the selected one is gone (or nothing selected).
+        setSelectedDrive((prev) => {
+          if (prev) {
+            const stillPresent = detected.find((d) => d.path === prev.path)
+            if (stillPresent) return stillPresent
+          }
+          return detected[0] ?? null
+        })
+        if (initial) setStep('select')
+      } catch (err: unknown) {
+        if (token !== scanTokenRef.current) return
+        // Background refreshes fail silently — keep the current view intact.
+        if (initial) {
+          const msg = err instanceof Error ? err.message : String(err)
+          setErrorMessage(msg || t('usbExport.errorScanDrives'))
+          setStep('error')
+        }
+      } finally {
+        if (token === scanTokenRef.current) setIsRefreshing(false)
+      }
+    },
+    [t]
+  )
+
+  // Hold the freshest fetchDrives in a ref so the mount/poll effects can invoke
+  // it WITHOUT depending on it. `t` (and thus fetchDrives) changes identity on
+  // every parent re-render; depending on it would re-fire the mount effect and
+  // reset the modal to the "scanning" step, wiping already-found drives.
+  const fetchDrivesRef = useRef(fetchDrives)
+  useEffect((): void => {
+    fetchDrivesRef.current = fetchDrives
+  }, [fetchDrives])
+
+  const refreshDrives = (): void => {
+    void fetchDrivesRef.current(false)
+  }
+
+  // Run the initial scan exactly once each time the modal opens.
   useEffect((): void => {
     if (isOpen) {
-      setTimeout((): void => {
-        scanDrives()
-      }, 0)
+      void fetchDrivesRef.current(true)
     }
-  }, [isOpen, scanDrives])
+  }, [isOpen])
+
+  // While the user is choosing a drive, quietly poll for changes (sticks being
+  // plugged in / removed) without disrupting the view or resetting the step.
+  useEffect((): (() => void) | undefined => {
+    if (!isOpen || step !== 'select') return undefined
+    const id = setInterval((): void => {
+      void fetchDrivesRef.current(false)
+    }, 4000)
+    return (): void => clearInterval(id)
+  }, [isOpen, step])
 
   useEffect((): (() => void) | undefined => {
     if (step === 'exporting') {
@@ -109,11 +168,15 @@ export default function UsbExportModal({
   }
 
   const handleClose = (): void => {
+    // Invalidate any in-flight scan so it can't resurrect state after close.
+    scanTokenRef.current++
     setStep('scanning')
     setDrives([])
     setSelectedDrive(null)
     setProgress(null)
     setErrorMessage('')
+    setIsRefreshing(false)
+    setIsInitGuideOpen(false)
     onClose()
   }
 
@@ -164,14 +227,38 @@ export default function UsbExportModal({
                   {t('usbExport.noStickDetectedTitle')}
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">{t('usbExport.noStickDetectedDesc')}</p>
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-zinc-600">
+                  <RefreshCw
+                    className={`h-3 w-3 ${isRefreshing ? 'animate-spin text-primary' : ''}`}
+                  />
+                  {t('usbExport.autoDetectHint')}
+                </p>
               </div>
             ) : (
               <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  {drives.length === 1
-                    ? t('usbExport.singleDriveLabel')
-                    : t('usbExport.multiDriveLabel')}
-                </label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    {drives.length === 1
+                      ? t('usbExport.singleDriveLabel')
+                      : t('usbExport.multiDriveLabel')}
+                  </label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={refreshDrives}
+                        className="flex items-center gap-1 text-[10px] font-medium text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer disabled:opacity-60"
+                        disabled={isRefreshing}
+                      >
+                        <RefreshCw
+                          className={`h-3 w-3 ${isRefreshing ? 'animate-spin text-primary' : ''}`}
+                        />
+                        {isRefreshing ? t('usbExport.checking') : t('usbExport.refreshBtn')}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('usbExport.refreshTooltip')}</TooltipContent>
+                  </Tooltip>
+                </div>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {drives.map((drive) => (
                     <button
@@ -218,8 +305,28 @@ export default function UsbExportModal({
                 {exportFormat === 'pioneer' &&
                   selectedDrive &&
                   !selectedDrive.isPioneerInitialized && (
-                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-400/90">
-                      {t('usbExport.notInitializedWarning')}
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2.5">
+                      <p className="text-xs leading-relaxed text-amber-400/90">
+                        {t('usbExport.notInitializedWarning')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(): void => setIsInitGuideOpen((prev) => !prev)}
+                        className="flex items-center gap-1.5 text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                      >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                        {t('pioneerInitGuide.toggle')}
+                        {isInitGuideOpen ? (
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+                      {isInitGuideOpen && (
+                        <div className="max-h-72 overflow-y-auto">
+                          <PioneerInitGuide />
+                        </div>
+                      )}
                     </div>
                   )}
               </div>
@@ -236,10 +343,11 @@ export default function UsbExportModal({
               {drives.length === 0 ? (
                 <button
                   type="button"
-                  onClick={(): Promise<void> => scanDrives()}
-                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors cursor-pointer"
+                  onClick={refreshDrives}
+                  disabled={isRefreshing}
+                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors cursor-pointer disabled:opacity-60"
                 >
-                  <RefreshCw className="h-3.5 w-3.5" />
+                  <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {t('usbExport.scanAgain')}
                 </button>
               ) : (
@@ -351,7 +459,7 @@ export default function UsbExportModal({
             <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-center">
               <AlertCircle className="mx-auto h-7 w-7 text-red-500 mb-2" />
               <p className="text-sm font-medium text-zinc-200">{t('usbExport.failedTitle')}</p>
-              <p className="text-xs text-red-400 mt-2 bg-red-500/10 p-2.5 rounded border border-red-500/20 text-left font-mono break-all max-h-24 overflow-y-auto">
+              <p className="text-xs text-red-400 mt-2 bg-red-500/10 p-2.5 rounded border border-red-500/20 text-left whitespace-pre-line break-words leading-relaxed max-h-52 overflow-y-auto">
                 {errorMessage}
               </p>
             </div>
@@ -366,7 +474,7 @@ export default function UsbExportModal({
               </button>
               <button
                 type="button"
-                onClick={(): Promise<void> => scanDrives()}
+                onClick={(): void => void fetchDrivesRef.current(true)}
                 className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/95 transition-colors shadow-lg cursor-pointer"
               >
                 {t('usbExport.tryAgainBtn')}
