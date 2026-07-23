@@ -9,6 +9,29 @@ export interface UsbDrive {
 }
 
 /**
+ * Resolves the path to the Rekordbox DeviceSQL database on a USB volume, or null
+ * if the stick has not been prepared by Rekordbox.
+ *
+ * Rekordbox's "Export" mode writes the database to `PIONEER/rekordbox/export.pdb`.
+ * Older/edge layouts placed it directly at `PIONEER/export.pdb`, so we accept that
+ * as a fallback.
+ */
+export function findPioneerPdb(usbPath: string): string | null {
+  const candidates = [
+    join(usbPath, 'PIONEER', 'rekordbox', 'export.pdb'),
+    join(usbPath, 'PIONEER', 'export.pdb')
+  ]
+  for (const candidate of candidates) {
+    try {
+      if (existsSync(candidate)) return candidate
+    } catch {
+      // Ignore permission/IO errors and try the next candidate.
+    }
+  }
+  return null
+}
+
+/**
  * Detects connected USB/removable drives across macOS, Windows, and Linux.
  * Does not require external C++ modules.
  */
@@ -226,6 +249,6 @@ export async function detectUsbDrives(): Promise<UsbDrive[]> {
 
   return drives.map((d) => ({
     ...d,
-    isPioneerInitialized: existsSync(join(d.path, 'PIONEER', 'export.pdb'))
+    isPioneerInitialized: findPioneerPdb(d.path) !== null
   }))
 }

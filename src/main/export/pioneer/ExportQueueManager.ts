@@ -6,6 +6,7 @@ import { getTracksForPlaylist } from '../../db'
 import { AnlzBuilder } from './AnlzBuilder'
 import { PioneerDbUpdater } from './PioneerDbUpdater'
 import { copyFileData, ensureWritable } from '../fsCopy'
+import { findPioneerPdb } from '../../usb'
 
 export interface WaveformPeak {
   low: number
@@ -131,21 +132,29 @@ export class ExportQueueManager {
       // filesystem / macOS privacy block) instead of crashing mid-copy on EPERM.
       await ensureWritable(usbPath)
 
-      // 2. Open SQLite database on the USB stick
-      const pdbPath = join(usbPath, 'PIONEER', 'export.pdb')
-      dbUpdater = new PioneerDbUpdater(pdbPath)
+      // 2. Open SQLite database on the USB stick. Rekordbox export sticks keep the
+      // database at PIONEER/rekordbox/export.pdb (with a legacy fallback of
+      // PIONEER/export.pdb), so resolve whichever actually exists.
+      const pdbPath = findPioneerPdb(usbPath)
 
       // Note: If export.pdb doesn't exist, we skip updating PDB but still write files.
       // Usually, Rekordbox USB sticks have export.pdb.
       let pdbEnabled = false
-      try {
-        dbUpdater.init()
-        pdbEnabled = true
-        console.log('[ExportQueueManager] Successfully connected to export.pdb')
-      } catch (dbErr) {
-        const message = dbErr instanceof Error ? dbErr.message : String(dbErr)
+      if (pdbPath) {
+        dbUpdater = new PioneerDbUpdater(pdbPath)
+        try {
+          dbUpdater.init()
+          pdbEnabled = true
+          console.log(`[ExportQueueManager] Successfully connected to ${pdbPath}`)
+        } catch (dbErr) {
+          const message = dbErr instanceof Error ? dbErr.message : String(dbErr)
+          console.warn(
+            `[ExportQueueManager] Pioneer export.pdb could not be opened: ${message}. Skipping database updates.`
+          )
+        }
+      } else {
         console.warn(
-          `[ExportQueueManager] Pioneer export.pdb not found or could not be opened: ${message}. Skipping database updates.`
+          '[ExportQueueManager] No Pioneer export.pdb found on stick. Skipping database updates.'
         )
       }
 
