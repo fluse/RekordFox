@@ -226,7 +226,7 @@ export default function App(): React.JSX.Element {
       }}
     >
       <TooltipSettingsProvider enabled={settings.tooltipsEnabled ?? true}>
-        <TooltipProvider delayDuration={settings.tooltipDelay ?? 200}>
+        <TooltipProvider delayDuration={settings.tooltipDelay ?? 600} skipDelayDuration={0}>
           <AppContent appState={appState} />
         </TooltipProvider>
       </TooltipSettingsProvider>

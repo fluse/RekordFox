@@ -16,13 +16,15 @@ function TooltipSettingsProvider({
 }
 
 function TooltipProvider({
-  delayDuration = 200,
+  delayDuration = 600,
+  skipDelayDuration = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>): React.JSX.Element {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
       delayDuration={delayDuration}
+      skipDelayDuration={skipDelayDuration}
       {...props}
     />
   )

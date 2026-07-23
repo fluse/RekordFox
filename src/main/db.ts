@@ -123,7 +123,7 @@ let dbData: DatabaseSchema = {
     filenameTemplate: 'default',
     historyLimit: 50,
     tooltipsEnabled: true,
-    tooltipDelay: 200
+    tooltipDelay: 600
   }
 }
 
@@ -153,7 +153,7 @@ export function initDb(): void {
       rekordboxXmlPath: '',
       historyLimit: 50,
       tooltipsEnabled: true,
-      tooltipDelay: 200
+      tooltipDelay: 600
     }
     saveDb()
   } else {
@@ -178,7 +178,7 @@ export function initDb(): void {
           filenameTemplate: 'default',
           rekordboxXmlPath: '',
           tooltipsEnabled: true,
-          tooltipDelay: 200
+          tooltipDelay: 600
         }
       } else {
         if (!dbData.settings.theme) dbData.settings.theme = 'dark'
@@ -190,7 +190,7 @@ export function initDb(): void {
         if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'default'
         if (dbData.settings.rekordboxXmlPath === undefined) dbData.settings.rekordboxXmlPath = ''
         if (dbData.settings.tooltipsEnabled === undefined) dbData.settings.tooltipsEnabled = true
-        if (dbData.settings.tooltipDelay === undefined) dbData.settings.tooltipDelay = 200
+        if (dbData.settings.tooltipDelay === undefined) dbData.settings.tooltipDelay = 600
       }
 
       // Self-healing database: Ensure all tracks have filesize, format, rating, and bitrate
@@ -926,7 +926,7 @@ export function getSettings(): AppSettings {
       language: 'de',
       historyLimit: 50,
       tooltipsEnabled: true,
-      tooltipDelay: 200
+      tooltipDelay: 600
     }
   )
 }

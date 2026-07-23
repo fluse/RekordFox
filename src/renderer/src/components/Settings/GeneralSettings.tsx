@@ -27,14 +27,14 @@ export default function GeneralSettings({
   onUpdateSettings
 }: GeneralSettingsProps): React.JSX.Element {
   const { t } = useLanguage()
-  const [tooltipDelay, setTooltipDelay] = useState(settings.tooltipDelay ?? 200)
+  const [tooltipDelay, setTooltipDelay] = useState(settings.tooltipDelay ?? 600)
 
   // Keeps the slider's local drag state in sync when settings.tooltipDelay
   // changes from outside (e.g. still loading on mount), without a useEffect.
   const [prevTooltipDelay, setPrevTooltipDelay] = useState(settings.tooltipDelay)
   if (settings.tooltipDelay !== prevTooltipDelay) {
     setPrevTooltipDelay(settings.tooltipDelay)
-    setTooltipDelay(settings.tooltipDelay ?? 200)
+    setTooltipDelay(settings.tooltipDelay ?? 600)
   }
 
   const handleToggleTheme = async (theme: 'dark' | 'light'): Promise<void> => {
