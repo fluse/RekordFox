@@ -238,6 +238,76 @@
   border-color: #e4e4e7 !important;
 }
 
+/* ------------------------------------------------------------------
+   Custom scrollbars — consistent across macOS / Windows / Linux.
+   Electron runs on Chromium, so ::-webkit-scrollbar applies on every
+   OS (replacing the native Windows/Linux bars). Firefox-style
+   scrollbar-width/color is kept as a fallback.
+   ------------------------------------------------------------------ */
+
+/* Firefox / standards fallback */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(240 3.7% 30%) transparent;
+}
+
+.light * {
+  scrollbar-color: hsl(240 5% 75%) transparent;
+}
+
+/* WebKit (Chromium) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(240 3.7% 28%);
+  border-radius: 9999px;
+  /* Transparent border creates padding so the thumb looks slimmer
+     and floats within the track. */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(240 4% 40%);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: hsl(263.4 70% 50.4%);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background-color: hsl(240 5% 78%);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(240 5% 65%);
+}
+
+.light ::-webkit-scrollbar-thumb:active {
+  background-color: hsl(263.4 70% 50.4%);
+}
+
+/* Utility to hide scrollbars where a clean edge is wanted */
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* Base transitions for smooth theme switching */
 body,
 div,

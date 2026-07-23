@@ -1,4 +1,5 @@
-import { copyFileSync, mkdirSync, writeFileSync, existsSync, rmSync } from 'fs'
+import { existsSync } from 'fs'
+import { copyFile, mkdir, writeFile, rm } from 'fs/promises'
 import { join, extname } from 'path'
 import { BrowserWindow } from 'electron'
 import { getTracksForPlaylist, getPlaylists } from '../../db'
@@ -40,7 +41,7 @@ export async function exportPlaylistToUsb(
     if (forceOverwrite && folderExists) {
       if (exportFolderPlaylist.includes('RekordFox_Export') && playlistFolderName.length > 0) {
         try {
-          rmSync(exportFolderPlaylist, { recursive: true, force: true })
+          await rm(exportFolderPlaylist, { recursive: true, force: true })
         } catch (rmErr) {
           console.error(`Failed to clean old directory ${exportFolderPlaylist}:`, rmErr)
         }
@@ -49,7 +50,7 @@ export async function exportPlaylistToUsb(
 
     // Re-create folder
     if (!existsSync(exportFolderPlaylist)) {
-      mkdirSync(exportFolderPlaylist, { recursive: true })
+      await mkdir(exportFolderPlaylist, { recursive: true })
     }
 
     const m3uLines: string[] = ['#EXTM3U']
@@ -71,9 +72,10 @@ export async function exportPlaylistToUsb(
       const sanitizedFilename = sanitizeFilename(`${track.artist} - ${track.title}`) + fileExt
       const targetFilePath = join(exportFolderPlaylist, sanitizedFilename)
 
-      // Copy file to USB
+      // Copy file to USB. Async (fs/promises) so each slow USB write yields the
+      // main-process event loop instead of freezing the window ("Keine Rückmeldung").
       try {
-        copyFileSync(track.filepath, targetFilePath)
+        await copyFile(track.filepath, targetFilePath)
       } catch (copyErr: unknown) {
         console.error(`Failed to copy ${track.filepath} to ${targetFilePath}:`, copyErr)
         // Continue copying other tracks even if one fails
@@ -89,7 +91,7 @@ export async function exportPlaylistToUsb(
     }
 
     // Write M3U8 file in UTF-8 format
-    writeFileSync(m3uPath, m3uLines.join('\n'), 'utf8')
+    await writeFile(m3uPath, m3uLines.join('\n'), 'utf8')
 
     return { success: true }
   } catch (err: unknown) {

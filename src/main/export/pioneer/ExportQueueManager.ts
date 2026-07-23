@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import { copyFileSync, existsSync, mkdirSync, rmSync } from 'fs'
+import { existsSync, rmSync } from 'fs'
+import { copyFile, mkdir } from 'fs/promises'
 import { join, extname, dirname } from 'path'
 import { getTracksForPlaylist } from '../../db'
 import { AnlzBuilder } from './AnlzBuilder'
@@ -194,11 +195,12 @@ export class ExportQueueManager {
         this.activeFiles = [absAudioPath, absAnlzPath, absExtPath]
 
         // Create directories
-        mkdirSync(dirname(absAudioPath), { recursive: true })
-        mkdirSync(dirname(absAnlzPath), { recursive: true })
+        await mkdir(dirname(absAudioPath), { recursive: true })
+        await mkdir(dirname(absAnlzPath), { recursive: true })
 
-        // Copy audio file
-        copyFileSync(track.filepath, absAudioPath)
+        // Copy audio file. Async (fs/promises) so the slow USB write yields the
+        // main-process event loop instead of freezing the window ("Keine Rückmeldung").
+        await copyFile(track.filepath, absAudioPath)
 
         // 4. Build standard DAT (PMAI + PWV3 overview)
         const datBuilder = new AnlzBuilder(512)

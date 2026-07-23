@@ -260,30 +260,53 @@ export function useApp(): UseAppReturn {
     [t]
   )
 
-  const handleLoadTrack = useCallback((track: Track, deck: 'A' | 'B'): void => {
-    if (deck === 'A') {
-      setLoadedTrackA(track)
-      localStorage.setItem('loadedTrackAId', track.id)
-    } else {
-      setLoadedTrackB(track)
-      localStorage.setItem('loadedTrackBId', track.id)
-    }
-
-    if (!track.played) {
-      window.api
-        .updateTrackPlayed(track.id, track.playlistId, true)
-        .then((res) => {
-          if (res.success) {
-            setTracks((prev) =>
-              prev.map((t) =>
-                t.id === track.id && t.playlistId === track.playlistId ? { ...t, played: true } : t
-              )
+  // Clears the "NEW" label for a track by persisting played=true and patching
+  // it in the visible tracks state. Shared by deck-loading and preview-player
+  // playback so a track counts as heard however it was auditioned.
+  const markTrackPlayed = useCallback((trackId: string, playlistId: string): void => {
+    window.api
+      .updateTrackPlayed(trackId, playlistId, true)
+      .then((res) => {
+        if (res.success) {
+          setTracks((prev) =>
+            prev.map((t) =>
+              t.id === trackId && t.playlistId === playlistId ? { ...t, played: true } : t
             )
-          }
-        })
-        .catch((err) => console.error('Failed to update track played status:', err))
-    }
+          )
+        }
+      })
+      .catch((err) => console.error('Failed to update track played status:', err))
   }, [])
+
+  const handleLoadTrack = useCallback(
+    (track: Track, deck: 'A' | 'B'): void => {
+      if (deck === 'A') {
+        setLoadedTrackA(track)
+        localStorage.setItem('loadedTrackAId', track.id)
+      } else {
+        setLoadedTrackB(track)
+        localStorage.setItem('loadedTrackBId', track.id)
+      }
+
+      if (!track.played) {
+        markTrackPlayed(track.id, track.playlistId)
+      }
+    },
+    [markTrackPlayed]
+  )
+
+  // Mark a track as played once it starts in the Preview Player. Subscribing to
+  // the store covers every entry path (playNow, advance to next, previous) in
+  // one place. Stream-only previews (Discover, not yet in the library) carry no
+  // real playlistId and are skipped.
+  useEffect(() => {
+    return usePreviewStore.subscribe((state, prevState) => {
+      const track = state.previewTrack
+      if (!track || track.id === prevState.previewTrack?.id) return
+      if (!track.playlistId || track.played) return
+      markTrackPlayed(track.id, track.playlistId)
+    })
+  }, [markTrackPlayed])
 
   const handleAddPlaylist = useCallback(async (url: string): Promise<void> => {
     const res = await window.api.addPlaylist(url)
