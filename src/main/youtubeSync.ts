@@ -1,15 +1,19 @@
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, readFileSync, statSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync } from 'fs'
 import nodeId3 from 'node-id3'
 import {
   Playlist,
+  Track,
   addPlaylist,
   addTrack,
+  deleteTrack,
   getTracksForPlaylist,
   getPlaylists,
   updatePlaylistStatus,
+  updateTrackDownloadFailed,
   clearPlaylistDirty,
+  setPlaylistLinkState,
   getSettings,
   getDownloadsDir,
   getCoversDir,
@@ -21,8 +25,27 @@ import {
 } from './db'
 import { downloadTrack } from './downloader'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
-import { parseTitleAndArtist } from './sync'
-import { getYoutubeClientForAccount } from './youtubeOAuth'
+import { parseTitleAndArtist, beginPlaylistSync, endPlaylistSync } from './sync'
+import { getYoutubeClientForAccount, isAuthError, isQuotaError } from './youtubeOAuth'
+
+// Playlists whose link is healthy enough to talk to YouTube. Orphaned (account removed) and
+// needs-reauth (token revoked) playlists must never hit the API — the caller surfaces a clear,
+// actionable error instead of a raw "account not found" / 401.
+function isLinkUsable(playlist: Playlist): boolean {
+  return (
+    playlist.source === 'youtube-oauth' &&
+    !!playlist.oauthAccountId &&
+    (playlist.linkState === undefined || playlist.linkState === 'linked')
+  )
+}
+
+// Classifies an API failure and records it on the playlist so the UI can react: a revoked token
+// flips it to 'needs-reauth', anything else is left as-is (transient/quota — retry later).
+function noteApiFailure(playlistId: string, err: unknown): void {
+  if (isAuthError(err)) {
+    setPlaylistLinkState(playlistId, 'needs-reauth')
+  }
+}
 
 function parseIsoDuration(iso: string): number {
   const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso)
@@ -107,17 +130,36 @@ async function fetchAllPlaylistItems(
   return items
 }
 
-// Runs once right after an account connects: existing 'local' playlists (added earlier via a
-// pasted public URL, download-only) may in fact be playlists the now-connected account owns —
-// e.g. the user pasted their own YouTube playlist link before ever setting up OAuth. For each
-// local playlist whose ID matches one of the account's own remote playlists, upgrade it in place
-// to 'youtube-oauth' and attach each track's playlistItem ID, unlocking write-back sync without
-// re-downloading anything. Playlists that don't match stay 'local' — they belong to someone else.
+// Runs once right after an account connects: existing playlists may in fact be playlists the
+// now-connected account owns — either a 'local' one added earlier via a pasted public URL
+// (download-only, before OAuth was ever set up), or a 'youtube-oauth' one still pointing at a
+// stale oauthAccountId. The latter happens because every OAuth connection mints a brand-new random
+// account ID (see startYoutubeOAuthFlow) — disconnecting and reconnecting the very same Google
+// account, or removing an account and then reconnecting it later, leaves any playlist that was
+// linked to the old ID orphaned: it keeps 'youtube-oauth' as its source, so sync push-back throws
+// "account not found" against an ID that no longer exists, and it's silently excluded from ever
+// being re-checked since only 'local' playlists were re-examined here before. For each playlist
+// whose ID matches one of the account's own remote playlists and whose oauthAccountId isn't
+// already this account, (re-)link it: attach each track's current playlistItem ID and point the
+// playlist at this account, unlocking (or restoring) write-back sync without re-downloading
+// anything. Playlists that don't match stay as they are — they belong to someone else.
 export async function reconcileLocalPlaylistsWithAccount(accountId: string): Promise<Playlist[]> {
   const remotePlaylists = await listMyRemotePlaylists(accountId)
   const ownRemoteIds = new Set(remotePlaylists.map((p) => p.id))
+  const connectedAccountIds = new Set(getOAuthAccounts().map((a) => a.id))
 
-  const candidates = getPlaylists().filter((p) => p.source === 'local' && ownRemoteIds.has(p.id))
+  // Only (re-)claim a playlist for this account when doing so can't "steal" it from another,
+  // still-connected account. A YouTube playlist ID is owned by exactly one channel, so a match
+  // here is either: a 'local' one we can adopt, an 'orphaned' one whose account is gone, or one
+  // pointing at an oauthAccountId that no longer exists. A playlist already linked to a *different
+  // but still-connected* account is left alone — that's the same channel connected twice, and
+  // relinking it on every reconcile would ping-pong it between the two account IDs.
+  const candidates = getPlaylists().filter((p) => {
+    if (!ownRemoteIds.has(p.id) || p.oauthAccountId === accountId) return false
+    if (p.source === 'local') return true
+    if (p.linkState === 'orphaned' || p.linkState === 'needs-reauth') return true
+    return !p.oauthAccountId || !connectedAccountIds.has(p.oauthAccountId)
+  })
   if (candidates.length === 0) return []
 
   const youtube = getYoutubeClientForAccount(accountId)
@@ -136,10 +178,33 @@ export async function reconcileLocalPlaylistsWithAccount(accountId: string): Pro
     }
 
     linkPlaylistToOauthAccount(playlist.id, accountId)
-    linked.push({ ...playlist, source: 'youtube-oauth', oauthAccountId: accountId })
+    linked.push({
+      ...playlist,
+      source: 'youtube-oauth',
+      oauthAccountId: accountId,
+      linkState: 'linked'
+    })
   }
 
   return linked
+}
+
+// Self-heals link state that drifted while the app was closed: any 'youtube-oauth' playlist whose
+// oauthAccountId no longer belongs to a connected account is marked 'orphaned'. This covers the
+// case where the account file was edited/removed out-of-band, or an older build never orphaned on
+// disconnect. Returns the playlists it changed so the caller can notify the renderer.
+export function reconcilePlaylistLinkStates(): Playlist[] {
+  const connectedAccountIds = new Set(getOAuthAccounts().map((a) => a.id))
+  const orphaned: Playlist[] = []
+  for (const p of getPlaylists()) {
+    if (p.source !== 'youtube-oauth') continue
+    const healthy = !!p.oauthAccountId && connectedAccountIds.has(p.oauthAccountId)
+    if (!healthy && p.linkState !== 'orphaned') {
+      setPlaylistLinkState(p.id, 'orphaned')
+      orphaned.push({ ...p, linkState: 'orphaned' })
+    }
+  }
+  return orphaned
 }
 
 // Runs once at app startup for every already-connected account, covering the case where a
@@ -148,6 +213,13 @@ export async function reconcileLocalPlaylistsWithAccount(accountId: string): Pro
 // any newly-linked playlists to the given window so the renderer can pick them up without a
 // manual refresh.
 export async function reconcileAllConnectedAccounts(win: BrowserWindow): Promise<void> {
+  // First flag any playlist whose account vanished while closed, so the UI shows the right state
+  // even if no account is currently connected to adopt it.
+  const orphaned = reconcilePlaylistLinkStates()
+  if (orphaned.length > 0) {
+    win.webContents.send('youtube-oauth:playlists-unlinked', orphaned)
+  }
+
   for (const account of getOAuthAccounts()) {
     try {
       const linked = await reconcileLocalPlaylistsWithAccount(account.id)
@@ -201,9 +273,17 @@ export async function importYoutubePlaylist(
     syncStatus: 'syncing',
     lastSync: '',
     source: 'youtube-oauth',
-    oauthAccountId: accountId
+    oauthAccountId: accountId,
+    linkState: 'linked'
   }
-  addPlaylist(newPlaylist)
+  // addPlaylist is a no-op when the ID already exists (e.g. it was added earlier as a 'local'
+  // public-URL playlist, or is a stale orphaned OAuth one). In that case link it to this account
+  // explicitly instead, so we upgrade in place rather than silently leaving a mismatched source.
+  if (getPlaylists().some((p) => p.id === remotePlaylistId)) {
+    linkPlaylistToOauthAccount(remotePlaylistId, accountId)
+  } else {
+    addPlaylist(newPlaylist)
+  }
   win.webContents.send('sync-status-changed', newPlaylist.id, 'syncing')
 
   let items: RemotePlaylistItem[]
@@ -256,6 +336,8 @@ export async function importYoutubePlaylist(
   return newPlaylist
 }
 
+// Thin status-managing wrapper around downloadItemsIntoPlaylist for the initial import: flips the
+// playlist to 'idle' when all downloads finish, or 'error' if the batch throws.
 async function downloadYoutubePlaylistTracks(
   newPlaylist: Playlist,
   remoteTitle: string,
@@ -263,14 +345,37 @@ async function downloadYoutubePlaylistTracks(
   durations: Map<string, number>,
   win: BrowserWindow
 ): Promise<void> {
-  const remotePlaylistId = newPlaylist.id
-
   try {
+    await downloadItemsIntoPlaylist(newPlaylist, remoteTitle, items, durations, win)
+    const now = new Date().toISOString()
+    updatePlaylistStatus(newPlaylist.id, 'idle', now)
+    win.webContents.send('sync-status-changed', newPlaylist.id, 'idle', now)
+  } catch (err) {
+    updatePlaylistStatus(newPlaylist.id, 'error')
+    win.webContents.send('sync-status-changed', newPlaylist.id, 'error')
+    throw err
+  }
+}
+
+// Downloads the given remote items' audio into the playlist's folder via a worker pool, writes ID3
+// tags, computes bitrate and kicks off BPM/key analysis. Pure download work with no playlist-status
+// side effects, so both the initial import and an incremental pull reuse it.
+async function downloadItemsIntoPlaylist(
+  playlist: Playlist,
+  remoteTitle: string,
+  items: RemotePlaylistItem[],
+  durations: Map<string, number>,
+  win: BrowserWindow
+): Promise<void> {
+  if (items.length === 0) return
+  const remotePlaylistId = playlist.id
+
+  {
     const settings = getSettings()
     const maxWorkers = Math.max(1, Math.min(12, settings.maxWorkers || 1))
     const downloadsDir = getDownloadsDir()
     const coversDir = getCoversDir()
-    const targetDir = join(downloadsDir, getPlaylistFolderName(newPlaylist))
+    const targetDir = join(downloadsDir, getPlaylistFolderName(playlist))
     if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true })
 
     const queue = [...items]
@@ -340,6 +445,10 @@ async function downloadYoutubePlaylistTracks(
             if (duration > 0) bitrate = Math.round((filesize * 8) / (duration * 1000))
           }
 
+          // No position here on purpose: the caller (import / pull) always creates the track's
+          // placeholder first, so addTrack preserves that existing position. This keeps a
+          // re-download during a pull from resetting a track to its remote position and clobbering
+          // the DJ's local order.
           addTrack({
             id: item.videoId,
             playlistId: remotePlaylistId,
@@ -354,10 +463,11 @@ async function downloadYoutubePlaylistTracks(
             format: 'MP3',
             rating: 0,
             bitrate,
-            position: item.position + 1,
             source: 'youtube-oauth',
             youtubePlaylistItemId: item.playlistItemId
           })
+          // Clear any earlier failure flag now that this attempt succeeded.
+          updateTrackDownloadFailed(item.videoId, remotePlaylistId, false)
 
           win.webContents.send('download-progress', {
             playlistId: remotePlaylistId,
@@ -376,6 +486,9 @@ async function downloadYoutubePlaylistTracks(
           })
         } catch (err) {
           console.error(`Failed to download YouTube OAuth track ${item.videoId}:`, err)
+          // Flag as undownloadable (mirrors sync.ts) so it's excluded from queue/shuffle relevance
+          // instead of lingering as a silent placeholder with an empty filepath.
+          updateTrackDownloadFailed(item.videoId, remotePlaylistId, true)
           win.webContents.send('download-progress', {
             playlistId: remotePlaylistId,
             trackId: item.videoId,
@@ -391,47 +504,222 @@ async function downloadYoutubePlaylistTracks(
     const workers: Promise<void>[] = []
     for (let i = 0; i < maxWorkers; i++) workers.push(worker())
     await Promise.all(workers)
-
-    const now = new Date().toISOString()
-    updatePlaylistStatus(remotePlaylistId, 'idle', now)
-    win.webContents.send('sync-status-changed', remotePlaylistId, 'idle', now)
-  } catch (err) {
-    updatePlaylistStatus(remotePlaylistId, 'error')
-    win.webContents.send('sync-status-changed', remotePlaylistId, 'error')
-    throw err
   }
 }
 
-// Pushes the given local track order back to the real YouTube playlist via playlistItems.update.
-// Never inserts or deletes items — only reorders existing ones — so it's safe to call repeatedly
-// and never touches the remote playlist's actual membership.
+// Pulls the current state of a 'youtube-oauth' playlist from the authenticated Data API and
+// reconciles it into the local db. This is the ONLY correct way to refresh an OAuth playlist —
+// the yt-dlp path (syncLocalPlaylist) can't see private/unlisted items and would delete them.
+//
+// Reconciliation rules, chosen so a pull never fights the user's local edits:
+//  - Membership only: never reorders existing local tracks (local order is the DJ's, pushed *to*
+//    YouTube), so a pending local reorder survives a pull untouched.
+//  - Adds remote tracks that aren't local yet and downloads their audio.
+//  - Removes a local track only if it was known to be on the remote (has a youtubePlaylistItemId)
+//    but is gone now — i.e. deleted on YouTube. Locally-added, not-yet-pushed tracks (no item ID)
+//    and 'discover' tracks are always kept.
+//  - Refreshes each surviving track's youtubePlaylistItemId in case it changed, and re-downloads
+//    any track whose local file went missing.
+export async function pullYoutubeOAuthPlaylist(
+  playlist: Playlist,
+  win: BrowserWindow
+): Promise<void> {
+  if (!isLinkUsable(playlist)) {
+    // Orphaned / needs-reauth / not actually OAuth-backed: nothing to pull. Leave state as-is so
+    // the UI keeps showing the actionable link problem rather than a generic sync error.
+    return
+  }
+  if (!beginPlaylistSync(playlist.id)) return
+
+  updatePlaylistStatus(playlist.id, 'syncing')
+  win.webContents.send('sync-status-changed', playlist.id, 'syncing')
+
+  try {
+    const youtube = getYoutubeClientForAccount(playlist.oauthAccountId!)
+    const items = await fetchAllPlaylistItems(youtube, playlist.id)
+    const remoteVideoIds = new Set(items.map((i) => i.videoId))
+    const localTracks = getTracksForPlaylist(playlist.id)
+    const localById = new Map(localTracks.map((t) => [t.id, t]))
+
+    // Remove tracks deleted on YouTube (only ones we knew were remote — see rules above).
+    for (const track of localTracks) {
+      if (track.source === 'discover') continue
+      if (track.youtubePlaylistItemId && !remoteVideoIds.has(track.id)) {
+        try {
+          if (track.filepath && existsSync(track.filepath)) unlinkSync(track.filepath)
+          if (track.coverPath && existsSync(track.coverPath)) unlinkSync(track.coverPath)
+        } catch (err) {
+          console.error(`Failed to clean up files for pulled-out track ${track.id}:`, err)
+        }
+        deleteTrack(track.id, playlist.id)
+      }
+    }
+
+    // Attach/refresh item IDs, create placeholders for new tracks, collect what needs downloading.
+    const toDownload: RemotePlaylistItem[] = []
+    for (const item of items) {
+      const existing = localById.get(item.videoId)
+      if (existing) {
+        if (existing.youtubePlaylistItemId !== item.playlistItemId) {
+          linkTrackToYoutubePlaylistItem(item.videoId, playlist.id, item.playlistItemId)
+        }
+        const missingFiles =
+          !existing.filepath || !existsSync(existing.filepath) || !existsSync(existing.coverPath)
+        if (missingFiles) toDownload.push(item)
+      } else {
+        const { title, artist } = parseTitleAndArtist(item.title, item.channelTitle)
+        // No position: addTrack appends new tracks after the current max, so tracks that appeared
+        // on YouTube since the last pull land at the end of the DJ's local order rather than
+        // shuffling existing tracks around.
+        const placeholder: Track = {
+          id: item.videoId,
+          playlistId: playlist.id,
+          title,
+          artist,
+          bpm: 0,
+          key: '',
+          duration: 0,
+          filepath: '',
+          coverPath: '',
+          filesize: 0,
+          format: 'MP3',
+          rating: 0,
+          bitrate: 0,
+          source: 'youtube-oauth',
+          youtubePlaylistItemId: item.playlistItemId
+        }
+        addTrack(placeholder)
+        toDownload.push(item)
+      }
+    }
+
+    // Let the renderer refresh the tracklist with the new membership before downloads finish.
+    win.webContents.send('sync-status-changed', playlist.id, 'syncing')
+
+    const durations = await fetchDurations(
+      youtube,
+      toDownload.map((i) => i.videoId)
+    )
+    await downloadItemsIntoPlaylist(playlist, playlist.title, toDownload, durations, win)
+
+    const now = new Date().toISOString()
+    updatePlaylistStatus(playlist.id, 'idle', now)
+    win.webContents.send('sync-status-changed', playlist.id, 'idle', now)
+  } catch (err) {
+    console.error(`Failed to pull YouTube OAuth playlist ${playlist.id}:`, err)
+    noteApiFailure(playlist.id, err)
+    updatePlaylistStatus(playlist.id, 'error')
+    win.webContents.send('sync-status-changed', playlist.id, 'error')
+  } finally {
+    endPlaylistSync(playlist.id)
+  }
+}
+
+// Pushes the local track order/membership of a 'youtube-oauth' playlist back to the real YouTube
+// playlist. To keep write quota sane (each write costs ~50 units against a 10k/day default), it
+// first reads the current remote order (1 unit) and only writes the items that actually need to
+// move: an unbroken correct prefix is skipped, and everything from the first divergence onward is
+// (re)positioned in order — which is exactly correct regardless of how YouTube shifts siblings.
+// Tracks without a remote item ID are inserted; the returned ID is linked back immediately so a
+// retry never double-inserts. Never removes remote items — a locally deleted track just stops
+// being pushed. On quota/auth failure it stops, leaves the pending flag set (so the user can retry
+// later), and throws an actionable message; the dirty flag is only cleared on full success.
 export async function pushPlaylistOrderToYoutube(
   playlistId: string,
   orderedTrackIds: string[]
 ): Promise<void> {
   const playlist = getPlaylists().find((p) => p.id === playlistId)
-  if (!playlist || playlist.source !== 'youtube-oauth' || !playlist.oauthAccountId) {
+  if (!playlist || playlist.source !== 'youtube-oauth') {
     throw new Error('Playlist is not linked to a YouTube account.')
   }
+  if (playlist.linkState === 'orphaned' || !playlist.oauthAccountId) {
+    throw new Error(
+      'This playlist is no longer linked to a YouTube account. Reconnect the account in Settings to sync it again.'
+    )
+  }
+  if (playlist.linkState === 'needs-reauth') {
+    throw new Error(
+      'YouTube authorization expired. Reconnect the account in Settings, then sync again.'
+    )
+  }
+
   const youtube = getYoutubeClientForAccount(playlist.oauthAccountId)
   const tracks = getTracksForPlaylist(playlistId)
   const trackById = new Map(tracks.map((t) => [t.id, t]))
+  const desired = orderedTrackIds
+    .map((id) => trackById.get(id))
+    .filter((t): t is Track => t !== undefined)
 
-  for (let index = 0; index < orderedTrackIds.length; index++) {
-    const track = trackById.get(orderedTrackIds[index])
-    if (!track || !track.youtubePlaylistItemId) continue
-    await youtube.playlistItems.update({
-      part: ['snippet'],
-      requestBody: {
-        id: track.youtubePlaylistItemId,
-        snippet: {
-          playlistId,
-          position: index,
-          resourceId: { kind: 'youtube#video', videoId: track.id }
+  let remoteByVideoId: Map<string, RemotePlaylistItem>
+  try {
+    const remoteItems = await fetchAllPlaylistItems(youtube, playlistId)
+    remoteByVideoId = new Map(remoteItems.map((r) => [r.videoId, r]))
+  } catch (err) {
+    noteApiFailure(playlistId, err)
+    throw toActionableError(err)
+  }
+
+  let diverged = false
+  for (let index = 0; index < desired.length; index++) {
+    const track = desired[index]
+    const remote = track.youtubePlaylistItemId ? remoteByVideoId.get(track.id) : undefined
+
+    // Skip while the prefix is still exactly right — no write needed for already-correct items.
+    if (!diverged && remote && remote.position === index) continue
+    diverged = true
+
+    try {
+      if (!remote) {
+        const inserted = await youtube.playlistItems.insert({
+          part: ['snippet'],
+          requestBody: {
+            snippet: {
+              playlistId,
+              position: index,
+              resourceId: { kind: 'youtube#video', videoId: track.id }
+            }
+          }
+        })
+        if (!inserted.data.id) {
+          // Bail rather than continue: without the returned ID we can't link it, and a retry would
+          // insert the same video a second time.
+          throw new Error('YouTube did not return an item ID for the inserted track.')
         }
+        linkTrackToYoutubePlaylistItem(track.id, playlistId, inserted.data.id)
+      } else {
+        await youtube.playlistItems.update({
+          part: ['snippet'],
+          requestBody: {
+            id: remote.playlistItemId,
+            snippet: {
+              playlistId,
+              position: index,
+              resourceId: { kind: 'youtube#video', videoId: track.id }
+            }
+          }
+        })
       }
-    })
+    } catch (err) {
+      noteApiFailure(playlistId, err)
+      throw toActionableError(err)
+    }
   }
 
   clearPlaylistDirty(playlistId, new Date().toISOString())
+}
+
+// Turns a raw googleapis error into a message that tells the user what to do, mapping the two
+// cases they can act on (quota, expired auth) and passing anything else through.
+function toActionableError(err: unknown): Error {
+  if (isQuotaError(err)) {
+    return new Error(
+      'YouTube API quota exceeded. Your changes are saved locally — try syncing again later.'
+    )
+  }
+  if (isAuthError(err)) {
+    return new Error(
+      'YouTube authorization expired. Reconnect the account in Settings, then sync again.'
+    )
+  }
+  return err instanceof Error ? err : new Error(String(err))
 }

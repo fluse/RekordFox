@@ -30,6 +30,10 @@ export const es = {
   'sidebar.connectYoutubeTooltip': 'Conectar cuenta de YouTube',
   'sidebar.youtubeSourceTooltip': 'Importado desde YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Sincronizado con YouTube',
+  'sidebar.orphanedTooltip':
+    'Cuenta de YouTube desconectada — vuelve a conectarla en Ajustes para sincronizar de nuevo',
+  'sidebar.needsReauthTooltip':
+    'La sesión de YouTube expiró — vuelve a conectar la cuenta en Ajustes',
   'sidebar.pushPendingTooltip': 'Cambios sin guardar — aún no sincronizados con YouTube',
   'sidebar.addPlaylistTooltip': 'Añadir playlist',
   'sidebar.renamePlaylistTooltip': 'Renombrar playlist',

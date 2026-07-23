@@ -56,8 +56,8 @@ export function registerYoutubeAuthIpc(): void {
 
   ipcMain.handle('youtube-oauth:disconnect', (_, accountId: string) =>
     ipcTry(async () => {
-      await disconnectYoutubeAccount(accountId)
-      return {}
+      const unlinkedPlaylists = await disconnectYoutubeAccount(accountId)
+      return { unlinkedPlaylists }
     })
   )
 

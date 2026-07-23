@@ -12,7 +12,6 @@ import {
   getTracksForPlaylist,
   updateTrackDownloadFailed,
   getSettings,
-  getPlaylists,
   getTrackFilename,
   getPlaylistFolderName
 } from './db'
@@ -20,7 +19,8 @@ import { getPlaylistInfo, downloadTrack } from './downloader'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
 import nodeId3 from 'node-id3'
 
-// Map of active synchronization tasks
+// Map of active synchronization tasks. Shared by every sync path (local yt-dlp here and the
+// OAuth pull in youtubeSync.ts) so the same playlist can never be synced by two paths at once.
 const activeSyncs = new Map<string, boolean>()
 
 export function isAnyPlaylistSyncing(): boolean {
@@ -28,6 +28,18 @@ export function isAnyPlaylistSyncing(): boolean {
     if (val) return true
   }
   return false
+}
+
+// Claims the sync slot for a playlist; returns false if one is already running (caller should
+// bail out). Always pair a true result with endPlaylistSync in a finally block.
+export function beginPlaylistSync(playlistId: string): boolean {
+  if (activeSyncs.get(playlistId)) return false
+  activeSyncs.set(playlistId, true)
+  return true
+}
+
+export function endPlaylistSync(playlistId: string): void {
+  activeSyncs.delete(playlistId)
 }
 
 // Parse YouTube video title to extract Artist and Title
@@ -66,13 +78,16 @@ export function parseTitleAndArtist(
   return { title, artist }
 }
 
-export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Promise<void> {
-  if (activeSyncs.get(playlist.id)) {
+// Syncs a 'local' (public-URL, yt-dlp scraped, download-only) playlist. Never call this for a
+// 'youtube-oauth' playlist: yt-dlp can't see private/unlisted items, so the diff below would read
+// an owned playlist as empty and wipe every downloaded track. The source-aware dispatcher in
+// syncManager.ts routes OAuth playlists to pullYoutubeOAuthPlaylist instead.
+export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow): Promise<void> {
+  if (!beginPlaylistSync(playlist.id)) {
     console.log(`Sync for playlist ${playlist.id} already running.`)
     return
   }
 
-  activeSyncs.set(playlist.id, true)
   updatePlaylistStatus(playlist.id, 'syncing')
   win.webContents.send('sync-status-changed', playlist.id, 'syncing')
 
@@ -173,11 +188,11 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
       }
     }
 
-    // Tracks added via the Discover feature are never part of the actual remote YouTube
-    // playlist (we only write them to the local db), so excluding them here keeps them from
+    // Tracks added via the Discover feature (and any that somehow carry a 'youtube-oauth' source)
+    // are never part of this playlist's public yt-dlp scrape, so excluding them keeps them from
     // being wiped out as "removed" on every subsequent sync.
     const toDelete = currentLocalTracks.filter(
-      (t) => !ytTracksMap.has(t.id) && t.source !== 'discover'
+      (t) => !ytTracksMap.has(t.id) && t.source !== 'discover' && t.source !== 'youtube-oauth'
     )
 
     // 1. Delete removed tracks
@@ -366,27 +381,6 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
     updatePlaylistStatus(playlist.id, 'error')
     win.webContents.send('sync-status-changed', playlist.id, 'error')
   } finally {
-    activeSyncs.delete(playlist.id)
-  }
-}
-
-// Background Cron-Sync for all playlists
-let syncInterval: NodeJS.Timeout | null = null
-
-export function startBackgroundSync(win: BrowserWindow, intervalMs = 30 * 60 * 1000): void {
-  if (syncInterval) clearInterval(syncInterval)
-
-  syncInterval = setInterval(() => {
-    const playlists = getPlaylists()
-    for (const playlist of playlists) {
-      syncPlaylist(playlist, win).catch((err) => console.error(err))
-    }
-  }, intervalMs)
-}
-
-export function stopBackgroundSync(): void {
-  if (syncInterval) {
-    clearInterval(syncInterval)
-    syncInterval = null
+    endPlaylistSync(playlist.id)
   }
 }

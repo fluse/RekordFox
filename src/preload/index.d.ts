@@ -52,7 +52,11 @@ declare global {
         error?: string
       }>
       onYoutubeAuthUrlReady: (callback: (url: string) => void) => () => void
-      disconnectYoutubeAccount: (accountId: string) => Promise<{ success: boolean; error?: string }>
+      disconnectYoutubeAccount: (accountId: string) => Promise<{
+        success: boolean
+        unlinkedPlaylists?: Playlist[]
+        error?: string
+      }>
       listMyYoutubePlaylists: (
         accountId: string
       ) => Promise<{ success: boolean; playlists?: RemotePlaylistSummary[]; error?: string }>
@@ -68,6 +72,7 @@ declare global {
         accountId: string
       ) => Promise<{ success: boolean; linkedPlaylists?: Playlist[]; error?: string }>
       onYoutubePlaylistsLinked: (callback: (linkedPlaylists: Playlist[]) => void) => () => void
+      onYoutubePlaylistsUnlinked: (callback: (unlinkedPlaylists: Playlist[]) => void) => () => void
       copyToClipboard: (text: string) => void
       getSettings: () => Promise<AppSettings>
       updateSettings: (

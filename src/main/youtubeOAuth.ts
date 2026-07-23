@@ -4,11 +4,13 @@ import { shell, safeStorage, BrowserWindow } from 'electron'
 import { google, youtube_v3 } from 'googleapis'
 import {
   OAuthAccount,
+  Playlist,
   getSettings,
   getOAuthAccounts,
   addOAuthAccount,
   updateOAuthAccountTokens,
-  removeOAuthAccount
+  removeOAuthAccount,
+  orphanPlaylistsForAccount
 } from './db'
 
 // Broadcasts to every open window directly via BrowserWindow, rather than importing the
@@ -198,6 +200,40 @@ export function startYoutubeOAuthFlow(openBrowser = true): Promise<OAuthAccount>
   })
 }
 
+// One live OAuth2Client per account, reused across all API calls for that account. A single client
+// means a single 'tokens' listener and a single in-flight refresh, so concurrent calls (e.g. the
+// reconcile fan-out) can't each mint their own client and race to persist different rotated
+// tokens — the last writer no longer clobbers a fresher refresh_token.
+const clientCache = new Map<string, InstanceType<typeof google.auth.OAuth2>>()
+
+// Drops an account's cached client — call on disconnect, or after credentials change, so a stale
+// client (revoked tokens / wrong secret) is never reused.
+export function invalidateYoutubeClient(accountId: string): void {
+  clientCache.delete(accountId)
+}
+
+// True for the OAuth errors that mean the account's authorization is gone and re-consent is
+// required (revoked/expired refresh token), as opposed to a transient/quota/network error.
+export function isAuthError(err: unknown): boolean {
+  const anyErr = err as { response?: { data?: { error?: string } }; message?: string } | undefined
+  const code = anyErr?.response?.data?.error || ''
+  const msg = anyErr?.message || ''
+  return /invalid_grant|invalid_token|unauthorized|401/i.test(`${code} ${msg}`)
+}
+
+// True when the error is a YouTube Data API quota / rate-limit rejection, so callers can back off
+// and preserve pending state instead of surfacing it as a hard failure.
+export function isQuotaError(err: unknown): boolean {
+  const anyErr = err as
+    | { response?: { data?: { error?: { errors?: { reason?: string }[] } }; status?: number } }
+    | undefined
+  const reasons = anyErr?.response?.data?.error?.errors || []
+  const status = anyErr?.response?.status
+  return (
+    status === 429 || reasons.some((e) => /quota|rateLimit|userRateLimit/i.test(e.reason || ''))
+  )
+}
+
 // Rehydrates an authorized googleapis YouTube client for a stored account, refreshing the access
 // token via the OAuth2Client's built-in refresh logic if needed and persisting any rotated tokens.
 export function getYoutubeClientForAccount(accountId: string): youtube_v3.Youtube {
@@ -207,25 +243,34 @@ export function getYoutubeClientForAccount(accountId: string): youtube_v3.Youtub
   }
   const { clientId, clientSecret } = getClientCredentials()
 
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret)
-  oauth2Client.setCredentials({
-    access_token: decryptSecret(account.accessTokenEnc),
-    refresh_token: decryptSecret(account.refreshTokenEnc),
-    expiry_date: account.expiresAt
-  })
-
-  oauth2Client.on('tokens', (tokens) => {
-    updateOAuthAccountTokens(accountId, {
-      accessTokenEnc: encryptSecret(tokens.access_token || decryptSecret(account.accessTokenEnc)),
-      refreshTokenEnc: tokens.refresh_token ? encryptSecret(tokens.refresh_token) : undefined,
-      expiresAt: tokens.expiry_date || account.expiresAt
+  let oauth2Client = clientCache.get(accountId)
+  if (!oauth2Client) {
+    oauth2Client = new google.auth.OAuth2(clientId, clientSecret)
+    oauth2Client.setCredentials({
+      access_token: decryptSecret(account.accessTokenEnc),
+      refresh_token: decryptSecret(account.refreshTokenEnc),
+      expiry_date: account.expiresAt
     })
-  })
+    oauth2Client.on('tokens', (tokens) => {
+      const current = getOAuthAccounts().find((a) => a.id === accountId)
+      if (!current) return
+      updateOAuthAccountTokens(accountId, {
+        accessTokenEnc: encryptSecret(tokens.access_token || decryptSecret(current.accessTokenEnc)),
+        refreshTokenEnc: tokens.refresh_token ? encryptSecret(tokens.refresh_token) : undefined,
+        expiresAt: tokens.expiry_date || current.expiresAt
+      })
+    })
+    clientCache.set(accountId, oauth2Client)
+  }
 
   return google.youtube({ version: 'v3', auth: oauth2Client })
 }
 
-export async function disconnectYoutubeAccount(accountId: string): Promise<void> {
+// Disconnects an account: best-effort token revocation, then removes it. Any playlists that were
+// linked to it are orphaned (kept, but write-back disabled) and returned so the caller can push
+// the change to the renderer — without this they'd keep 'youtube-oauth' + a dead oauthAccountId
+// and every "sync to YouTube" would fail with "account not found".
+export async function disconnectYoutubeAccount(accountId: string): Promise<Playlist[]> {
   const account = getOAuthAccounts().find((a) => a.id === accountId)
   if (account) {
     try {
@@ -237,5 +282,11 @@ export async function disconnectYoutubeAccount(accountId: string): Promise<void>
       console.error(`Failed to revoke YouTube credentials for account ${accountId}:`, err)
     }
   }
+  invalidateYoutubeClient(accountId)
+  const orphaned = orphanPlaylistsForAccount(accountId)
   removeOAuthAccount(accountId)
+  if (orphaned.length > 0) {
+    broadcastToAllWindows('youtube-oauth:playlists-unlinked', orphaned)
+  }
+  return orphaned
 }

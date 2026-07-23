@@ -247,10 +247,23 @@ export default function Sidebar({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="flex-shrink-0 flex items-center">
-                              <YoutubeIcon className="h-3 w-3" />
+                              <YoutubeIcon
+                                className={`h-3 w-3 ${
+                                  playlist.linkState === 'orphaned' ||
+                                  playlist.linkState === 'needs-reauth'
+                                    ? 'opacity-40 grayscale'
+                                    : ''
+                                }`}
+                              />
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent>{t('sidebar.youtubeSourceTooltip')}</TooltipContent>
+                          <TooltipContent>
+                            {playlist.linkState === 'orphaned'
+                              ? t('sidebar.orphanedTooltip')
+                              : playlist.linkState === 'needs-reauth'
+                                ? t('sidebar.needsReauthTooltip')
+                                : t('sidebar.youtubeSourceTooltip')}
+                          </TooltipContent>
                         </Tooltip>
                       )}
                       <span className="truncate">{playlist.title}</span>

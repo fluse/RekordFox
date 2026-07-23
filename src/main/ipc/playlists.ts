@@ -7,7 +7,7 @@ import {
   Playlist
 } from '../db'
 import { getPlaylistInfo } from '../downloader'
-import { syncPlaylist } from '../sync'
+import { syncPlaylist } from '../syncManager'
 import { exportPlaylistToUsb } from '../export/m3u8/m3u8Exporter'
 import { ipcTry } from '../errors'
 import { getMainWindow } from '../window'

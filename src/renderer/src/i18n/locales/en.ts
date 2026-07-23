@@ -30,6 +30,9 @@ export const en = {
   'sidebar.connectYoutubeTooltip': 'Connect YouTube account',
   'sidebar.youtubeSourceTooltip': 'Imported from YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Synced with YouTube',
+  'sidebar.orphanedTooltip':
+    'YouTube account disconnected — reconnect it in Settings to sync again',
+  'sidebar.needsReauthTooltip': 'YouTube sign-in expired — reconnect the account in Settings',
   'sidebar.pushPendingTooltip': 'Unsaved changes — not yet synced to YouTube',
   'sidebar.addPlaylistTooltip': 'Add playlist',
   'sidebar.renamePlaylistTooltip': 'Rename playlist',

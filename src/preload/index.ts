@@ -52,6 +52,14 @@ const api = {
       ipcRenderer.removeListener('youtube-oauth:playlists-linked', subscription)
     }
   },
+  onYoutubePlaylistsUnlinked: (callback: (unlinkedPlaylists: Playlist[]) => void): (() => void) => {
+    const subscription = (_event: unknown, unlinkedPlaylists: Playlist[]): void =>
+      callback(unlinkedPlaylists)
+    ipcRenderer.on('youtube-oauth:playlists-unlinked', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('youtube-oauth:playlists-unlinked', subscription)
+    }
+  },
 
   // Uses Electron's native clipboard module (via preload) rather than navigator.clipboard —
   // the web Clipboard API frequently throws "Document is not focused" in Electron renderers,

@@ -32,6 +32,10 @@ export const de = {
   'sidebar.connectYoutubeTooltip': 'YouTube-Konto verbinden',
   'sidebar.youtubeSourceTooltip': 'Importiert von YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Mit YouTube synchronisiert',
+  'sidebar.orphanedTooltip':
+    'YouTube-Konto getrennt — erneut in den Einstellungen verbinden, um wieder zu synchronisieren',
+  'sidebar.needsReauthTooltip':
+    'YouTube-Anmeldung abgelaufen — Konto in den Einstellungen erneut verbinden',
   'sidebar.pushPendingTooltip': 'Ungespeicherte Änderungen — noch nicht zu YouTube synchronisiert',
   'sidebar.addPlaylistTooltip': 'Playlist hinzufügen',
   'sidebar.renamePlaylistTooltip': 'Playlist umbenennen',

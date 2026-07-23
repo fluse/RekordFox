@@ -232,6 +232,15 @@ export function useApp(): UseAppReturn {
         const res = await window.api.addTrackToPlaylist(track.id, targetPlaylistId)
         if (res.success && res.track) {
           toast.success(t('sidebar.trackAddedToPlaylist'))
+          // The main process already marked a 'youtube-oauth' target playlist dirty in the DB —
+          // reflect that locally to enable the "Sync to YouTube" button without a full refetch.
+          setPlaylists((prev) =>
+            prev.map((p) =>
+              p.id === targetPlaylistId && p.source === 'youtube-oauth'
+                ? { ...p, pendingRemoteChanges: true }
+                : p
+            )
+          )
           setSelectedPlaylistId((currentId) => {
             if (currentId === targetPlaylistId) {
               window.api.getTracks(targetPlaylistId).then(setTracks).catch(console.error)
@@ -626,6 +635,18 @@ export function useApp(): UseAppReturn {
       toast.success(t('connections.playlistsLinked', { count: String(linkedPlaylists.length) }))
     })
 
+    // Listen for playlists the main process unlinked (their YouTube account was disconnected, or
+    // found gone on startup): keep them, but reflect the orphaned state so the UI disables
+    // write-back and stops showing a pending "sync to YouTube" prompt against a dead account.
+    const cleanupPlaylistsUnlinked = window.api.onYoutubePlaylistsUnlinked((unlinkedPlaylists) => {
+      const orphanedIds = new Set(unlinkedPlaylists.map((p) => p.id))
+      setPlaylists((prev) =>
+        prev.map((p) =>
+          orphanedIds.has(p.id) ? { ...p, linkState: 'orphaned', pendingRemoteChanges: false } : p
+        )
+      )
+    })
+
     return (): void => {
       cleanupSyncStatus()
       cleanupDownloadProgress()
@@ -635,6 +656,7 @@ export function useApp(): UseAppReturn {
       cleanupFilepathChanged()
       cleanupTracksUpdated()
       cleanupPlaylistsLinked()
+      cleanupPlaylistsUnlinked()
     }
   }, [
     selectedPlaylistId,

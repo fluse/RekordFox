@@ -27,9 +27,17 @@ export interface Playlist {
   // supports pushing the local track order back to YouTube. 'soundcloud' reserved for future use.
   source: PlaylistSource
   oauthAccountId?: string // links a 'youtube-oauth' playlist to the OAuthAccount used to import it
+  // Health of the OAuth link, authoritative for whether write-back is possible. Only meaningful
+  // for source === 'youtube-oauth'; undefined is treated as 'linked' for backward compatibility.
+  //  - 'linked':       oauthAccountId points at a connected account that owns this playlist.
+  //  - 'orphaned':     the linked account was disconnected/removed — no write-back until re-linked.
+  //  - 'needs-reauth': the account still exists but its token is invalid (revoked/expired refresh).
+  linkState?: PlaylistLinkState
   pendingRemoteChanges?: boolean // true once the local order diverges from the last YouTube push
   lastPushToYoutube?: string
 }
+
+export type PlaylistLinkState = 'linked' | 'orphaned' | 'needs-reauth'
 
 export interface OAuthAccount {
   id: string
@@ -526,7 +534,15 @@ export function updatePlaylistStatus(
 
 export function markPlaylistDirty(playlistId: string): void {
   const playlist = dbData.playlists.find((p) => p.id === playlistId)
-  if (playlist && playlist.source === 'youtube-oauth' && !playlist.pendingRemoteChanges) {
+  // Only OAuth-backed playlists with a healthy link can push back, so only they track pending
+  // changes — flagging an orphaned/needs-reauth one would light up a "sync to YouTube" prompt that
+  // can't succeed until the account is reconnected.
+  if (
+    playlist &&
+    playlist.source === 'youtube-oauth' &&
+    (playlist.linkState === undefined || playlist.linkState === 'linked') &&
+    !playlist.pendingRemoteChanges
+  ) {
     playlist.pendingRemoteChanges = true
     saveDb()
   }
@@ -541,15 +557,45 @@ export function clearPlaylistDirty(playlistId: string, timestamp: string): void 
   }
 }
 
-// Upgrades a 'local' (public-URL, download-only) playlist to 'youtube-oauth' once it's been
-// confirmed to actually belong to the connected account, unlocking write-back support.
+// Upgrades a 'local' (public-URL, download-only) playlist to 'youtube-oauth' — or re-links an
+// 'orphaned'/'needs-reauth' one to a (re)connected account — once it's been confirmed to actually
+// belong to that account, restoring write-back support and clearing any stale link problem.
 export function linkPlaylistToOauthAccount(playlistId: string, accountId: string): void {
   const playlist = dbData.playlists.find((p) => p.id === playlistId)
   if (playlist) {
     playlist.source = 'youtube-oauth'
     playlist.oauthAccountId = accountId
+    playlist.linkState = 'linked'
     saveDb()
   }
+}
+
+// Sets the link health of a single 'youtube-oauth' playlist (see PlaylistLinkState). No-op for
+// playlists that aren't OAuth-backed.
+export function setPlaylistLinkState(playlistId: string, state: PlaylistLinkState): void {
+  const playlist = dbData.playlists.find((p) => p.id === playlistId)
+  if (playlist && playlist.source === 'youtube-oauth' && playlist.linkState !== state) {
+    playlist.linkState = state
+    saveDb()
+  }
+}
+
+// Marks every 'youtube-oauth' playlist tied to the given account as 'orphaned' when that account
+// is disconnected: keeps the source/tracks/downloads intact so the user can re-link later, but
+// stops write-back (the push path refuses anything that isn't 'linked') and clears the pending
+// flag so no stale "sync to YouTube" prompt lingers against an account that no longer exists.
+// Returns the affected playlists so the caller can tell the renderer to update.
+export function orphanPlaylistsForAccount(accountId: string): Playlist[] {
+  const affected = dbData.playlists.filter(
+    (p) => p.source === 'youtube-oauth' && p.oauthAccountId === accountId
+  )
+  if (affected.length === 0) return []
+  for (const playlist of affected) {
+    playlist.linkState = 'orphaned'
+    playlist.pendingRemoteChanges = false
+  }
+  saveDb()
+  return affected
 }
 
 // Attaches the remote playlistItem ID a track needs for reorder push-back, once its parent
@@ -622,14 +668,19 @@ export function addTrack(track: Track): void {
     (t) => t.id === track.id && t.playlistId === track.playlistId
   )
   if (index !== -1) {
-    const existingPosition = dbData.tracks[index].position
-    const existingDateAdded = dbData.tracks[index].dateAdded
-    const existingPlayed = dbData.tracks[index].played
+    const existing = dbData.tracks[index]
     dbData.tracks[index] = {
       ...track,
-      position: track.position !== undefined ? track.position : existingPosition,
-      dateAdded: track.dateAdded !== undefined ? track.dateAdded : existingDateAdded,
-      played: track.played !== undefined ? track.played : existingPlayed
+      position: track.position !== undefined ? track.position : existing.position,
+      dateAdded: track.dateAdded !== undefined ? track.dateAdded : existing.dateAdded,
+      played: track.played !== undefined ? track.played : existing.played,
+      // Never drop the YouTube playlistItem link on a plain re-add (e.g. a re-download that
+      // rebuilds the track record without carrying it): losing it would make the next push treat
+      // an already-present remote item as new and insert a duplicate on the user's real playlist.
+      youtubePlaylistItemId:
+        track.youtubePlaylistItemId !== undefined
+          ? track.youtubePlaylistItemId
+          : existing.youtubePlaylistItemId
     }
   } else {
     const playlistTracks = dbData.tracks.filter((t) => t.playlistId === track.playlistId)
@@ -649,6 +700,8 @@ export function addTrack(track: Track): void {
 
 // Copies a track (metadata + physical mp3/cover files) into another playlist, appended at the
 // end. Used by the sidebar drag & drop feature — callers must gate this with canDropTrack first.
+// Marks the target playlist dirty so a 'youtube-oauth' playlist can push the new membership back
+// to YouTube, mirroring updateTrackPositions' handling of local reorders.
 export function addTrackToPlaylist(sourceTrackId: string, targetPlaylistId: string): Track | null {
   const sourceTrack = dbData.tracks.find((t) => t.id === sourceTrackId)
   const targetPlaylist = dbData.playlists.find((p) => p.id === targetPlaylistId)
@@ -714,6 +767,7 @@ export function addTrackToPlaylist(sourceTrackId: string, targetPlaylistId: stri
     youtubePlaylistItemId: undefined
   }
   dbData.tracks.push(newTrack)
+  markPlaylistDirty(targetPlaylistId)
   saveDb()
   return newTrack
 }
