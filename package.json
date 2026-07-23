@@ -1,6 +1,6 @@
 {
   "name": "RekordFox",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "The modern, intuitive, and fast DJ library management alternative to Rekordbox.",
   "main": "./out/main/index.js",
   "author": "holger.schauf",
