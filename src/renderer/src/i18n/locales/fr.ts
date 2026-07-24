@@ -286,20 +286,20 @@ export const fr = {
     'Les CDJ Pioneer ne lisent que les clés USB formatées en FAT32 (ou HFS+). Formatez la clé en conséquence au préalable. Attention : le formatage efface toutes les données de la clé — sauvegardez les fichiers existants.',
   'pioneerInitGuide.step2.title': '2. Ouvrir rekordbox et passer en mode « Export »',
   'pioneerInitGuide.step2.description':
-    'Lancez rekordbox sur l\'ordinateur. Réglez le sélecteur de mode en haut à gauche sur « Export » (pas « Performance »). Les clés USB ne peuvent être préparées pour les CDJ qu\'en mode Export.',
+    "Lancez rekordbox sur l'ordinateur. Réglez le sélecteur de mode en haut à gauche sur « Export » (pas « Performance »). Les clés USB ne peuvent être préparées pour les CDJ qu'en mode Export.",
   'pioneerInitGuide.step2.link': 'Télécharger rekordbox',
   'pioneerInitGuide.step3.title': '3. Brancher la clé USB',
   'pioneerInitGuide.step3.description':
     'Branchez la clé. Elle apparaît dans la barre latérale gauche de rekordbox sous « Périphériques » (Devices), avec le nom de la clé.',
-  'pioneerInitGuide.step4.title': '4. Analyser un titre et l\'exporter vers le périphérique',
+  'pioneerInitGuide.step4.title': "4. Analyser un titre et l'exporter vers le périphérique",
   'pioneerInitGuide.step4.description':
-    'Glissez-déposez n\'importe quel titre (analysé) ou playlist de votre collection rekordbox sur le périphérique dans la barre latérale. rekordbox crée alors une fois le dossier « PIONEER » avec la base de données. Attendez la fin de l\'export.',
+    "Glissez-déposez n'importe quel titre (analysé) ou playlist de votre collection rekordbox sur le périphérique dans la barre latérale. rekordbox crée alors une fois le dossier « PIONEER » avec la base de données. Attendez la fin de l'export.",
   'pioneerInitGuide.step5.title': '5. Éjecter le périphérique en toute sécurité',
   'pioneerInitGuide.step5.description':
-    'Éjectez la clé en toute sécurité via l\'icône d\'éjection à côté du périphérique dans rekordbox (ou dans votre système d\'exploitation) afin que la base de données soit entièrement écrite.',
+    "Éjectez la clé en toute sécurité via l'icône d'éjection à côté du périphérique dans rekordbox (ou dans votre système d'exploitation) afin que la base de données soit entièrement écrite.",
   'pioneerInitGuide.step6.title': '6. Retour à RekordFox',
   'pioneerInitGuide.step6.description':
-    'Rebranchez la clé et sélectionnez-la à nouveau ici. Le message disparaît, et l\'export Pioneer écrit désormais aussi les formes d\'onde affichées par les CDJ. Cette configuration n\'est nécessaire qu\'une seule fois par clé.',
+    "Rebranchez la clé et sélectionnez-la à nouveau ici. Le message disparaît, et l'export Pioneer écrit désormais aussi les formes d'onde affichées par les CDJ. Cette configuration n'est nécessaire qu'une seule fois par clé.",
 
   // YouTube Onboarding Modal
   'youtubeConnect.title': 'Connecter YouTube',
