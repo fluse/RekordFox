@@ -467,5 +467,22 @@ export const es = {
   'discover.addErrorToast': 'Error al añadir "{{title}}": {{error}}',
   'discover.selectAll': 'Seleccionar todo',
   'discover.clearSelection': 'Quitar selección',
-  'discover.addSelected': 'Añadir seleccionados ({{count}})'
+  'discover.addSelected': 'Añadir seleccionados ({{count}})',
+
+  // Eliminar / mover tema
+  'tracklist.colRemove': '',
+  'tracklist.removeTrackTooltip': 'Quitar de la playlist',
+  'tracklist.trackRemoved': 'Tema eliminado de la playlist.',
+  'tracklist.trackRemoveFailed': 'Error al quitar el tema: {{error}}',
+  'tracklist.trashDropLabel': 'Arrastra aquí para quitar',
+  'tracklist.trashDropHint': 'Quita el tema de esta playlist',
+  'tracklist.trashDropActive': 'Suelta para quitar',
+  'sidebar.dropChoiceTitle': 'Añadir a «{{playlist}}»',
+  'sidebar.dropChoiceQuestion': '¿Quieres copiar o mover este tema?',
+  'sidebar.dropChoiceCopy': 'Copiar',
+  'sidebar.dropChoiceCopyDesc': 'Mantener el tema también en la playlist original.',
+  'sidebar.dropChoiceMove': 'Mover',
+  'sidebar.dropChoiceMoveDesc': 'Quitar el tema de la playlist original.',
+  'sidebar.dropChoiceCancel': 'Cancelar',
+  'sidebar.trackMovedToPlaylist': 'Tema movido a la playlist.'
 }

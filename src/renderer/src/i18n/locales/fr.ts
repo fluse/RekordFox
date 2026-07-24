@@ -473,5 +473,22 @@ export const fr = {
   'discover.addErrorToast': "Erreur lors de l'ajout de « {{title}} » : {{error}}",
   'discover.selectAll': 'Tout sélectionner',
   'discover.clearSelection': 'Désélectionner',
-  'discover.addSelected': 'Ajouter la sélection ({{count}})'
+  'discover.addSelected': 'Ajouter la sélection ({{count}})',
+
+  // Suppression / déplacement de piste
+  'tracklist.colRemove': '',
+  'tracklist.removeTrackTooltip': 'Retirer de la playlist',
+  'tracklist.trackRemoved': 'Piste retirée de la playlist.',
+  'tracklist.trackRemoveFailed': 'Erreur lors du retrait de la piste : {{error}}',
+  'tracklist.trashDropLabel': 'Glissez ici pour retirer',
+  'tracklist.trashDropHint': 'Retire la piste de cette playlist',
+  'tracklist.trashDropActive': 'Relâchez pour retirer',
+  'sidebar.dropChoiceTitle': 'Ajouter à « {{playlist}} »',
+  'sidebar.dropChoiceQuestion': 'Voulez-vous copier ou déplacer cette piste ?',
+  'sidebar.dropChoiceCopy': 'Copier',
+  'sidebar.dropChoiceCopyDesc': 'Conserver aussi la piste dans la playlist d’origine.',
+  'sidebar.dropChoiceMove': 'Déplacer',
+  'sidebar.dropChoiceMoveDesc': 'Retirer la piste de la playlist d’origine.',
+  'sidebar.dropChoiceCancel': 'Annuler',
+  'sidebar.trackMovedToPlaylist': 'Piste déplacée vers la playlist.'
 }

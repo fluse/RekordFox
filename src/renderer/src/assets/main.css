@@ -341,6 +341,56 @@ p {
   opacity: 0;
 }
 
+/* ------------------------------------------------------------------
+   Track trash drop zone — appears while a track is being dragged.
+   Three nested layers so the transforms never fight:
+   outer wrapper = static positioning/centering,
+   .trash-zone-enter = the spring-in entrance,
+   .trash-zone-bob = the idle float (paused on hover for a precise drop).
+   Hover emphasis (colors, glow, icon scale) lives on non-transformed
+   children so it composes cleanly on top.
+   ------------------------------------------------------------------ */
+@keyframes trash-zone-in {
+  0% {
+    opacity: 0;
+    transform: translateY(150%) scale(0.8);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-14%) scale(1.04);
+  }
+  75% {
+    transform: translateY(4%) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes trash-zone-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.trash-zone-enter {
+  animation: trash-zone-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.trash-zone-bob {
+  animation: trash-zone-bob 2.6s ease-in-out infinite;
+}
+
+/* Hold still while hovering so releasing onto the zone feels precise. */
+.trash-zone-bob.is-over {
+  animation-play-state: paused;
+}
+
 /* Sticky position column styling for horizontal scrolling */
 .sticky-position-cell {
   position: sticky !important;

@@ -23,6 +23,8 @@ const api = {
     ipcRenderer.invoke('tracks:reorder', playlistId, trackIds),
   addTrackToPlaylist: (trackId: string, targetPlaylistId: string) =>
     ipcRenderer.invoke('tracks:add-to-playlist', trackId, targetPlaylistId),
+  removeTrackFromPlaylist: (trackId: string, playlistId: string) =>
+    ipcRenderer.invoke('tracks:remove-from-playlist', trackId, playlistId),
 
   getYoutubeAccounts: () => ipcRenderer.invoke('youtube-oauth:get-accounts'),
   connectYoutubeAccount: (openBrowser?: boolean) =>

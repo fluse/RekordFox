@@ -44,6 +44,10 @@ declare global {
         trackId: string,
         targetPlaylistId: string
       ) => Promise<{ success: boolean; track?: Track | null; error?: string }>
+      removeTrackFromPlaylist: (
+        trackId: string,
+        playlistId: string
+      ) => Promise<{ success: boolean; error?: string }>
       getYoutubeAccounts: () => Promise<PublicOAuthAccount[]>
       connectYoutubeAccount: (openBrowser?: boolean) => Promise<{
         success: boolean

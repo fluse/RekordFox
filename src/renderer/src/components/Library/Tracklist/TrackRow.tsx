@@ -1,5 +1,5 @@
 import React from 'react'
-import { Loader2, Music, Star, Play, Pause, AlertCircle } from 'lucide-react'
+import { Loader2, Music, Star, Play, Pause, AlertCircle, Trash2 } from 'lucide-react'
 import type { Track } from '@main/db'
 import { formatDuration, getMediaUrl } from '@renderer/utils/audio'
 import { useLanguage } from '@renderer/i18n'
@@ -25,6 +25,7 @@ interface TrackRowProps {
   onLoadTrack: (track: Track, deck: 'A' | 'B') => void
   onUpdateRating: (trackId: string, rating: number) => void
   onPlayNow: (track: Track) => void
+  onRemoveTrack?: (track: Track) => void
   onOpenContextMenu: (track: Track, e: React.MouseEvent) => void
   isPlayingA: boolean
   isPlayingB: boolean
@@ -43,6 +44,7 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
     onLoadTrack,
     onUpdateRating,
     onPlayNow,
+    onRemoveTrack,
     onOpenContextMenu,
     isPlayingA,
     isPlayingB,
@@ -84,7 +86,10 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
   // looks broken, so we swap in a small cover+title card as the drag image instead.
   const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>): void => {
     e.dataTransfer.setData('text/plain', JSON.stringify(track))
-    e.dataTransfer.effectAllowed = 'copy'
+    // A private marker type so app-level listeners can recognise a track drag (to show the
+    // trash drop zone) without having to parse the JSON payload on every dragover.
+    e.dataTransfer.setData('application/x-recordfox-track', track.id)
+    e.dataTransfer.effectAllowed = 'copyMove'
 
     const preview = document.createElement('div')
     preview.style.position = 'fixed'
@@ -420,12 +425,34 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                   </div>
                 </td>
               )
+            case 'remove':
+              return (
+                <td key={colId} className="py-2.5 px-3">
+                  <div className="flex items-center justify-center">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e): void => {
+                            e.stopPropagation()
+                            onRemoveTrack?.(track)
+                          }}
+                          className="rounded p-1.5 text-zinc-600 transition-colors hover:bg-red-500/10 hover:text-red-400 cursor-pointer opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t('tracklist.removeTrackTooltip')}</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </td>
+              )
             default:
               return null
           }
         })()
 
-        if (!cell || colId === 'position' || isPlaceholder) return cell
+        if (!cell || colId === 'position' || colId === 'remove' || isPlaceholder) return cell
 
         return React.cloneElement(cell, {
           draggable: true,

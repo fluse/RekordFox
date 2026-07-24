@@ -463,5 +463,22 @@ export const en = {
   'discover.addErrorToast': 'Error adding "{{title}}": {{error}}',
   'discover.selectAll': 'Select all',
   'discover.clearSelection': 'Clear selection',
-  'discover.addSelected': 'Add selected ({{count}})'
+  'discover.addSelected': 'Add selected ({{count}})',
+
+  // Track removal / move
+  'tracklist.colRemove': '',
+  'tracklist.removeTrackTooltip': 'Remove from playlist',
+  'tracklist.trackRemoved': 'Track removed from playlist.',
+  'tracklist.trackRemoveFailed': 'Error removing track: {{error}}',
+  'tracklist.trashDropLabel': 'Drag here to remove',
+  'tracklist.trashDropHint': 'Deletes the track from this playlist',
+  'tracklist.trashDropActive': 'Release to remove',
+  'sidebar.dropChoiceTitle': 'Add to “{{playlist}}”',
+  'sidebar.dropChoiceQuestion': 'Do you want to copy or move this track?',
+  'sidebar.dropChoiceCopy': 'Copy',
+  'sidebar.dropChoiceCopyDesc': 'Keep the track in the original playlist too.',
+  'sidebar.dropChoiceMove': 'Move',
+  'sidebar.dropChoiceMoveDesc': 'Remove the track from the original playlist.',
+  'sidebar.dropChoiceCancel': 'Cancel',
+  'sidebar.trackMovedToPlaylist': 'Track moved to playlist.'
 }

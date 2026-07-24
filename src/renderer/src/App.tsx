@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Sidebar, SplashScreen, TitleBar } from '@renderer/components/Layout'
+import React, { useEffect, useState } from 'react'
+import { Sidebar, SplashScreen, TitleBar, TrackTrashZone } from '@renderer/components/Layout'
 import {
   Tracklist,
   AddPlaylistModal,
@@ -32,6 +32,26 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const [settingsCategory, setSettingsCategory] = useState<'general' | 'connections'>('general')
   const [discoverContext, setDiscoverContext] = useState<DiscoverContext | null>(null)
   const [forceOnboarding, setForceOnboarding] = useState(false)
+  // True while a track is being dragged (native HTML5 drag), so the trash drop zone can appear.
+  const [isDraggingTrack, setIsDraggingTrack] = useState(false)
+
+  useEffect(() => {
+    const handleDragStart = (e: DragEvent): void => {
+      if (e.dataTransfer?.types?.includes('application/x-recordfox-track')) {
+        setIsDraggingTrack(true)
+      }
+    }
+    const handleDragEnd = (): void => setIsDraggingTrack(false)
+
+    window.addEventListener('dragstart', handleDragStart)
+    window.addEventListener('dragend', handleDragEnd)
+    window.addEventListener('drop', handleDragEnd)
+    return (): void => {
+      window.removeEventListener('dragstart', handleDragStart)
+      window.removeEventListener('dragend', handleDragEnd)
+      window.removeEventListener('drop', handleDragEnd)
+    }
+  }, [])
 
   const handleFindSimilarTrack = (track: Track): void => {
     setDiscoverContext({
@@ -61,6 +81,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
     handleUpdateRatingInState,
     handleReorderTracks,
     handleDropTrackToPlaylist,
+    handleMoveTrackToPlaylist,
+    handleRemoveTrack,
     handlePlaylistImported,
     handleSyncToYoutube,
     syncingToYoutubeId,
@@ -127,6 +149,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
           }}
           onOpenYoutubeConnect={() => setIsYoutubeConnectModalOpen(true)}
           onDropTrackToPlaylist={handleDropTrackToPlaylist}
+          onMoveTrackToPlaylist={handleMoveTrackToPlaylist}
           isSettingsSelected={viewMode === 'settings'}
           activeSyncs={activeSyncs}
           width={sidebarWidth}
@@ -188,6 +211,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             onUpdateKey={handleUpdateKeyInState}
             onUpdateRating={handleUpdateRatingInState}
             onReorderTracks={handleReorderTracks}
+            onRemoveTrack={handleRemoveTrack}
             onSyncToYoutube={handleSyncToYoutube}
             isSyncingToYoutube={syncingToYoutubeId === selectedPlaylistId}
             onFindSimilarTrack={handleFindSimilarTrack}
@@ -203,6 +227,8 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
 
         <PreviewPlayer appShortcuts={settings.appShortcuts} />
       </div>
+
+      <TrackTrashZone visible={isDraggingTrack} onRemoveTrack={handleRemoveTrack} />
 
       {/* Modal Dialogs */}
       <AddPlaylistModal

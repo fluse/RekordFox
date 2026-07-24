@@ -35,6 +35,7 @@ interface TracklistProps {
   onUpdateKey: (trackId: string, key: string) => void
   onUpdateRating: (trackId: string, rating: number) => void
   onReorderTracks: (playlistId: string, trackIds: string[]) => Promise<void>
+  onRemoveTrack: (track: Track) => void
   onSyncToYoutube: (playlistId: string, trackIds: string[]) => Promise<void>
   isSyncingToYoutube: boolean
   onFindSimilarTrack?: (track: Track) => void
@@ -53,6 +54,7 @@ export default function Tracklist({
   onUpdateKey,
   onUpdateRating,
   onReorderTracks,
+  onRemoveTrack,
   onSyncToYoutube,
   isSyncingToYoutube,
   onFindSimilarTrack,
@@ -182,6 +184,7 @@ export default function Tracklist({
           onLoadTrack={onLoadTrack}
           onUpdateRating={handleSearchResultRating}
           onPlayNow={handlePlayNow}
+          onRemoveTrack={onRemoveTrack}
           onOpenContextMenu={openContextMenu}
           currentTrackA={currentTrackA}
           currentTrackB={currentTrackB}
@@ -224,6 +227,7 @@ export default function Tracklist({
                     onLoadTrack={onLoadTrack}
                     onUpdateRating={onUpdateRating}
                     onPlayNow={handlePlayNow}
+                    onRemoveTrack={onRemoveTrack}
                     onOpenContextMenu={openContextMenu}
                     isPlayingA={currentTrackA?.id === item.track.id}
                     isPlayingB={currentTrackB?.id === item.track.id}

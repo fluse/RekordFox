@@ -40,6 +40,8 @@ export interface UseAppReturn {
   handleUpdateRatingInState: (trackId: string, rating: number) => void
   handleReorderTracks: (playlistId: string, trackIds: string[]) => Promise<void>
   handleDropTrackToPlaylist: (track: Track, targetPlaylistId: string) => Promise<void>
+  handleMoveTrackToPlaylist: (track: Track, targetPlaylistId: string) => Promise<void>
+  handleRemoveTrack: (track: Track) => Promise<void>
   handlePlaylistImported: (playlist: Playlist) => void
   handleSyncToYoutube: (playlistId: string, trackIds: string[]) => Promise<void>
   syncingToYoutubeId: string | null
@@ -258,6 +260,96 @@ export function useApp(): UseAppReturn {
       }
     },
     [t]
+  )
+
+  // Applies a track removal to the local UI state: drops it from the visible list, unloads it
+  // from either deck if it was loaded, and flags an OAuth-backed source playlist as dirty. Shared
+  // by the direct "remove" action and the "move to playlist" flow (copy-then-remove).
+  const applyLocalTrackRemoval = useCallback((track: Track): void => {
+    setTracks((prev) =>
+      prev.filter((t) => !(t.id === track.id && t.playlistId === track.playlistId))
+    )
+    setPlaylists((prev) =>
+      prev.map((p) =>
+        p.id === track.playlistId && p.source === 'youtube-oauth'
+          ? { ...p, pendingRemoteChanges: true }
+          : p
+      )
+    )
+    setLoadedTrackA((prev) => {
+      if (prev && prev.id === track.id && prev.playlistId === track.playlistId) {
+        localStorage.removeItem('loadedTrackAId')
+        return null
+      }
+      return prev
+    })
+    setLoadedTrackB((prev) => {
+      if (prev && prev.id === track.id && prev.playlistId === track.playlistId) {
+        localStorage.removeItem('loadedTrackBId')
+        return null
+      }
+      return prev
+    })
+  }, [])
+
+  const handleRemoveTrack = useCallback(
+    async (track: Track): Promise<void> => {
+      try {
+        const res = await window.api.removeTrackFromPlaylist(track.id, track.playlistId)
+        if (res.success) {
+          applyLocalTrackRemoval(track)
+          toast.success(t('tracklist.trackRemoved'))
+        } else {
+          toast.error(t('tracklist.trackRemoveFailed', { error: res.error || '' }))
+        }
+      } catch (err) {
+        console.error('Failed to remove track from playlist:', err)
+        toast.error(t('tracklist.trackRemoveFailed', { error: String(err) }))
+      }
+    },
+    [t, applyLocalTrackRemoval]
+  )
+
+  const handleMoveTrackToPlaylist = useCallback(
+    async (track: Track, targetPlaylistId: string): Promise<void> => {
+      if (track.playlistId === targetPlaylistId) return
+      try {
+        const addRes = await window.api.addTrackToPlaylist(track.id, targetPlaylistId)
+        if (!addRes.success) {
+          toast.error(t('sidebar.trackAddFailed', { error: addRes.error || '' }))
+          return
+        }
+
+        // The main process already marked a 'youtube-oauth' target playlist dirty in the DB —
+        // reflect that locally to enable the "Sync to YouTube" button without a full refetch.
+        setPlaylists((prev) =>
+          prev.map((p) =>
+            p.id === targetPlaylistId && p.source === 'youtube-oauth'
+              ? { ...p, pendingRemoteChanges: true }
+              : p
+          )
+        )
+
+        const removeRes = await window.api.removeTrackFromPlaylist(track.id, track.playlistId)
+        if (removeRes.success) {
+          applyLocalTrackRemoval(track)
+        }
+
+        toast.success(t('sidebar.trackMovedToPlaylist'))
+
+        // Refresh the target playlist's tracks if it's the one currently displayed.
+        setSelectedPlaylistId((currentId) => {
+          if (currentId === targetPlaylistId) {
+            window.api.getTracks(targetPlaylistId).then(setTracks).catch(console.error)
+          }
+          return currentId
+        })
+      } catch (err) {
+        console.error('Failed to move track to playlist:', err)
+        toast.error(t('sidebar.trackAddFailed', { error: String(err) }))
+      }
+    },
+    [t, applyLocalTrackRemoval]
   )
 
   // Clears the "NEW" label for a track by persisting played=true and patching
@@ -710,6 +802,8 @@ export function useApp(): UseAppReturn {
     handleUpdateRatingInState,
     handleReorderTracks,
     handleDropTrackToPlaylist,
+    handleMoveTrackToPlaylist,
+    handleRemoveTrack,
     handlePlaylistImported,
     handleSyncToYoutube,
     syncingToYoutubeId,

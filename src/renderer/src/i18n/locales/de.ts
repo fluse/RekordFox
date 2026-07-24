@@ -472,5 +472,22 @@ export const de = {
   'discover.addErrorToast': 'Fehler beim Hinzufügen von „{{title}}“: {{error}}',
   'discover.selectAll': 'Alle auswählen',
   'discover.clearSelection': 'Auswahl aufheben',
-  'discover.addSelected': 'Ausgewählte hinzufügen ({{count}})'
+  'discover.addSelected': 'Ausgewählte hinzufügen ({{count}})',
+
+  // Track entfernen / verschieben
+  'tracklist.colRemove': '',
+  'tracklist.removeTrackTooltip': 'Aus Playlist entfernen',
+  'tracklist.trackRemoved': 'Track aus der Playlist entfernt.',
+  'tracklist.trackRemoveFailed': 'Fehler beim Entfernen des Tracks: {{error}}',
+  'tracklist.trashDropLabel': 'Zum Entfernen hierher ziehen',
+  'tracklist.trashDropHint': 'Löscht den Track aus dieser Playlist',
+  'tracklist.trashDropActive': 'Loslassen zum Entfernen',
+  'sidebar.dropChoiceTitle': 'Zu „{{playlist}}“ hinzufügen',
+  'sidebar.dropChoiceQuestion': 'Möchtest du den Track kopieren oder verschieben?',
+  'sidebar.dropChoiceCopy': 'Kopieren',
+  'sidebar.dropChoiceCopyDesc': 'Track bleibt auch in der ursprünglichen Playlist.',
+  'sidebar.dropChoiceMove': 'Verschieben',
+  'sidebar.dropChoiceMoveDesc': 'Track wird aus der ursprünglichen Playlist entfernt.',
+  'sidebar.dropChoiceCancel': 'Abbrechen',
+  'sidebar.trackMovedToPlaylist': 'Track in Playlist verschoben.'
 }

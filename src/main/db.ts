@@ -849,6 +849,25 @@ export function deleteTrack(trackId: string, playlistId: string): void {
   saveDb()
 }
 
+// User-initiated removal of a single track from a playlist. Unlike deleteTrack (used by the
+// sync flows, which clean up files themselves), this also physically deletes the track's own
+// MP3/Cover copy for that playlist and flags an OAuth-backed playlist as dirty so the change
+// can be pushed back to YouTube.
+export function removeTrackFromPlaylist(trackId: string, playlistId: string): void {
+  const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
+  if (track) {
+    try {
+      if (track.filepath && existsSync(track.filepath)) unlinkSync(track.filepath)
+      if (track.coverPath && existsSync(track.coverPath)) unlinkSync(track.coverPath)
+    } catch (e) {
+      console.error(`Failed to clean up files for removed track ${trackId}:`, e)
+    }
+  }
+  dbData.tracks = dbData.tracks.filter((t) => !(t.id === trackId && t.playlistId === playlistId))
+  markPlaylistDirty(playlistId)
+  saveDb()
+}
+
 export function updateTrackBpm(
   trackId: string,
   playlistId: string,

@@ -95,6 +95,13 @@ export const COLUMN_DEFS: ColumnConfig[] = [
     align: 'center',
     canHide: true,
     defaultWidth: 110
+  },
+  {
+    id: 'remove',
+    labelKey: 'tracklist.colRemove',
+    align: 'center',
+    canHide: false,
+    defaultWidth: 52
   }
 ]
 

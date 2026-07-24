@@ -12,20 +12,31 @@ function loadVisibleColumns(): string[] {
     const parsed = JSON.parse(saved)
     if (!Array.isArray(parsed)) return DEFAULT_VISIBLE_COLUMNS
 
+    const next = [...parsed]
+    let migrated = false
+
     // Migration: the dateAdded column was added after some users already had a saved layout.
-    if (!parsed.includes('dateAdded')) {
+    if (!next.includes('dateAdded')) {
       const insertIdx = DEFAULT_VISIBLE_COLUMNS.indexOf('dateAdded')
-      const next = [...parsed]
       if (insertIdx !== -1 && insertIdx <= next.length) {
         next.splice(insertIdx, 0, 'dateAdded')
       } else {
         next.push('dateAdded')
       }
-      localStorage.setItem(VISIBLE_COLUMNS_KEY, JSON.stringify(next))
-      return next
+      migrated = true
     }
 
-    return parsed
+    // Migration: the always-on "remove" column was added later — append it for existing layouts.
+    if (!next.includes('remove')) {
+      next.push('remove')
+      migrated = true
+    }
+
+    if (migrated) {
+      localStorage.setItem(VISIBLE_COLUMNS_KEY, JSON.stringify(next))
+    }
+
+    return next
   } catch {
     return DEFAULT_VISIBLE_COLUMNS
   }

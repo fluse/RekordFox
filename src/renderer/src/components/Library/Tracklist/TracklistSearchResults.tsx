@@ -18,6 +18,7 @@ interface TracklistSearchResultsProps {
   onLoadTrack: (track: Track, deck: 'A' | 'B') => void
   onUpdateRating: (trackId: string, rating: number) => void
   onPlayNow: (track: Track) => void
+  onRemoveTrack: (track: Track) => void
   onOpenContextMenu: (track: Track, e: React.MouseEvent) => void
   currentTrackA: Track | null
   currentTrackB: Track | null
@@ -35,6 +36,7 @@ export default function TracklistSearchResults({
   onLoadTrack,
   onUpdateRating,
   onPlayNow,
+  onRemoveTrack,
   onOpenContextMenu,
   currentTrackA,
   currentTrackB
@@ -79,6 +81,7 @@ export default function TracklistSearchResults({
                     onLoadTrack={onLoadTrack}
                     onUpdateRating={onUpdateRating}
                     onPlayNow={onPlayNow}
+                    onRemoveTrack={onRemoveTrack}
                     onOpenContextMenu={onOpenContextMenu}
                     isPlayingA={currentTrackA?.id === track.id}
                     isPlayingB={currentTrackB?.id === track.id}

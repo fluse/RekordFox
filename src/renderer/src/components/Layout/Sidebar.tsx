@@ -10,7 +10,10 @@ import {
   Settings,
   Pencil,
   History,
-  Compass
+  Compass,
+  Copy,
+  FolderInput,
+  X
 } from 'lucide-react'
 import type { Playlist, Track } from '@main/db'
 import logo from '@renderer/assets/logo-rekordfox.svg'
@@ -35,6 +38,7 @@ interface SidebarProps {
   onOpenSettings: () => void
   onOpenYoutubeConnect: () => void
   onDropTrackToPlaylist: (track: Track, targetPlaylistId: string) => void
+  onMoveTrackToPlaylist: (track: Track, targetPlaylistId: string) => void
   isSettingsSelected: boolean
   activeSyncs: Record<
     string,
@@ -69,6 +73,7 @@ export default function Sidebar({
   onOpenSettings,
   onOpenYoutubeConnect,
   onDropTrackToPlaylist,
+  onMoveTrackToPlaylist,
   isSettingsSelected,
   activeSyncs,
   width,
@@ -79,6 +84,11 @@ export default function Sidebar({
   const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState<string>('')
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
+  // When a track is dropped onto another playlist we ask whether to copy or move it, rather than
+  // committing immediately — this holds the pending drop until the user makes that choice.
+  const [pendingDrop, setPendingDrop] = useState<{ track: Track; targetPlaylist: Playlist } | null>(
+    null
+  )
 
   const handleTrackDragOver = (e: React.DragEvent, playlistId: string): void => {
     e.preventDefault()
@@ -103,7 +113,18 @@ export default function Sidebar({
       return
     }
     if (track.playlistId === targetPlaylist.id) return
-    onDropTrackToPlaylist(track, targetPlaylist.id)
+    setPendingDrop({ track, targetPlaylist })
+  }
+
+  const handleDropChoice = (mode: 'copy' | 'move'): void => {
+    if (!pendingDrop) return
+    const { track, targetPlaylist } = pendingDrop
+    if (mode === 'copy') {
+      onDropTrackToPlaylist(track, targetPlaylist.id)
+    } else {
+      onMoveTrackToPlaylist(track, targetPlaylist.id)
+    }
+    setPendingDrop(null)
   }
 
   const startEditing = (playlist: Playlist): void => {
@@ -479,6 +500,75 @@ export default function Sidebar({
           </div>
         )}
       </div>
+
+      {/* Copy / Move choice dialog shown after dropping a track onto another playlist */}
+      {pendingDrop && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setPendingDrop(null)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPendingDrop(null)}
+              className="absolute top-4 right-4 cursor-pointer text-zinc-400 hover:text-zinc-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h2 className="mb-1 pr-6 text-lg font-bold text-zinc-100">
+              {t('sidebar.dropChoiceTitle', { playlist: pendingDrop.targetPlaylist.title })}
+            </h2>
+            <p className="mb-5 truncate text-sm text-zinc-400">
+              {pendingDrop.track.title}
+              <span className="text-zinc-600"> · {pendingDrop.track.artist}</span>
+            </p>
+            <p className="mb-4 text-sm text-zinc-300">{t('sidebar.dropChoiceQuestion')}</p>
+
+            <div className="space-y-2">
+              <button
+                onClick={() => handleDropChoice('copy')}
+                className="flex w-full items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-left transition hover:border-primary/60 hover:bg-zinc-900 cursor-pointer"
+              >
+                <Copy className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                <span>
+                  <span className="block text-sm font-semibold text-zinc-100">
+                    {t('sidebar.dropChoiceCopy')}
+                  </span>
+                  <span className="block text-xs text-zinc-500">
+                    {t('sidebar.dropChoiceCopyDesc')}
+                  </span>
+                </span>
+              </button>
+              <button
+                onClick={() => handleDropChoice('move')}
+                className="flex w-full items-start gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-left transition hover:border-primary/60 hover:bg-zinc-900 cursor-pointer"
+              >
+                <FolderInput className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                <span>
+                  <span className="block text-sm font-semibold text-zinc-100">
+                    {t('sidebar.dropChoiceMove')}
+                  </span>
+                  <span className="block text-xs text-zinc-500">
+                    {t('sidebar.dropChoiceMoveDesc')}
+                  </span>
+                </span>
+              </button>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setPendingDrop(null)}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-400 hover:text-zinc-200 cursor-pointer"
+              >
+                {t('sidebar.dropChoiceCancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

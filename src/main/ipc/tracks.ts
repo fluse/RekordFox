@@ -6,7 +6,8 @@ import {
   updateTrackRating,
   updateTrackPlayed,
   updateTrackPositions,
-  addTrackToPlaylist
+  addTrackToPlaylist,
+  removeTrackFromPlaylist
 } from '../db'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../trackAnalysis'
 import { ipcTry } from '../errors'
@@ -76,6 +77,13 @@ export function registerTracksIpc(): void {
     ipcTry(() => {
       const track = addTrackToPlaylist(trackId, targetPlaylistId)
       return { track }
+    })
+  )
+
+  ipcMain.handle('tracks:remove-from-playlist', (_, trackId: string, playlistId: string) =>
+    ipcTry(() => {
+      removeTrackFromPlaylist(trackId, playlistId)
+      return {}
     })
   )
 }
