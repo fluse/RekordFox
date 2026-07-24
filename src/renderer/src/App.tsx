@@ -10,6 +10,7 @@ import { DjMixer } from '@renderer/components/Mixer'
 import SettingsView from '@renderer/components/Settings'
 import YoutubeConnectModal from '@renderer/components/Integrations/YoutubeConnectModal'
 import { DiscoverView, type DiscoverContext } from '@renderer/components/Discover'
+import { OnboardingScreen } from '@renderer/components/Onboarding'
 import { Toaster } from '@renderer/components/ui/sonner'
 import { TooltipProvider, TooltipSettingsProvider } from '@renderer/components/ui/tooltip'
 import { ChevronDown } from 'lucide-react'
@@ -30,6 +31,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   )
   const [settingsCategory, setSettingsCategory] = useState<'general' | 'connections'>('general')
   const [discoverContext, setDiscoverContext] = useState<DiscoverContext | null>(null)
+  const [forceOnboarding, setForceOnboarding] = useState(false)
 
   const handleFindSimilarTrack = (track: Track): void => {
     setDiscoverContext({
@@ -153,6 +155,10 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             isSyncing={Object.keys(activeSyncs).length > 0}
             initialCategory={settingsCategory}
             renamingStatus={renamingStatus}
+            onShowOnboarding={() => {
+              setForceOnboarding(true)
+              setViewMode('library')
+            }}
           />
         ) : viewMode === 'history' ? (
           <HistoryView onFindSimilarTrack={handleFindSimilarTrack} />
@@ -161,6 +167,15 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             playlists={playlists}
             context={discoverContext}
             onContextChange={setDiscoverContext}
+          />
+        ) : forceOnboarding || playlists.length === 0 ? (
+          <OnboardingScreen
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onMigrate={handleMigrate}
+            onImportPlaylist={handleAddPlaylist}
+            onAddPlaylist={() => setIsAddModalOpen(true)}
+            onClose={forceOnboarding ? () => setForceOnboarding(false) : undefined}
           />
         ) : selectedPlaylistId && selectedPlaylist ? (
           <Tracklist

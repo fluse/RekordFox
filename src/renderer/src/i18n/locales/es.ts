@@ -4,6 +4,29 @@ export const es = {
   'app.tagline': 'Tu estación de sincronización DJ',
   'app.selectPlaylistPrompt': 'Selecciona una playlist o añade una nueva para ver los temas.',
 
+  // Onboarding (first run – shown when no playlists exist)
+  'onboarding.welcomeTitle': 'Bienvenido a RekordFox',
+  'onboarding.welcomeSubtitle':
+    'Tu estación de sincronización DJ: importa playlists de YouTube, gestiona tus temas y expórtalos para CDJs y USB.',
+  'onboarding.whatToExpectTitle': 'Esto es lo que te espera',
+  'onboarding.feature1Title': 'Importar playlists',
+  'onboarding.feature1Desc':
+    'Conecta tu cuenta de YouTube e importa tus playlists directamente en RekordFox.',
+  'onboarding.feature2Title': 'Gestionar y descargar temas',
+  'onboarding.feature2Desc':
+    'Descarga temas como MP3, analiza BPM y tonalidad, y ordena tus sets de forma armónica.',
+  'onboarding.feature3Title': 'Exportar para CDJs y USB',
+  'onboarding.feature3Desc':
+    'Exporta tus playlists en una estructura compatible con Rekordbox a memorias USB para CDJs de Pioneer.',
+  'onboarding.setupTitle': 'Configuración rápida',
+  'onboarding.tryTitle': 'Pruébalo',
+  'onboarding.tryDesc':
+    'Pruébalo e importa esta playlist de ejemplo a modo de prueba para ver cómo funciona la descarga.',
+  'onboarding.importExample': 'Importar playlist de ejemplo',
+  'onboarding.importing': 'Importando…',
+  'onboarding.getStarted': 'Añadir tu propia playlist',
+  'onboarding.close': 'Cerrar la introducción',
+
   // Title Bar
   'titlebar.minimize': 'Minimizar',
   'titlebar.maximize': 'Maximizar',
@@ -99,6 +122,10 @@ export const es = {
   'settings.storageHelp':
     'Muestra cuánto espacio en disco ocupan actualmente tus temas descargados y la caché de portadas.',
   'settings.languageLabel': 'Idioma',
+  'settings.sectionOnboarding': 'Introducción',
+  'settings.showOnboardingButton': 'Mostrar introducción',
+  'settings.showOnboardingHelp':
+    'Vuelve a mostrar la pantalla de bienvenida que viste al iniciar por primera vez.',
   'settings.sectionTooltips': 'Tooltips',
   'settings.tooltipsEnabledLabel': 'Mostrar tooltips',
   'settings.tooltipsEnabledHelp':

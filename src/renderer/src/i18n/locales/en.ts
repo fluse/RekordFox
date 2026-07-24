@@ -4,6 +4,29 @@ export const en = {
   'app.tagline': 'Your DJ Sync Station',
   'app.selectPlaylistPrompt': 'Select a playlist or add a new one to view tracks.',
 
+  // Onboarding (first run – shown when no playlists exist)
+  'onboarding.welcomeTitle': 'Welcome to RekordFox',
+  'onboarding.welcomeSubtitle':
+    'Your DJ sync station – import YouTube playlists, manage your tracks, and export them for CDJs & USB.',
+  'onboarding.whatToExpectTitle': "Here's what to expect",
+  'onboarding.feature1Title': 'Import playlists',
+  'onboarding.feature1Desc':
+    'Connect your YouTube account and import your playlists straight into RekordFox.',
+  'onboarding.feature2Title': 'Manage & download tracks',
+  'onboarding.feature2Desc':
+    'Download tracks as MP3, analyze BPM & key, and sort your sets harmonically.',
+  'onboarding.feature3Title': 'Export for CDJs & USB',
+  'onboarding.feature3Desc':
+    'Export your playlists in a Rekordbox-compatible structure to USB drives for Pioneer CDJs.',
+  'onboarding.setupTitle': 'Quick setup',
+  'onboarding.tryTitle': 'Try it out',
+  'onboarding.tryDesc':
+    'Give it a go and import this example playlist as a test to see how downloading works.',
+  'onboarding.importExample': 'Import example playlist',
+  'onboarding.importing': 'Importing…',
+  'onboarding.getStarted': 'Add your own playlist',
+  'onboarding.close': 'Close onboarding',
+
   // Title Bar
   'titlebar.minimize': 'Minimize',
   'titlebar.maximize': 'Maximize',
@@ -98,6 +121,9 @@ export const en = {
   'settings.storageHelp':
     'Shows how much disk space your downloaded tracks and the cover art cache currently use.',
   'settings.languageLabel': 'Language',
+  'settings.sectionOnboarding': 'Onboarding',
+  'settings.showOnboardingButton': 'Show onboarding',
+  'settings.showOnboardingHelp': 'Shows the welcome screen again that you saw on first launch.',
   'settings.sectionTooltips': 'Tooltips',
   'settings.tooltipsEnabledLabel': 'Show tooltips',
   'settings.tooltipsEnabledHelp': 'Shows hints when you hover over buttons and icons.',

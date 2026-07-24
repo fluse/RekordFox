@@ -25,6 +25,7 @@ interface SettingsViewProps {
     current: number
     total: number
   }
+  onShowOnboarding: () => void
 }
 
 export default function SettingsView({
@@ -34,7 +35,8 @@ export default function SettingsView({
   onPlaylistImported,
   isSyncing,
   initialCategory,
-  renamingStatus
+  renamingStatus,
+  onShowOnboarding
 }: SettingsViewProps): React.JSX.Element {
   const [category, setCategory] = useState<SettingsCategory>(initialCategory || 'general')
   const { t } = useLanguage()
@@ -76,7 +78,11 @@ export default function SettingsView({
       <div className="flex-1 overflow-y-auto p-8">
         <div className="max-w-2xl">
           {category === 'general' && (
-            <GeneralSettings settings={settings} onUpdateSettings={onUpdateSettings} />
+            <GeneralSettings
+              settings={settings}
+              onUpdateSettings={onUpdateSettings}
+              onShowOnboarding={onShowOnboarding}
+            />
           )}
           {category === 'library' && (
             <LibrarySettings

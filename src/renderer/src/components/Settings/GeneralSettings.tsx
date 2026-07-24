@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Label } from '@renderer/components/ui/label'
 import { Switch } from '@renderer/components/ui/switch'
 import { Slider } from '@renderer/components/ui/slider'
+import { Button } from '@renderer/components/ui/button'
 import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
 import ColorSchemePicker from './ColorSchemePicker'
 import SettingsSection from './SettingsSection'
@@ -13,6 +14,7 @@ import { useLanguage, type Language } from '@renderer/i18n'
 interface GeneralSettingsProps {
   settings: AppSettings
   onUpdateSettings: (settings: Partial<AppSettings>) => Promise<void>
+  onShowOnboarding: () => void
 }
 
 const LANGUAGES: { code: Language; name: string }[] = [
@@ -24,7 +26,8 @@ const LANGUAGES: { code: Language; name: string }[] = [
 
 export default function GeneralSettings({
   settings,
-  onUpdateSettings
+  onUpdateSettings,
+  onShowOnboarding
 }: GeneralSettingsProps): React.JSX.Element {
   const { t } = useLanguage()
   const [tooltipDelay, setTooltipDelay] = useState(settings.tooltipDelay ?? 600)
@@ -182,6 +185,22 @@ export default function GeneralSettings({
             onValueCommit={([value]) => handleCommitTooltipDelay(value)}
             disabled={settings.tooltipsEnabled === false}
           />
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title={t('settings.sectionOnboarding')}>
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-[10px] text-muted-foreground">{t('settings.showOnboardingHelp')}</p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="flex-shrink-0 gap-2"
+            onClick={onShowOnboarding}
+          >
+            <Sparkles className="h-4 w-4" />
+            {t('settings.showOnboardingButton')}
+          </Button>
         </div>
       </SettingsSection>
     </div>

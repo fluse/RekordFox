@@ -5,6 +5,29 @@ export const fr = {
   'app.selectPlaylistPrompt':
     'Sélectionnez une playlist ou ajoutez-en une nouvelle pour voir les pistes.',
 
+  // Onboarding (first run – shown when no playlists exist)
+  'onboarding.welcomeTitle': 'Bienvenue sur RekordFox',
+  'onboarding.welcomeSubtitle':
+    'Votre station de synchronisation DJ : importez des playlists YouTube, gérez vos pistes et exportez-les pour les CDJ et les clés USB.',
+  'onboarding.whatToExpectTitle': 'Voici ce qui vous attend',
+  'onboarding.feature1Title': 'Importer des playlists',
+  'onboarding.feature1Desc':
+    'Connectez votre compte YouTube et importez vos playlists directement dans RekordFox.',
+  'onboarding.feature2Title': 'Gérer et télécharger des pistes',
+  'onboarding.feature2Desc':
+    'Téléchargez des pistes en MP3, analysez le BPM et la tonalité, et triez vos sets de façon harmonique.',
+  'onboarding.feature3Title': 'Exporter pour les CDJ et USB',
+  'onboarding.feature3Desc':
+    'Exportez vos playlists dans une structure compatible Rekordbox vers des clés USB pour les CDJ Pioneer.',
+  'onboarding.setupTitle': 'Configuration rapide',
+  'onboarding.tryTitle': 'Essayez',
+  'onboarding.tryDesc':
+    "Essayez et importez cette playlist d'exemple à titre de test pour voir comment fonctionne le téléchargement.",
+  'onboarding.importExample': "Importer la playlist d'exemple",
+  'onboarding.importing': 'Importation…',
+  'onboarding.getStarted': 'Ajouter votre propre playlist',
+  'onboarding.close': "Fermer l'introduction",
+
   // Title Bar
   'titlebar.minimize': 'Réduire',
   'titlebar.maximize': 'Agrandir',
@@ -103,6 +126,10 @@ export const fr = {
   'settings.storageHelp':
     "Indique l'espace disque actuellement utilisé par vos titres téléchargés et le cache des pochettes.",
   'settings.languageLabel': 'Langue',
+  'settings.sectionOnboarding': 'Introduction',
+  'settings.showOnboardingButton': "Afficher l'introduction",
+  'settings.showOnboardingHelp':
+    "Affiche à nouveau l'écran de bienvenue que vous avez vu au premier lancement.",
   'settings.sectionTooltips': 'Info-bulles',
   'settings.tooltipsEnabledLabel': 'Afficher les info-bulles',
   'settings.tooltipsEnabledHelp': 'Affiche des info-bulles au survol des boutons et des icônes.',
