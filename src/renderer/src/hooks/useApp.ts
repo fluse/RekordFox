@@ -69,7 +69,7 @@ export function useApp(): UseAppReturn {
     downloadPath: '',
     sidebarWidth: 256,
     maxWorkers: 3,
-    language: 'de'
+    language: 'en'
   })
   const [sidebarWidth, setSidebarWidth] = useState(256)
   const sidebarWidthRef = useRef<number>(sidebarWidth)
@@ -80,7 +80,7 @@ export function useApp(): UseAppReturn {
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string => {
-      const lang = settings.language || 'de'
+      const lang = settings.language || 'en'
       const langDict = translations[lang] || de
       let text = langDict[key] || de[key] || String(key)
 

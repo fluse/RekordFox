@@ -235,7 +235,7 @@ export default function App(): React.JSX.Element {
 
   return (
     <LanguageProvider
-      language={settings.language || 'de'}
+      language={settings.language || 'en'}
       setLanguage={async (lang) => {
         await handleUpdateSettings({ language: lang })
       }}

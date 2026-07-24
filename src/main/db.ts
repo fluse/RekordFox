@@ -988,7 +988,7 @@ export function getSettings(): AppSettings {
       downloadPath: defaultDownloadsDir,
       sidebarWidth: 256,
       maxWorkers: 3,
-      language: 'de',
+      language: 'en',
       historyLimit: 50,
       tooltipsEnabled: true,
       tooltipDelay: 600
