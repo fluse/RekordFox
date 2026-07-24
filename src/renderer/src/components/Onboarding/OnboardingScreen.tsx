@@ -116,7 +116,7 @@ export default function OnboardingScreen({
   }
 
   return (
-    <div className="relative flex flex-1 items-center justify-center overflow-y-auto bg-zinc-900/10 p-8">
+    <div className="relative flex flex-1 items-start justify-center overflow-y-auto bg-zinc-900/10 p-8">
       {onClose && (
         <button
           type="button"
