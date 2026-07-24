@@ -2,20 +2,19 @@ import React, { useState } from 'react'
 import { toast } from 'sonner'
 import {
   Plus,
-  RefreshCw,
-  Trash2,
   CheckCircle2,
   AlertCircle,
   Loader2,
   Settings,
-  Pencil,
   History,
   Compass,
   Copy,
   FolderInput,
+  Link2,
+  Download,
   X
 } from 'lucide-react'
-import type { Playlist, Track } from '@main/db'
+import type { Playlist, PlaylistStats, Track } from '@main/db'
 import logo from '@renderer/assets/logo-rekordfox.svg'
 import logoLight from '@renderer/assets/logo-rekordfox-light.svg'
 import { useLanguage } from '@renderer/i18n'
@@ -25,14 +24,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui
 
 interface SidebarProps {
   playlists: Playlist[]
+  playlistStats: Record<string, PlaylistStats>
   selectedPlaylistId: string | null
   onSelectPlaylist: (id: string) => void
   isHistorySelected: boolean
   onSelectHistory: () => void
   isDiscoverSelected: boolean
   onSelectDiscover: () => void
-  onDeletePlaylist: (id: string) => void
-  onSyncPlaylist: (id: string) => void
   onRenamePlaylist: (id: string, newTitle: string) => void
   onOpenAddModal: () => void
   onOpenSettings: () => void
@@ -60,14 +58,13 @@ interface SidebarProps {
 
 export default function Sidebar({
   playlists,
+  playlistStats,
   selectedPlaylistId,
   onSelectPlaylist,
   isHistorySelected,
   onSelectHistory,
   isDiscoverSelected,
   onSelectDiscover,
-  onDeletePlaylist,
-  onSyncPlaylist,
   onRenamePlaylist,
   onOpenAddModal,
   onOpenSettings,
@@ -217,6 +214,9 @@ export default function Sidebar({
         <div className="space-y-1">
           {playlists.map((playlist) => {
             const syncState = activeSyncs[playlist.id] || { status: playlist.syncStatus }
+            const stats = playlistStats[playlist.id]
+            const hasTracks = !!stats && stats.total > 0
+            const allDownloaded = hasTracks && stats.downloaded >= stats.total
             const isSelected =
               !isHistorySelected &&
               !isSettingsSelected &&
@@ -258,22 +258,25 @@ export default function Sidebar({
                     />
                   ) : (
                     <div
-                      className="flex items-center gap-1.5 truncate pr-14 font-medium text-sm"
+                      className="flex items-center gap-1.5 truncate pr-20 font-medium text-sm"
                       onDoubleClick={(e) => {
                         e.stopPropagation()
                         startEditing(playlist)
                       }}
                     >
-                      {playlist.source === 'youtube-oauth' && (
+                      {playlist.source === 'youtube-oauth' ? (
+                        // Account-connected (OAuth) playlist: the "connect" icon signals a
+                        // two-way link to the user's YouTube account. Dimmed when the link is
+                        // broken (account removed) or its sign-in expired.
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="flex-shrink-0 flex items-center">
-                              <YoutubeIcon
-                                className={`h-3 w-3 ${
+                              <Link2
+                                className={`h-3.5 w-3.5 ${
                                   playlist.linkState === 'orphaned' ||
                                   playlist.linkState === 'needs-reauth'
-                                    ? 'opacity-40 grayscale'
-                                    : ''
+                                    ? 'text-zinc-600'
+                                    : 'text-emerald-500'
                                 }`}
                               />
                             </span>
@@ -283,42 +286,99 @@ export default function Sidebar({
                               ? t('sidebar.orphanedTooltip')
                               : playlist.linkState === 'needs-reauth'
                                 ? t('sidebar.needsReauthTooltip')
-                                : t('sidebar.youtubeSourceTooltip')}
+                                : t('sidebar.connectedTooltip')}
                           </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        // Plain YouTube playlist added via a public URL — download-only, no link.
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex-shrink-0 flex items-center">
+                              <YoutubeIcon className="h-3 w-3" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{t('sidebar.localSourceTooltip')}</TooltipContent>
                         </Tooltip>
                       )}
                       <span className="truncate">{playlist.title}</span>
                     </div>
                   )}
 
-                  {/* Status Indicator */}
+                  {/* Status: track count + a single download/sync indicator.
+                      - amber dot: this connected playlist has local changes not yet pushed to YouTube
+                      - "downloaded/total": how many tracks are downloaded (Theme 3)
+                      - status icon: syncing spinner / error / all-downloaded check / download-pending */}
                   {editingPlaylistId !== playlist.id && (
                     <div className="absolute right-3 top-3 flex items-center gap-1.5">
                       {playlist.source === 'youtube-oauth' &&
                         syncState.status !== 'syncing' &&
-                        (playlist.pendingRemoteChanges ? (
+                        playlist.pendingRemoteChanges && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                             </TooltipTrigger>
                             <TooltipContent>{t('sidebar.pushPendingTooltip')}</TooltipContent>
                           </Tooltip>
-                        ) : playlist.lastPushToYoutube ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="flex items-center">
-                                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('sidebar.pushSyncedTooltip')}</TooltipContent>
-                          </Tooltip>
-                        ) : null)}
+                        )}
+
+                      {hasTracks && syncState.status !== 'syncing' && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={`text-[10px] font-semibold tabular-nums ${
+                                allDownloaded ? 'text-zinc-500' : 'text-amber-500'
+                              }`}
+                            >
+                              {stats.downloaded}/{stats.total}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {allDownloaded
+                              ? t('sidebar.allDownloadedTooltip', { count: String(stats.total) })
+                              : t('sidebar.someMissingTooltip', {
+                                  downloaded: String(stats.downloaded),
+                                  total: String(stats.total)
+                                })}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+
                       {syncState.status === 'syncing' ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                       ) : syncState.status === 'error' ? (
-                        <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex items-center">
+                              <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{t('sidebar.syncErrorTooltip')}</TooltipContent>
+                        </Tooltip>
+                      ) : !hasTracks ? null : allDownloaded ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex items-center">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('sidebar.allDownloadedTooltip', { count: String(stats.total) })}
+                          </TooltipContent>
+                        </Tooltip>
                       ) : (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 opacity-60" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="flex items-center">
+                              <Download className="h-3.5 w-3.5 text-amber-500" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('sidebar.someMissingTooltip', {
+                              downloaded: String(stats.downloaded),
+                              total: String(stats.total)
+                            })}
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   )}
@@ -401,55 +461,6 @@ export default function Sidebar({
                       })()}
                     </div>
                   )
-                )}
-
-                {/* Hover Actions */}
-                {editingPlaylistId !== playlist.id && (
-                  <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            startEditing(playlist)
-                          }}
-                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t('sidebar.renamePlaylistTooltip')}</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onSyncPlaylist(playlist.id)
-                          }}
-                          disabled={syncState.status === 'syncing'}
-                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-50"
-                        >
-                          <RefreshCw className="h-3.5 w-3.5" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t('sidebar.syncPlaylistTooltip')}</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onDeletePlaylist(playlist.id)
-                          }}
-                          className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t('sidebar.deletePlaylistTooltip')}</TooltipContent>
-                    </Tooltip>
-                  </div>
                 )}
               </div>
             )

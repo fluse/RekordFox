@@ -53,6 +53,11 @@ export const en = {
   'sidebar.connectYoutubeTooltip': 'Connect YouTube account',
   'sidebar.youtubeSourceTooltip': 'Imported from YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Synced with YouTube',
+  'sidebar.connectedTooltip': 'Connected to your YouTube account',
+  'sidebar.localSourceTooltip': 'YouTube playlist (download only)',
+  'sidebar.allDownloadedTooltip': 'All {{count}} tracks downloaded',
+  'sidebar.someMissingTooltip': '{{downloaded}} of {{total}} tracks downloaded',
+  'sidebar.syncErrorTooltip': 'Last sync failed',
   'sidebar.orphanedTooltip':
     'YouTube account disconnected — reconnect it in Settings to sync again',
   'sidebar.needsReauthTooltip': 'YouTube sign-in expired — reconnect the account in Settings',

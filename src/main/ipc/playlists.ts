@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import {
   getPlaylists,
+  getPlaylistStats,
   addPlaylist as addPlaylistToDb,
   deletePlaylist as deletePlaylistFromDb,
   renamePlaylist,
@@ -15,6 +16,10 @@ import { getMainWindow } from '../window'
 export function registerPlaylistsIpc(): void {
   ipcMain.handle('playlists:get', () => {
     return getPlaylists()
+  })
+
+  ipcMain.handle('playlists:stats', () => {
+    return getPlaylistStats()
   })
 
   ipcMain.handle('playlists:add', (_, url: string) =>

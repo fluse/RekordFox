@@ -38,6 +38,10 @@ interface TracklistProps {
   onRemoveTrack: (track: Track) => void
   onSyncToYoutube: (playlistId: string, trackIds: string[]) => Promise<void>
   isSyncingToYoutube: boolean
+  onRenamePlaylist: (id: string, newTitle: string) => void
+  onSyncPlaylist: (id: string) => void
+  onDeletePlaylist: (id: string) => void
+  isSyncing: boolean
   onFindSimilarTrack?: (track: Track) => void
   currentTrackA: Track | null
   currentTrackB: Track | null
@@ -57,6 +61,10 @@ export default function Tracklist({
   onRemoveTrack,
   onSyncToYoutube,
   isSyncingToYoutube,
+  onRenamePlaylist,
+  onSyncPlaylist,
+  onDeletePlaylist,
+  isSyncing,
   onFindSimilarTrack,
   currentTrackA,
   currentTrackB,
@@ -159,6 +167,8 @@ export default function Tracklist({
   return (
     <div className="flex flex-1 flex-col bg-zinc-900/40 min-h-0 overflow-hidden">
       <TracklistToolbar
+        key={playlistId}
+        playlistId={playlistId}
         playlistTitle={playlistTitle}
         search={search}
         onSearchChange={setSearch}
@@ -167,6 +177,10 @@ export default function Tracklist({
         pendingRemoteChanges={!!playlist?.pendingRemoteChanges}
         isSyncingToYoutube={isSyncingToYoutube}
         onSyncToYoutube={handleSyncToYoutube}
+        isSyncing={isSyncing}
+        onRenamePlaylist={onRenamePlaylist}
+        onSyncPlaylist={onSyncPlaylist}
+        onDeletePlaylist={onDeletePlaylist}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
       />

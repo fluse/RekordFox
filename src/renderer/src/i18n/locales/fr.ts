@@ -55,6 +55,11 @@ export const fr = {
   'sidebar.connectYoutubeTooltip': 'Connecter un compte YouTube',
   'sidebar.youtubeSourceTooltip': 'Importé depuis YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Synchronisé avec YouTube',
+  'sidebar.connectedTooltip': 'Connecté à votre compte YouTube',
+  'sidebar.localSourceTooltip': 'Playlist YouTube (téléchargement seul)',
+  'sidebar.allDownloadedTooltip': 'Les {{count}} titres sont téléchargés',
+  'sidebar.someMissingTooltip': '{{downloaded}} titres sur {{total}} téléchargés',
+  'sidebar.syncErrorTooltip': 'Échec de la dernière synchronisation',
   'sidebar.orphanedTooltip':
     'Compte YouTube déconnecté — reconnectez-le dans les Paramètres pour resynchroniser',
   'sidebar.needsReauthTooltip':

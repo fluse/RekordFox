@@ -63,6 +63,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
 
   const {
     playlists,
+    playlistStats,
     selectedPlaylistId,
     setSelectedPlaylistId,
     tracks,
@@ -125,6 +126,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           playlists={playlists}
+          playlistStats={playlistStats}
           selectedPlaylistId={selectedPlaylistId}
           onSelectPlaylist={(id) => {
             setViewMode('library')
@@ -139,8 +141,6 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             )
             setViewMode('discover')
           }}
-          onDeletePlaylist={handleDeletePlaylist}
-          onSyncPlaylist={handleSyncPlaylist}
           onRenamePlaylist={handleRenamePlaylist}
           onOpenAddModal={() => setIsAddModalOpen(true)}
           onOpenSettings={() => {
@@ -214,6 +214,10 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             onRemoveTrack={handleRemoveTrack}
             onSyncToYoutube={handleSyncToYoutube}
             isSyncingToYoutube={syncingToYoutubeId === selectedPlaylistId}
+            onRenamePlaylist={handleRenamePlaylist}
+            onSyncPlaylist={handleSyncPlaylist}
+            onDeletePlaylist={handleDeletePlaylist}
+            isSyncing={activeSyncs[selectedPlaylistId]?.status === 'syncing'}
             onFindSimilarTrack={handleFindSimilarTrack}
             currentTrackA={loadedTrackA}
             currentTrackB={loadedTrackB}

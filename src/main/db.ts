@@ -482,6 +482,24 @@ export function getTracks(): Track[] {
   return dbData.tracks
 }
 
+export interface PlaylistStats {
+  total: number
+  downloaded: number
+}
+
+// Per-playlist track counts for the sidebar: how many tracks the playlist has and how many are
+// actually downloaded (a track counts as downloaded once it has a local filepath, matching the
+// tracklist's own "placeholder = no filepath" rule).
+export function getPlaylistStats(): Record<string, PlaylistStats> {
+  const stats: Record<string, PlaylistStats> = {}
+  for (const track of dbData.tracks) {
+    const entry = stats[track.playlistId] || (stats[track.playlistId] = { total: 0, downloaded: 0 })
+    entry.total++
+    if (track.filepath) entry.downloaded++
+  }
+  return stats
+}
+
 export function getTracksForPlaylist(playlistId: string): Track[] {
   return dbData.tracks
     .filter((t) => t.playlistId === playlistId)

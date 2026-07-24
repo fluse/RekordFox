@@ -6,6 +6,7 @@ import type { RecommendedTrack } from '@main/explore'
 // Custom APIs for renderer
 const api = {
   getPlaylists: () => ipcRenderer.invoke('playlists:get'),
+  getPlaylistStats: () => ipcRenderer.invoke('playlists:stats'),
   addPlaylist: (url: string) => ipcRenderer.invoke('playlists:add', url),
   deletePlaylist: (id: string) => ipcRenderer.invoke('playlists:delete', id),
   syncPlaylist: (id: string) => ipcRenderer.invoke('playlists:sync', id),

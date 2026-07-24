@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
-import type { Playlist, Track, AppSettings } from '@main/db'
+import type { Playlist, Track, AppSettings, PlaylistStats } from '@main/db'
 import { de } from '../i18n/locales/de'
 import { en } from '../i18n/locales/en'
 import { fr } from '../i18n/locales/fr'
@@ -22,6 +22,7 @@ export type ActiveSyncsMap = Record<string, ActiveSync>
 
 export interface UseAppReturn {
   playlists: Playlist[]
+  playlistStats: Record<string, PlaylistStats>
   selectedPlaylistId: string | null
   setSelectedPlaylistId: (id: string | null) => void
   tracks: Track[]
@@ -57,8 +58,16 @@ export interface UseAppReturn {
 
 export function useApp(): UseAppReturn {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
+  const [playlistStats, setPlaylistStats] = useState<Record<string, PlaylistStats>>({})
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
+
+  // Refreshes the per-playlist track counts shown in the sidebar. Cheap (counts only, no track
+  // payloads) so it's safe to call after any mutation that changes playlist membership or a
+  // track's downloaded state.
+  const refreshPlaylistStats = useCallback((): void => {
+    window.api.getPlaylistStats().then(setPlaylistStats).catch(console.error)
+  }, [])
 
   // Track loaded on Deck A / Deck B
   const [loadedTrackA, setLoadedTrackA] = useState<Track | null>(null)
@@ -249,6 +258,7 @@ export function useApp(): UseAppReturn {
             }
             return currentId
           })
+          refreshPlaylistStats()
         } else if (res.success && !res.track) {
           toast.error(t('sidebar.trackAlreadyInPlaylist'))
         } else {
@@ -259,7 +269,7 @@ export function useApp(): UseAppReturn {
         toast.error(t('sidebar.trackAddFailed', { error: String(err) }))
       }
     },
-    [t]
+    [t, refreshPlaylistStats]
   )
 
   // Applies a track removal to the local UI state: drops it from the visible list, unloads it
@@ -298,6 +308,7 @@ export function useApp(): UseAppReturn {
         const res = await window.api.removeTrackFromPlaylist(track.id, track.playlistId)
         if (res.success) {
           applyLocalTrackRemoval(track)
+          refreshPlaylistStats()
           toast.success(t('tracklist.trackRemoved'))
         } else {
           toast.error(t('tracklist.trackRemoveFailed', { error: res.error || '' }))
@@ -307,7 +318,7 @@ export function useApp(): UseAppReturn {
         toast.error(t('tracklist.trackRemoveFailed', { error: String(err) }))
       }
     },
-    [t, applyLocalTrackRemoval]
+    [t, applyLocalTrackRemoval, refreshPlaylistStats]
   )
 
   const handleMoveTrackToPlaylist = useCallback(
@@ -334,6 +345,7 @@ export function useApp(): UseAppReturn {
         if (removeRes.success) {
           applyLocalTrackRemoval(track)
         }
+        refreshPlaylistStats()
 
         toast.success(t('sidebar.trackMovedToPlaylist'))
 
@@ -349,7 +361,7 @@ export function useApp(): UseAppReturn {
         toast.error(t('sidebar.trackAddFailed', { error: String(err) }))
       }
     },
-    [t, applyLocalTrackRemoval]
+    [t, applyLocalTrackRemoval, refreshPlaylistStats]
   )
 
   // Clears the "NEW" label for a track by persisting played=true and patching
@@ -400,20 +412,28 @@ export function useApp(): UseAppReturn {
     })
   }, [markTrackPlayed])
 
-  const handleAddPlaylist = useCallback(async (url: string): Promise<void> => {
-    const res = await window.api.addPlaylist(url)
-    if (res.success && res.playlist) {
-      setPlaylists((prev) => [...prev, res.playlist!])
-      setSelectedPlaylistId(res.playlist.id)
-    } else {
-      throw new Error(res.error || 'Failed to add playlist')
-    }
-  }, [])
+  const handleAddPlaylist = useCallback(
+    async (url: string): Promise<void> => {
+      const res = await window.api.addPlaylist(url)
+      if (res.success && res.playlist) {
+        setPlaylists((prev) => [...prev, res.playlist!])
+        setSelectedPlaylistId(res.playlist.id)
+        refreshPlaylistStats()
+      } else {
+        throw new Error(res.error || 'Failed to add playlist')
+      }
+    },
+    [refreshPlaylistStats]
+  )
 
-  const handlePlaylistImported = useCallback((playlist: Playlist): void => {
-    setPlaylists((prev) => [...prev.filter((p) => p.id !== playlist.id), playlist])
-    setSelectedPlaylistId(playlist.id)
-  }, [])
+  const handlePlaylistImported = useCallback(
+    (playlist: Playlist): void => {
+      setPlaylists((prev) => [...prev.filter((p) => p.id !== playlist.id), playlist])
+      setSelectedPlaylistId(playlist.id)
+      refreshPlaylistStats()
+    },
+    [refreshPlaylistStats]
+  )
 
   const handleDeletePlaylist = useCallback(
     async (id: string): Promise<void> => {
@@ -425,6 +445,7 @@ export function useApp(): UseAppReturn {
       if (res.success) {
         setPlaylists((prev) => prev.filter((p) => p.id !== id))
         setSelectedPlaylistId((prevSelected) => (prevSelected === id ? null : prevSelected))
+        refreshPlaylistStats()
 
         // Unload deleted tracks from DJ decks if active
         setLoadedTrackA((prev) => {
@@ -445,7 +466,7 @@ export function useApp(): UseAppReturn {
         alert(t('actions.errorDeletePlaylist', { error: res.error || '' }))
       }
     },
-    [t]
+    [t, refreshPlaylistStats]
   )
 
   const handleSyncPlaylist = useCallback(
@@ -548,6 +569,7 @@ export function useApp(): UseAppReturn {
         if (list.length > 0) {
           setSelectedPlaylistId(list[0].id)
         }
+        refreshPlaylistStats()
       } catch (e) {
         console.error('Failed to load playlists:', e)
       }
@@ -585,7 +607,7 @@ export function useApp(): UseAppReturn {
     fetchPlaylists()
     loadSettings()
     loadLastTracks()
-  }, [])
+  }, [refreshPlaylistStats])
 
   // 2. Inject theme class into HTML document root
   useEffect((): void => {
@@ -666,6 +688,11 @@ export function useApp(): UseAppReturn {
       if (playlistId === selectedPlaylistId) {
         window.api.getTracks(playlistId).then(setTracks).catch(console.error)
       }
+
+      // A finished sync may have added/removed tracks or downloaded new ones — refresh counts.
+      if (status === 'idle' || status === 'error') {
+        refreshPlaylistStats()
+      }
     })
 
     // Listen for download progress updates
@@ -707,6 +734,11 @@ export function useApp(): UseAppReturn {
       if (data.percent >= 100 && data.playlistId === selectedPlaylistId) {
         window.api.getTracks(data.playlistId).then(setTracks).catch(console.error)
       }
+
+      // Each completed download bumps the playlist's downloaded count in the sidebar.
+      if (data.percent >= 100) {
+        refreshPlaylistStats()
+      }
     })
 
     // Listen for BPM analysis results from the main process
@@ -735,6 +767,7 @@ export function useApp(): UseAppReturn {
       if (selectedPlaylistId) {
         window.api.getTracks(selectedPlaylistId).then(setTracks).catch(console.error)
       }
+      refreshPlaylistStats()
     })
 
     // Listen for local playlists the main process discovered belong to a connected YouTube
@@ -779,11 +812,13 @@ export function useApp(): UseAppReturn {
     handleUpdateKeyInState,
     handleUpdateFilepathsInState,
     handlePlaylistImported,
+    refreshPlaylistStats,
     t
   ])
 
   return {
     playlists,
+    playlistStats,
     selectedPlaylistId,
     setSelectedPlaylistId,
     tracks,

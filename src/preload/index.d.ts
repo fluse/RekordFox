@@ -1,5 +1,5 @@
 import type { ElectronAPI } from '@electron-toolkit/preload'
-import { Playlist, Track, AppSettings, StorageStats, OAuthAccount } from '@main/db'
+import { Playlist, Track, AppSettings, StorageStats, OAuthAccount, PlaylistStats } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
 import type { RecommendedTrack } from '@main/explore'
 import type { RemotePlaylistSummary } from '@main/youtubeSync'
@@ -11,6 +11,7 @@ declare global {
     electron: ElectronAPI
     api: {
       getPlaylists: () => Promise<Playlist[]>
+      getPlaylistStats: () => Promise<Record<string, PlaylistStats>>
       addPlaylist: (
         url: string
       ) => Promise<{ success: boolean; playlist?: Playlist; error?: string }>

@@ -1,11 +1,21 @@
-import React, { useState } from 'react'
-import { Search, X, HardDrive, SlidersHorizontal, Loader2 } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+  Search,
+  X,
+  HardDrive,
+  SlidersHorizontal,
+  Loader2,
+  Pencil,
+  RefreshCw,
+  Trash2
+} from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import { COLUMN_DEFS } from './columns'
 
 interface TracklistToolbarProps {
+  playlistId: string
   playlistTitle: string
   search: string
   onSearchChange: (value: string) => void
@@ -14,11 +24,16 @@ interface TracklistToolbarProps {
   pendingRemoteChanges: boolean
   isSyncingToYoutube: boolean
   onSyncToYoutube: () => void
+  isSyncing: boolean
+  onRenamePlaylist: (id: string, newTitle: string) => void
+  onSyncPlaylist: (id: string) => void
+  onDeletePlaylist: (id: string) => void
   visibleColumns: string[]
   onToggleColumn: (colId: string) => void
 }
 
 export default function TracklistToolbar({
+  playlistId,
   playlistTitle,
   search,
   onSearchChange,
@@ -27,15 +42,104 @@ export default function TracklistToolbar({
   pendingRemoteChanges,
   isSyncingToYoutube,
   onSyncToYoutube,
+  isSyncing,
+  onRenamePlaylist,
+  onSyncPlaylist,
+  onDeletePlaylist,
   visibleColumns,
   onToggleColumn
 }: TracklistToolbarProps): React.JSX.Element {
   const { t } = useLanguage()
   const [isColMenuOpen, setIsColMenuOpen] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [titleDraft, setTitleDraft] = useState(playlistTitle)
+  const renameInputRef = useRef<HTMLInputElement>(null)
+
+  // Note: the parent remounts this toolbar (key={playlistId}) when the selected playlist changes,
+  // so local rename state can't leak across playlists — no reset effect needed here.
+  useEffect(() => {
+    if (isRenaming) {
+      renameInputRef.current?.focus()
+      renameInputRef.current?.select()
+    }
+  }, [isRenaming])
+
+  const startRename = (): void => {
+    setTitleDraft(playlistTitle)
+    setIsRenaming(true)
+  }
+
+  const commitRename = (): void => {
+    const trimmed = titleDraft.trim()
+    if (trimmed && trimmed !== playlistTitle) {
+      onRenamePlaylist(playlistId, trimmed)
+    }
+    setIsRenaming(false)
+  }
 
   return (
     <div className="flex h-16 items-center justify-between border-b border-zinc-900 px-6">
-      <h1 className="text-lg font-bold text-zinc-200 truncate max-w-[300px]">{playlistTitle}</h1>
+      <div className="flex min-w-0 items-center gap-2">
+        {isRenaming ? (
+          <input
+            ref={renameInputRef}
+            type="text"
+            value={titleDraft}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename()
+              else if (e.key === 'Escape') setIsRenaming(false)
+            }}
+            onBlur={commitRename}
+            className="max-w-[300px] rounded border border-primary bg-zinc-800 px-2 py-0.5 text-lg font-bold text-zinc-100 focus:outline-none"
+          />
+        ) : (
+          <h1
+            className="truncate max-w-[300px] text-lg font-bold text-zinc-200"
+            onDoubleClick={startRename}
+          >
+            {playlistTitle}
+          </h1>
+        )}
+        {!isRenaming && (
+          <div className="flex items-center gap-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={startRename}
+                  className="rounded p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200 cursor-pointer"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.renamePlaylistTooltip')}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onSyncPlaylist(playlistId)}
+                  disabled={isSyncing}
+                  className="rounded p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.syncPlaylistTooltip')}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => onDeletePlaylist(playlistId)}
+                  className="rounded p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-red-400 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t('sidebar.deletePlaylistTooltip')}</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-3">
         {isYoutubeOauth && (
           <button
