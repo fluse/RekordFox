@@ -13,7 +13,7 @@ import {
 } from '@renderer/utils/artistSearch'
 import { UsbExportModal, PioneerExportModal } from '@renderer/components/Export'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
-import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
+import { useTrackContextMenu } from '@renderer/components/ContextMenu/TrackContextMenu/useTrackContextMenu'
 import TrackRow from './TrackRow'
 import TrackRowPlaceholder from './TrackRowPlaceholder'
 import TracklistToolbar from './TracklistToolbar'

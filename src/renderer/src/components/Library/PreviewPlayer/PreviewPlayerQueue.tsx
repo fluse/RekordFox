@@ -21,7 +21,7 @@ import {
   openYoutubeVideo
 } from '@renderer/utils/artistSearch'
 import TrackContextMenu from '@renderer/components/ContextMenu/TrackContextMenu'
-import { useTrackContextMenu } from '@renderer/components/ContextMenu/useTrackContextMenu'
+import { useTrackContextMenu } from '@renderer/components/ContextMenu/TrackContextMenu/useTrackContextMenu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
 export const QUEUE_ID_MIME = 'application/x-rekordfox-queue-id'
