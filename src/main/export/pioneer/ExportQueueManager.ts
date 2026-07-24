@@ -1,12 +1,12 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { existsSync, rmSync } from 'fs'
-import { mkdir } from 'fs/promises'
+import { mkdir, readFile, writeFile, rename, copyFile } from 'fs/promises'
 import { join, extname, dirname } from 'path'
-import { getTracksForPlaylist } from '../../db'
+import { getTracksForPlaylist, getPlaylists } from '../../db'
 import { AnlzBuilder } from './AnlzBuilder'
-import { PioneerDbUpdater } from './PioneerDbUpdater'
 import { copyFileData, ensureWritable } from '../fsCopy'
 import { findPioneerPdb } from '../../usb'
+import { mergePlaylist, MergeTrackInput } from './pdb/PdbMerger'
 
 export interface WaveformPeak {
   low: number
@@ -112,7 +112,6 @@ export class ExportQueueManager {
     this.isRunning = true
     this.cancelRequested = false
     this.activeFiles = []
-    let dbUpdater: PioneerDbUpdater | null = null
 
     try {
       // 1. Resolve tracks in playlist
@@ -132,31 +131,21 @@ export class ExportQueueManager {
       // filesystem / macOS privacy block) instead of crashing mid-copy on EPERM.
       await ensureWritable(usbPath)
 
-      // 2. Open SQLite database on the USB stick. Rekordbox export sticks keep the
-      // database at PIONEER/rekordbox/export.pdb (with a legacy fallback of
-      // PIONEER/export.pdb), so resolve whichever actually exists.
+      // 2. Locate the rekordbox DeviceSQL database (PIONEER/rekordbox/export.pdb,
+      // legacy fallback PIONEER/export.pdb). If present, we merge the exported
+      // playlist into it at the end so it appears in the CDJ playlist menu. If
+      // absent, we still copy audio + waveforms but cannot register a playlist.
       const pdbPath = findPioneerPdb(usbPath)
-
-      // Note: If export.pdb doesn't exist, we skip updating PDB but still write files.
-      // Usually, Rekordbox USB sticks have export.pdb.
-      let pdbEnabled = false
-      if (pdbPath) {
-        dbUpdater = new PioneerDbUpdater(pdbPath)
-        try {
-          dbUpdater.init()
-          pdbEnabled = true
-          console.log(`[ExportQueueManager] Successfully connected to ${pdbPath}`)
-        } catch (dbErr) {
-          const message = dbErr instanceof Error ? dbErr.message : String(dbErr)
-          console.warn(
-            `[ExportQueueManager] Pioneer export.pdb could not be opened: ${message}. Skipping database updates.`
-          )
-        }
-      } else {
+      const pdbEnabled = pdbPath !== null
+      if (!pdbEnabled) {
         console.warn(
-          '[ExportQueueManager] No Pioneer export.pdb found on stick. Skipping database updates.'
+          '[ExportQueueManager] No Pioneer export.pdb found on stick. Files will be copied but no playlist will be registered.'
         )
       }
+
+      // Per-track metadata collected during the copy loop; merged into the pdb
+      // in a single pass afterwards.
+      const trackInputs: MergeTrackInput[] = []
 
       // 3. Process each track
       for (let i = 0; i < totalTracks; i++) {
@@ -198,12 +187,23 @@ export class ExportQueueManager {
         const relAudioPath = join('CONTENTS', artistDir, albumDir, trackFilename)
         const absAudioPath = join(usbPath, relAudioPath)
 
-        const relAnlzDir = join('PIONEER', 'USBANLZ', artistDir, albumDir)
-        const relAnlzPath = join(relAnlzDir, `${track.id}.DAT`)
-        const relExtPath = join(relAnlzDir, `${track.id}.EXT`)
+        // Analysis files use rekordbox's own USBANLZ folder convention:
+        // /PIONEER/USBANLZ/P<xxx>/<8-hex>/ANLZ0000.{DAT,EXT}. The 8-hex counter
+        // starts high (0x10000000+) so it never collides with rekordbox's own
+        // low-numbered analysis folders already present on the stick.
+        const anlzHex = (0x10000000 + i).toString(16).toUpperCase().padStart(8, '0')
+        const anlzP = `P${anlzHex.slice(0, 3)}`
+        const relAnlzDir = join('PIONEER', 'USBANLZ', anlzP, anlzHex)
+        const relAnlzPath = join(relAnlzDir, 'ANLZ0000.DAT')
+        const relExtPath = join(relAnlzDir, 'ANLZ0000.EXT')
 
         const absAnlzPath = join(usbPath, relAnlzPath)
         const absExtPath = join(usbPath, relExtPath)
+
+        // POSIX-style, slash-prefixed on-USB paths as stored in the pdb.
+        const toUsbPath = (p: string): string => '/' + p.replace(/\\/g, '/')
+        const pdbFilePath = toUsbPath(relAudioPath)
+        const pdbAnalyzePath = toUsbPath(relAnlzPath)
 
         // Keep track of active files for this step so we can delete them if canceled
         this.activeFiles = [absAudioPath, absAnlzPath, absExtPath]
@@ -270,23 +270,23 @@ export class ExportQueueManager {
         extBuilder.setUInt32(4, totalExtSize)
         await extBuilder.saveToFile(absExtPath)
 
-        // 6. Database Update
-        if (pdbEnabled && dbUpdater) {
-          // Relativize paths for SQLite (usually starts with a slash, e.g. /PIONEER/USBANLZ/...)
-          // Normalize paths to use forward slashes for Pioneer compatibility
-          const sqlAnlz = '/' + relAnlzPath.replace(/\\/g, '/')
-          const sqlExt = '/' + relExtPath.replace(/\\/g, '/')
-
-          // Execute database update. If it throws (e.g. trackId mismatch), we catch it
-          try {
-            dbUpdater.linkWaveformToTrack(track.id, sqlAnlz, sqlExt)
-          } catch (dbUpdateErr) {
-            console.error(
-              `[ExportQueueManager] Failed to link database entry for track ${track.id}:`,
-              dbUpdateErr
-            )
-          }
-        }
+        // 6. Collect this track's metadata for the pdb merge (done once, after
+        // all files are on disk).
+        trackInputs.push({
+          title: track.title,
+          artist: track.artist || '',
+          key: track.key || undefined,
+          filePath: pdbFilePath,
+          filename: trackFilename,
+          analyzePath: pdbAnalyzePath,
+          tempo: Math.max(0, Math.round((track.bpm || 0) * 100)),
+          durationSec: Math.max(0, Math.round(track.duration || 0)),
+          bitrate: Math.max(0, Math.round(track.bitrate || 0)),
+          sampleRate: 44100,
+          sampleDepth: 16,
+          fileSize: Math.max(0, Math.round(track.filesize || 0)),
+          dateAdded: track.dateAdded || ''
+        })
 
         // Active files successfully processed and registered
         this.activeFiles = []
@@ -299,6 +299,47 @@ export class ExportQueueManager {
           statusText: `Titel erfolgreich exportiert: ${track.artist} - ${track.title}`,
           progressPercent: trackPercentEnd
         })
+      }
+
+      // 7. Merge the exported playlist into the rekordbox database so it shows
+      // up in the CDJ playlist menu. Append-only: existing rows are preserved.
+      if (pdbEnabled && pdbPath) {
+        win.webContents.send('pioneer:export-progress', {
+          currentTrack: totalTracks,
+          totalTracks,
+          statusText: 'Aktualisiere Rekordbox-Datenbank…',
+          progressPercent: 99
+        })
+
+        const playlist = getPlaylists().find((p) => p.id === playlistId)
+        const playlistName = playlist?.title || 'RekordFox Export'
+
+        try {
+          const original = await readFile(pdbPath)
+
+          // One-time safety backup of the untouched database.
+          const backupPath = `${pdbPath}.rffbak`
+          if (!existsSync(backupPath)) {
+            await copyFile(pdbPath, backupPath)
+          }
+
+          const result = mergePlaylist(original, playlistName, trackInputs)
+
+          // Atomic write: temp file then rename over the original.
+          const tmpPath = `${pdbPath}.tmp`
+          await writeFile(tmpPath, result.buffer)
+          await rename(tmpPath, pdbPath)
+
+          console.log(
+            `[ExportQueueManager] Merged playlist "${playlistName}" (id ${result.playlistId}): ` +
+              `+${result.addedTracks} tracks, ${result.reusedTracks} reused, ` +
+              `+${result.addedArtists} artists, +${result.addedAlbums} albums, +${result.addedKeys} keys.`
+          )
+        } catch (mergeErr) {
+          const message = mergeErr instanceof Error ? mergeErr.message : String(mergeErr)
+          console.error('[ExportQueueManager] Failed to update rekordbox database:', mergeErr)
+          throw new Error(`Rekordbox-Datenbank konnte nicht aktualisiert werden: ${message}`)
+        }
       }
 
       console.log('[ExportQueueManager] Export finished successfully.')
@@ -327,9 +368,6 @@ export class ExportQueueManager {
       })
       return { success: false, error: message }
     } finally {
-      if (dbUpdater) {
-        dbUpdater.close()
-      }
       this.isRunning = false
       this.cancelRequested = false
     }

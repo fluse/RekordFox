@@ -5,3 +5,6 @@ out
 .eslintcache
 *.log*
 *.tsbuildinfo
+
+# Local pdb test fixtures (contain personal rekordbox library data)
+test-fixtures/
