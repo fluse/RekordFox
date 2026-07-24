@@ -83,7 +83,18 @@ export function getPlaylistFolderName(playlist: Playlist): string {
   return `${cleanTitle}-${provider}-${playlist.id}`
 }
 
-export type ColorScheme = 'purple' | 'blue' | 'green' | 'orange' | 'rose' | 'teal' | 'custom'
+export type ColorScheme =
+  | 'purple'
+  | 'blue'
+  | 'green'
+  | 'orange'
+  | 'rose'
+  | 'teal'
+  | 'forest'
+  | 'amber'
+  | 'cyan'
+  | 'fuchsia'
+  | 'custom'
 
 export interface AppSettings {
   theme: 'dark' | 'light'

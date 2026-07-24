@@ -14,7 +14,11 @@ export const PRESET_SCHEMES: Record<Exclude<ColorScheme, 'custom'>, Hsl> = {
   green: { h: 142.1, s: 70.6, l: 45.3 },
   orange: { h: 24.6, s: 95, l: 53.1 },
   rose: { h: 346.8, s: 77.2, l: 49.8 },
-  teal: { h: 173.4, s: 80.4, l: 40 }
+  teal: { h: 173.4, s: 80.4, l: 40 },
+  forest: { h: 138.3, s: 31.2, l: 37.1 }, // #417C53
+  amber: { h: 37.7, s: 92.1, l: 50.2 },
+  cyan: { h: 188.7, s: 94.5, l: 42.7 },
+  fuchsia: { h: 292.2, s: 84.1, l: 60.6 }
 }
 
 export const CUSTOM_SCHEME_DEFAULT_HEX = '#8b5cf6'

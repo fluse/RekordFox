@@ -12,7 +12,11 @@ const PRESET_ORDER: Exclude<ColorScheme, 'custom'>[] = [
   'green',
   'orange',
   'rose',
-  'teal'
+  'teal',
+  'forest',
+  'amber',
+  'cyan',
+  'fuchsia'
 ]
 
 const LABEL_KEYS: Record<ColorScheme, TranslationKey> = {
@@ -22,6 +26,10 @@ const LABEL_KEYS: Record<ColorScheme, TranslationKey> = {
   orange: 'settings.colorSchemeOrange',
   rose: 'settings.colorSchemeRose',
   teal: 'settings.colorSchemeTeal',
+  forest: 'settings.colorSchemeForest',
+  amber: 'settings.colorSchemeAmber',
+  cyan: 'settings.colorSchemeCyan',
+  fuchsia: 'settings.colorSchemeFuchsia',
   custom: 'settings.colorSchemeCustom'
 }
 
