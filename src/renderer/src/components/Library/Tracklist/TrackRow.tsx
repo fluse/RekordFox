@@ -304,7 +304,7 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
                   ) : track.bpm === 0 ? (
                     <span className="text-zinc-600 text-xs italic">{t('track.waiting')}</span>
                   ) : (
-                    <span className="text-primary font-bold">{track.bpm}</span>
+                    <span className="text-primary font-bold">{Math.round(track.bpm)}</span>
                   )}
                 </td>
               )

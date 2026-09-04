@@ -364,7 +364,7 @@ export function initDb(): void {
               // 1. If BPM is in database but missing from ID3 tags, update the tag
               if (track.bpm > 0 && currentTags && !currentTags.bpm) {
                 try {
-                  nodeId3.update({ bpm: track.bpm.toString() }, track.filepath)
+                  nodeId3.update({ bpm: Math.round(track.bpm).toString() }, track.filepath)
                 } catch (bpmErr) {
                   console.error(`Failed to update BPM ID3 tag for track ${track.id}:`, bpmErr)
                 }
@@ -392,7 +392,7 @@ export function initDb(): void {
                     title: track.title,
                     artist: track.artist,
                     album: albumName,
-                    bpm: track.bpm > 0 ? track.bpm.toString() : undefined,
+                    bpm: track.bpm > 0 ? Math.round(track.bpm).toString() : undefined,
                     audioSourceUrl: youtubeUrl,
                     popularimeter:
                       track.rating > 0
@@ -1116,7 +1116,7 @@ export function getTrackFilename(
     const cleanArtist = sanitizeForFilename(artist) || 'Unknown Artist'
     const cleanTitle = sanitizeForFilename(title) || 'Unknown Title'
     const trackPos = position.toString().padStart(2, '0')
-    return `${trackPos}-${cleanArtist}-${cleanTitle}-${bpm}bpm-${trackId}.mp3`
+    return `${trackPos}-${cleanArtist}-${cleanTitle}-${Math.round(bpm)}bpm-${trackId}.mp3`
   }
   return `${playlistId}_${trackId}.mp3`
 }

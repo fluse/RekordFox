@@ -70,17 +70,19 @@ Rules of thumb for where logic goes:
 
 ## Code quality & tooling
 
-- Before finishing any change: `npm run lint`, `npm run typecheck`, `npm run format`.
+- Before finishing any change: `npm run lint`, `npm run typecheck`, `npm run format`, `npm test`.
 - Prettier: single quotes, no semicolons, no trailing commas, 100-char print width ([.prettierrc.yaml](.prettierrc.yaml)) — let the formatter enforce this, don't hand-format against it.
 - ESLint is flat-config based (`@electron-toolkit` + React Hooks + React Refresh rules). No `eslint-disable` without a short reason comment.
 - Don't add a new dependency when a native Web/Node API already covers the need.
 
 ## Tests
 
-There is currently no test runner configured. Until one exists:
+Vitest is configured ([vitest.config.ts](vitest.config.ts)) for pure-logic unit tests — it does not spin up the Electron runtime, so it only covers plain TS/TSX modules (export writers, DB functions, BPM/key parsing, sync diffing, harmonic chaining, etc.), not IPC handlers or React rendering.
 
-- Before non-trivial changes to core logic (BPM/key analysis, Rekordbox/Pioneer export, JSON DB migrations, sync logic), verify manually by running the app (`npm run dev`) — there's no automated safety net yet.
-- If introducing a test setup, pure logic (export writers, DB functions, BPM/key parsing, sync diffing) is the best first target since it doesn't need the Electron runtime.
+- **New pure logic must ship with tests.** Any new or changed function with non-trivial branching (parsing, scoring, diffing, filtering, formatting) needs a co-located `*.test.ts` covering its normal case and its edge cases (empty/null input, boundary values). Bug fixes in existing pure logic should add a regression test for the fixed case.
+- Co-locate tests next to the code they cover (`harmonicChaining.ts` → `harmonicChaining.test.ts`), matching the co-location convention used for components ([React: component size & structure](#react-component-size--structure)).
+- Run `npm test` (or `npm run test:watch` while iterating) before considering a change done, alongside `npm run lint`/`npm run typecheck`.
+- Code that's inherently Electron/IPC/DOM-bound (main-process handlers, React components with side effects, anything touching `window.api`) has no test harness yet — for that, keep verifying manually by running the app (`npm run dev`) as before.
 
 ## Checklist for new IPC functionality
 
@@ -90,4 +92,5 @@ There is currently no test runner configured. Until one exists:
 4. For events: return an unsubscribe function, wire it into the calling hook's `useEffect` cleanup.
 5. Put shared types in `src/main/db.ts` (or `src/shared/` for main+renderer-only types) instead of duplicating them.
 6. Add any new UI strings to all four `i18n/locales/*.ts` files.
-7. `npm run lint && npm run typecheck` before wrapping up.
+7. Cover any new pure logic (validation, diffing, payload shaping) with a co-located `*.test.ts` — see [Tests](#tests).
+8. `npm run lint && npm run typecheck && npm test` before wrapping up.

@@ -165,15 +165,42 @@ function detectBpmHps(samples: Float32Array, sampleRate: number): number {
     }
   }
 
-  // --- Step 4: Convert best lag → BPM ---
-  const rawBpm = (fps * 60) / bestLag
+  // --- Step 4: Sub-lag refinement ---
+  // The integer-lag peak is coarse (at 128 BPM one lag step is already a few
+  // BPM). Fit a parabola through the peak and its neighbors to interpolate
+  // the true peak position between samples, matching Rekordbox's fractional
+  // (e.g. 127.98) precision instead of snapping to whole BPM values.
+  const refinedLag = refinePeakLag(acf, bestLag, minLag, maxLag)
 
-  // --- Step 5: Octave correction ---
+  // --- Step 5: Convert best lag → BPM ---
+  const rawBpm = (fps * 60) / refinedLag
+
+  // --- Step 6: Octave correction ---
   // Normalize into the 80–185 BPM range by doubling/halving.
   // This handles edge cases where the HPS still finds a sub-octave.
   let bpm = rawBpm
   while (bpm < 80) bpm *= 2
   while (bpm > 185) bpm /= 2
 
-  return Math.round(bpm)
+  return Math.round(bpm * 100) / 100
+}
+
+/**
+ * Quadratic (parabolic) interpolation around the discrete peak lag using its
+ * immediate neighbors in the autocorrelation. Returns a fractional lag.
+ */
+function refinePeakLag(acf: Float32Array, lag: number, minLag: number, maxLag: number): number {
+  if (lag <= minLag || lag >= maxLag) return lag
+
+  const y0 = acf[lag - 1]
+  const y1 = acf[lag]
+  const y2 = acf[lag + 1]
+  const denom = y0 - 2 * y1 + y2
+  if (denom === 0) return lag
+
+  const offset = (0.5 * (y0 - y2)) / denom
+  // Guard against pathological offsets from near-flat neighborhoods.
+  if (offset <= -1 || offset >= 1) return lag
+
+  return lag + offset
 }

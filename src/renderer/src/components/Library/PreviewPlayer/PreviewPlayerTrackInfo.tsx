@@ -72,7 +72,9 @@ export const PreviewPlayerTrackInfo: React.FC<PreviewPlayerTrackInfoProps> = ({
         {(track.bpm > 0 || track.key) && (
           <div className="flex items-center gap-2 mt-0.5">
             {track.bpm > 0 && (
-              <span className="text-xs font-mono font-bold text-primary">{track.bpm} BPM</span>
+              <span className="text-xs font-mono font-bold text-primary">
+                {Math.round(track.bpm)} BPM
+              </span>
             )}
             {track.key && (
               <span

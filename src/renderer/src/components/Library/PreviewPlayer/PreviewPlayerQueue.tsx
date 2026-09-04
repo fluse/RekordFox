@@ -122,7 +122,9 @@ function QueueRowShell({
       </div>
       <div className="flex flex-shrink-0 items-center gap-1.5">
         {track.bpm > 0 && (
-          <span className="font-mono text-[10px] font-semibold text-primary">{track.bpm}</span>
+          <span className="font-mono text-[10px] font-semibold text-primary">
+            {Math.round(track.bpm)}
+          </span>
         )}
         {track.key && (
           <span

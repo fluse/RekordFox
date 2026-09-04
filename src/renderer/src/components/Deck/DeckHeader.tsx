@@ -42,7 +42,7 @@ export const DeckHeader: React.FC<DeckHeaderProps> = ({
         </div>
         {track && track.bpm > 0 && Math.abs(pitch - 1.0) > 0.001 && (
           <div className="text-[10px] font-mono text-zinc-500">
-            Orig: {track.bpm} ({((pitch - 1.0) * 100).toFixed(1)}%)
+            Orig: {Math.round(track.bpm)} ({((pitch - 1.0) * 100).toFixed(1)}%)
           </div>
         )}
         <div className="mt-1 text-sm font-bold text-zinc-300 font-mono leading-none">
