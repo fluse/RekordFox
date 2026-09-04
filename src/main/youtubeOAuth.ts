@@ -12,6 +12,7 @@ import {
   removeOAuthAccount,
   orphanPlaylistsForAccount
 } from './db'
+import { renderOAuthCallbackPage } from './oauthCallbackPage'
 
 // Broadcasts to every open window directly via BrowserWindow, rather than importing the
 // sendToRenderer helper from './window' — that module also pulls in the app icon asset (a
@@ -157,7 +158,7 @@ export function startYoutubeOAuthFlow(openBrowser = true): Promise<OAuthAccount>
 
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
           res.end(
-            '<html><body>Erfolgreich verbunden! Du kannst dieses Fenster schließen und zu RekordFox zurückkehren.</body></html>'
+            renderOAuthCallbackPage({ status: 'success', lang: getSettings().language || 'de' })
           )
 
           cleanup()
@@ -168,7 +169,11 @@ export function startYoutubeOAuthFlow(openBrowser = true): Promise<OAuthAccount>
           console.error('YouTube OAuth flow failed:', err)
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
           res.end(
-            `<html><body>Anmeldung fehlgeschlagen: ${message}<br/>Du kannst dieses Fenster schließen und es in RekordFox erneut versuchen.</body></html>`
+            renderOAuthCallbackPage({
+              status: 'error',
+              lang: getSettings().language || 'de',
+              detail: message
+            })
           )
           cleanup()
           focusMainWindow()
@@ -198,6 +203,36 @@ export function startYoutubeOAuthFlow(openBrowser = true): Promise<OAuthAccount>
       reject(err)
     })
   })
+}
+
+// Validates a Client ID/Secret pair without requiring the user to sign in. Google's OAuth token
+// endpoint authenticates the client (client_id + client_secret) before it even looks at the grant,
+// so exchanging a deliberately invalid authorization code still tells us what we need: an
+// 'invalid_client' error means the credentials themselves are wrong, while any other error (e.g.
+// 'invalid_grant' for the bogus code) means the client authenticated fine and only the throwaway
+// code was rejected — i.e. the credentials are valid. Used by the Settings UI's "Test connection"
+// button so the user gets feedback before starting the full browser-based sign-in.
+export async function testYoutubeCredentials(
+  clientId: string,
+  clientSecret: string
+): Promise<void> {
+  if (!clientId.trim() || !clientSecret.trim()) {
+    throw new Error('Please enter both Client ID and Client Secret.')
+  }
+  const oauth2Client = new google.auth.OAuth2(
+    clientId.trim(),
+    clientSecret.trim(),
+    'http://127.0.0.1/oauth/callback'
+  )
+  try {
+    await oauth2Client.getToken('rekordfox-connection-test-invalid-code')
+  } catch (err) {
+    const data = (err as { response?: { data?: { error?: string; error_description?: string } } })
+      ?.response?.data
+    if (data?.error === 'invalid_client') {
+      throw new Error(data.error_description || 'Client ID or Client Secret is incorrect.')
+    }
+  }
 }
 
 // One live OAuth2Client per account, reused across all API calls for that account. A single client

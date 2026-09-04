@@ -216,7 +216,8 @@ export function downloadTrack(
   outputPath: string,
   coverPath: string,
   _playlistTitle: string,
-  progressCallback: (percent: number) => void
+  progressCallback: (percent: number) => void,
+  coverUrl?: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     void (async (): Promise<void> => {
@@ -225,10 +226,11 @@ export function downloadTrack(
         const videoUrl = `https://www.youtube.com/watch?v=${videoId}`
 
         // Steps:
-        // 1. Download cover art first
+        // 1. Download cover art first — prefer the caller-supplied cover (e.g. a Spotify album
+        // cover, which is reliably correct) over the matched YouTube video's thumbnail.
         try {
-          const coverUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-          const res = await fetch(coverUrl)
+          const resolvedCoverUrl = coverUrl || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+          const res = await fetch(resolvedCoverUrl)
           if (res.ok) {
             const arrayBuffer = await res.arrayBuffer()
             writeFileSync(coverPath, Buffer.from(arrayBuffer))

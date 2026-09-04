@@ -22,7 +22,7 @@ export default function LibrarySettings({
         <div>
           <ToggleGroupField
             orientation="vertical"
-            value={settings.filenameTemplate || 'default'}
+            value={settings.filenameTemplate || 'custom'}
             onValueChange={handleUpdateFilenameTemplate}
             disabled={renamingStatus?.active}
             options={[

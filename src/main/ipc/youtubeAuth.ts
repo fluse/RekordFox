@@ -1,6 +1,10 @@
 import { ipcMain } from 'electron'
-import { getOAuthAccounts, OAuthAccount } from '../db'
-import { startYoutubeOAuthFlow, disconnectYoutubeAccount } from '../youtubeOAuth'
+import { getOAuthAccounts, toPublicOAuthAccount } from '../db'
+import {
+  startYoutubeOAuthFlow,
+  disconnectYoutubeAccount,
+  testYoutubeCredentials
+} from '../youtubeOAuth'
 import {
   listMyRemotePlaylists,
   importYoutubePlaylist,
@@ -9,16 +13,6 @@ import {
 } from '../youtubeSync'
 import { ipcTry } from '../errors'
 import { getMainWindow } from '../window'
-
-// Accounts are only ever exposed to the renderer stripped of their encrypted tokens.
-function toPublicAccount(
-  account: OAuthAccount
-): Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'> {
-  const { accessTokenEnc, refreshTokenEnc, ...rest } = account
-  void accessTokenEnc
-  void refreshTokenEnc
-  return rest
-}
 
 // Reconciliation is a bonus on top of whatever triggered it (a fresh connect, a manual re-check,
 // app startup) — never let an API error from the ownership check itself fail that caller.
@@ -34,13 +28,24 @@ async function safeReconcile(
 }
 
 export function registerYoutubeAuthIpc(): void {
-  ipcMain.handle('youtube-oauth:get-accounts', () => getOAuthAccounts().map(toPublicAccount))
+  ipcMain.handle('youtube-oauth:get-accounts', () =>
+    getOAuthAccounts()
+      .filter((a) => a.provider === 'google')
+      .map(toPublicOAuthAccount)
+  )
+
+  ipcMain.handle('youtube-oauth:test-connection', (_, clientId: string, clientSecret: string) =>
+    ipcTry(async () => {
+      await testYoutubeCredentials(clientId, clientSecret)
+      return {}
+    })
+  )
 
   ipcMain.handle('youtube-oauth:connect', (_, openBrowser?: boolean) =>
     ipcTry(async () => {
       const account = await startYoutubeOAuthFlow(openBrowser !== false)
       const linkedPlaylists = await safeReconcile(account.id)
-      return { account: toPublicAccount(account), linkedPlaylists }
+      return { account: toPublicOAuthAccount(account), linkedPlaylists }
     })
   )
 

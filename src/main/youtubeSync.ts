@@ -1,17 +1,18 @@
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, statSync } from 'fs'
 import nodeId3 from 'node-id3'
 import {
   Playlist,
   Track,
   addPlaylist,
   addTrack,
-  deleteTrack,
   getTracksForPlaylist,
   getPlaylists,
   updatePlaylistStatus,
-  updateTrackDownloadFailed,
+  recordTrackDownloadFailure,
+  recordTrackDownloadSuccess,
+  isDownloadAbandoned,
   clearPlaylistDirty,
   setPlaylistLinkState,
   getSettings,
@@ -25,7 +26,7 @@ import {
 } from './db'
 import { downloadTrack } from './downloader'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
-import { parseTitleAndArtist, beginPlaylistSync, endPlaylistSync } from './sync'
+import { parseTitleAndArtist, beginPlaylistSync, endPlaylistSync, syncLocalPlaylist } from './sync'
 import { getYoutubeClientForAccount, isAuthError, isQuotaError } from './youtubeOAuth'
 
 // Playlists whose link is healthy enough to talk to YouTube. Orphaned (account removed) and
@@ -220,7 +221,7 @@ export async function reconcileAllConnectedAccounts(win: BrowserWindow): Promise
     win.webContents.send('youtube-oauth:playlists-unlinked', orphaned)
   }
 
-  for (const account of getOAuthAccounts()) {
+  for (const account of getOAuthAccounts().filter((a) => a.provider === 'google')) {
     try {
       const linked = await reconcileLocalPlaylistsWithAccount(account.id)
       if (linked.length > 0) {
@@ -395,7 +396,7 @@ async function downloadItemsIntoPlaylist(
           title,
           item.position + 1,
           0,
-          settings.filenameTemplate || 'default'
+          settings.filenameTemplate || 'custom'
         )
         const filepath = join(targetDir, filename)
         const coverPath = join(coversDir, `${remotePlaylistId}_${item.videoId}.jpg`)
@@ -467,7 +468,7 @@ async function downloadItemsIntoPlaylist(
             youtubePlaylistItemId: item.playlistItemId
           })
           // Clear any earlier failure flag now that this attempt succeeded.
-          updateTrackDownloadFailed(item.videoId, remotePlaylistId, false)
+          recordTrackDownloadSuccess(item.videoId, remotePlaylistId)
 
           win.webContents.send('download-progress', {
             playlistId: remotePlaylistId,
@@ -487,8 +488,9 @@ async function downloadItemsIntoPlaylist(
         } catch (err) {
           console.error(`Failed to download YouTube OAuth track ${item.videoId}:`, err)
           // Flag as undownloadable (mirrors sync.ts) so it's excluded from queue/shuffle relevance
-          // instead of lingering as a silent placeholder with an empty filepath.
-          updateTrackDownloadFailed(item.videoId, remotePlaylistId, true)
+          // instead of lingering as a silent placeholder with an empty filepath. After
+          // MAX_DOWNLOAD_ATTEMPTS failures it's abandoned entirely (see isDownloadAbandoned).
+          recordTrackDownloadFailure(item.videoId, remotePlaylistId)
           win.webContents.send('download-progress', {
             playlistId: remotePlaylistId,
             trackId: item.videoId,
@@ -508,26 +510,45 @@ async function downloadItemsIntoPlaylist(
 }
 
 // Pulls the current state of a 'youtube-oauth' playlist from the authenticated Data API and
-// reconciles it into the local db. This is the ONLY correct way to refresh an OAuth playlist —
-// the yt-dlp path (syncLocalPlaylist) can't see private/unlisted items and would delete them.
+// reconciles it into the local db. This is the ONLY correct way to fully refresh an OAuth
+// playlist — the yt-dlp path (syncLocalPlaylist) can't see private/unlisted items. When the
+// account link itself isn't usable (orphaned/needs-reauth), this falls back to that same yt-dlp
+// path anyway — best-effort membership updates (new tracks only) instead of no updates at all
+// until the DJ reconnects the account.
 //
-// Reconciliation rules, chosen so a pull never fights the user's local edits:
-//  - Membership only: never reorders existing local tracks (local order is the DJ's, pushed *to*
-//    YouTube), so a pending local reorder survives a pull untouched.
+// Reconciliation rules: YouTube is authoritative for adding new tracks and refreshing each
+// track's own metadata, but never for removing tracks or for local order — so a pull never fights
+// the DJ's local edits there:
+//  - Add-only, order-preserving: never reorders existing local tracks (local order is the DJ's,
+//    pushed *to* YouTube), and never removes a track just because it's no longer on the remote —
+//    the DJ may still want it, or the remote view may simply be incomplete (see syncLocalPlaylist).
 //  - Adds remote tracks that aren't local yet and downloads their audio.
-//  - Removes a local track only if it was known to be on the remote (has a youtubePlaylistItemId)
-//    but is gone now — i.e. deleted on YouTube. Locally-added, not-yet-pushed tracks (no item ID)
-//    and 'discover' tracks are always kept.
-//  - Refreshes each surviving track's youtubePlaylistItemId in case it changed, and re-downloads
-//    any track whose local file went missing.
+//  - Refreshes each surviving track's youtubePlaylistItemId in case it changed, re-downloads any
+//    track whose local file went missing, and overwrites title/artist/duration from the remote
+//    item even when the file is already local (a YouTube-side rename shouldn't leave a stale
+//    local title forever).
 export async function pullYoutubeOAuthPlaylist(
   playlist: Playlist,
   win: BrowserWindow
 ): Promise<void> {
   if (!isLinkUsable(playlist)) {
-    // Orphaned / needs-reauth / not actually OAuth-backed: nothing to pull. Leave state as-is so
-    // the UI keeps showing the actionable link problem rather than a generic sync error.
-    return
+    // Orphaned / needs-reauth / not actually OAuth-backed: the Data API is off-limits, but the
+    // playlist may still be publicly reachable, so fall back to the same yt-dlp scrape 'local'
+    // playlists use. This way new tracks keep flowing in even while the account link is broken.
+    await syncLocalPlaylist(playlist, win)
+    const afterFallback = getPlaylists().find((p) => p.id === playlist.id)
+    if (afterFallback?.syncStatus !== 'error') return
+
+    // The fallback failed too (e.g. the playlist is actually private) — surface the real,
+    // actionable fix instead of the fallback's generic yt-dlp failure.
+    if (playlist.linkState === 'needs-reauth') {
+      throw new Error(
+        'YouTube authorization expired. Reconnect the account in Settings, then sync again.'
+      )
+    }
+    throw new Error(
+      'This playlist is no longer linked to a YouTube account. Reconnect the account in Settings to sync it again.'
+    )
   }
   if (!beginPlaylistSync(playlist.id)) return
 
@@ -537,23 +558,16 @@ export async function pullYoutubeOAuthPlaylist(
   try {
     const youtube = getYoutubeClientForAccount(playlist.oauthAccountId!)
     const items = await fetchAllPlaylistItems(youtube, playlist.id)
-    const remoteVideoIds = new Set(items.map((i) => i.videoId))
     const localTracks = getTracksForPlaylist(playlist.id)
     const localById = new Map(localTracks.map((t) => [t.id, t]))
 
-    // Remove tracks deleted on YouTube (only ones we knew were remote — see rules above).
-    for (const track of localTracks) {
-      if (track.source === 'discover') continue
-      if (track.youtubePlaylistItemId && !remoteVideoIds.has(track.id)) {
-        try {
-          if (track.filepath && existsSync(track.filepath)) unlinkSync(track.filepath)
-          if (track.coverPath && existsSync(track.coverPath)) unlinkSync(track.coverPath)
-        } catch (err) {
-          console.error(`Failed to clean up files for pulled-out track ${track.id}:`, err)
-        }
-        deleteTrack(track.id, playlist.id)
-      }
-    }
+    // Fetched up front (not just for toDownload) so already-downloaded tracks' title/artist/
+    // duration can also be refreshed below — YouTube is the source of truth for a track's own
+    // metadata even when its audio file is already local.
+    const durations = await fetchDurations(
+      youtube,
+      items.map((i) => i.videoId)
+    )
 
     // Attach/refresh item IDs, create placeholders for new tracks, collect what needs downloading.
     const toDownload: RemotePlaylistItem[] = []
@@ -565,7 +579,21 @@ export async function pullYoutubeOAuthPlaylist(
         }
         const missingFiles =
           !existing.filepath || !existsSync(existing.filepath) || !existsSync(existing.coverPath)
-        if (missingFiles) toDownload.push(item)
+        if (missingFiles && !isDownloadAbandoned(existing)) {
+          toDownload.push(item)
+        } else {
+          // Not (re-)downloading, but the video's title/duration may have changed since the last
+          // pull — keep local metadata in lockstep without touching position/rating/bpm/etc.
+          const { title, artist } = parseTitleAndArtist(item.title, item.channelTitle)
+          const duration = durations.get(item.videoId) ?? existing.duration
+          if (
+            existing.title !== title ||
+            existing.artist !== artist ||
+            existing.duration !== duration
+          ) {
+            addTrack({ ...existing, title, artist, duration })
+          }
+        }
       } else {
         const { title, artist } = parseTitleAndArtist(item.title, item.channelTitle)
         // No position: addTrack appends new tracks after the current max, so tracks that appeared
@@ -578,7 +606,7 @@ export async function pullYoutubeOAuthPlaylist(
           artist,
           bpm: 0,
           key: '',
-          duration: 0,
+          duration: durations.get(item.videoId) || 0,
           filepath: '',
           coverPath: '',
           filesize: 0,
@@ -596,10 +624,6 @@ export async function pullYoutubeOAuthPlaylist(
     // Let the renderer refresh the tracklist with the new membership before downloads finish.
     win.webContents.send('sync-status-changed', playlist.id, 'syncing')
 
-    const durations = await fetchDurations(
-      youtube,
-      toDownload.map((i) => i.videoId)
-    )
     await downloadItemsIntoPlaylist(playlist, playlist.title, toDownload, durations, win)
 
     const now = new Date().toISOString()

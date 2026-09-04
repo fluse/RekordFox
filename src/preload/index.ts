@@ -7,7 +7,8 @@ import type { RecommendedTrack } from '@main/explore'
 const api = {
   getPlaylists: () => ipcRenderer.invoke('playlists:get'),
   getPlaylistStats: () => ipcRenderer.invoke('playlists:stats'),
-  addPlaylist: (url: string) => ipcRenderer.invoke('playlists:add', url),
+  addPlaylist: (url: string, platform?: 'youtube' | 'spotify') =>
+    ipcRenderer.invoke('playlists:add', url, platform),
   deletePlaylist: (id: string) => ipcRenderer.invoke('playlists:delete', id),
   syncPlaylist: (id: string) => ipcRenderer.invoke('playlists:sync', id),
   renamePlaylist: (id: string, newTitle: string) =>
@@ -47,6 +48,21 @@ const api = {
     ipcRenderer.invoke('youtube-oauth:sync-order', playlistId, orderedTrackIds),
   reconcileYoutubePlaylists: (accountId: string) =>
     ipcRenderer.invoke('youtube-oauth:reconcile-playlists', accountId),
+  testYoutubeConnection: (clientId: string, clientSecret: string) =>
+    ipcRenderer.invoke('youtube-oauth:test-connection', clientId, clientSecret),
+  testSpotifyConnection: (clientId: string, clientSecret: string) =>
+    ipcRenderer.invoke('spotify:test-connection', clientId, clientSecret),
+  getSpotifyAccount: () => ipcRenderer.invoke('spotify-oauth:get-account'),
+  connectSpotifyAccount: (openBrowser?: boolean) =>
+    ipcRenderer.invoke('spotify-oauth:connect', openBrowser),
+  onSpotifyAuthUrlReady: (callback: (url: string) => void): (() => void) => {
+    const subscription = (_event: unknown, url: string): void => callback(url)
+    ipcRenderer.on('spotify-oauth:auth-url', subscription)
+    return (): void => {
+      ipcRenderer.removeListener('spotify-oauth:auth-url', subscription)
+    }
+  },
+  disconnectSpotifyAccount: () => ipcRenderer.invoke('spotify-oauth:disconnect'),
   onYoutubePlaylistsLinked: (callback: (linkedPlaylists: Playlist[]) => void): (() => void) => {
     const subscription = (_event: unknown, linkedPlaylists: Playlist[]): void =>
       callback(linkedPlaylists)

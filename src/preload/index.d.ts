@@ -13,7 +13,8 @@ declare global {
       getPlaylists: () => Promise<Playlist[]>
       getPlaylistStats: () => Promise<Record<string, PlaylistStats>>
       addPlaylist: (
-        url: string
+        url: string,
+        platform?: 'youtube' | 'spotify'
       ) => Promise<{ success: boolean; playlist?: Playlist; error?: string }>
       deletePlaylist: (id: string) => Promise<{ success: boolean; error?: string }>
       syncPlaylist: (id: string) => Promise<{ success: boolean; error?: string }>
@@ -76,6 +77,22 @@ declare global {
       reconcileYoutubePlaylists: (
         accountId: string
       ) => Promise<{ success: boolean; linkedPlaylists?: Playlist[]; error?: string }>
+      testYoutubeConnection: (
+        clientId: string,
+        clientSecret: string
+      ) => Promise<{ success: boolean; error?: string }>
+      testSpotifyConnection: (
+        clientId: string,
+        clientSecret: string
+      ) => Promise<{ success: boolean; error?: string }>
+      getSpotifyAccount: () => Promise<PublicOAuthAccount | null>
+      connectSpotifyAccount: (openBrowser?: boolean) => Promise<{
+        success: boolean
+        account?: PublicOAuthAccount
+        error?: string
+      }>
+      onSpotifyAuthUrlReady: (callback: (url: string) => void) => () => void
+      disconnectSpotifyAccount: () => Promise<{ success: boolean; error?: string }>
       onYoutubePlaylistsLinked: (callback: (linkedPlaylists: Playlist[]) => void) => () => void
       onYoutubePlaylistsUnlinked: (callback: (unlinkedPlaylists: Playlist[]) => void) => () => void
       copyToClipboard: (text: string) => void

@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import {
   getTracksForPlaylist,
   getTracks,
+  isDownloadAbandoned,
   updateTrackBpm,
   updateTrackRating,
   updateTrackPlayed,
@@ -15,10 +16,10 @@ import { getMainWindow, sendToRenderer } from '../window'
 
 export function registerTracksIpc(): void {
   ipcMain.handle('tracks:get', (_, playlistId?: string) => {
-    if (playlistId) {
-      return getTracksForPlaylist(playlistId)
-    }
-    return getTracks()
+    const tracks = playlistId ? getTracksForPlaylist(playlistId) : getTracks()
+    // Tracks abandoned after too many failed download attempts are excluded from the UI
+    // entirely (see isDownloadAbandoned) — they stay in the db so sync doesn't retry them.
+    return tracks.filter((t) => !isDownloadAbandoned(t))
   })
 
   ipcMain.handle('tracks:update-bpm', (_, trackId: string, playlistId: string, bpm: number) =>

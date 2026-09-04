@@ -1,8 +1,9 @@
 import React from 'react'
-import { AlertCircle, CheckCircle2, Download, Link2, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, Loader2 } from 'lucide-react'
 import type { Playlist, PlaylistStats } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
+import SpotifyIcon from '@renderer/components/icons/SpotifyIcon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import type { ActiveSyncState } from '../types'
 import { formatLastSync } from '../helpers'
@@ -90,19 +91,19 @@ export function PlaylistItem({
             }}
           >
             {playlist.source === 'youtube-oauth' ? (
-              // Account-connected (OAuth) playlist: the "connect" icon signals a two-way link to
-              // the user's YouTube account. Dimmed when the link is broken (account removed) or
-              // its sign-in expired.
+              // Account-connected (OAuth) playlist: still a YouTube playlist, so it gets the
+              // YouTube icon rather than a "connected" glyph. Dimmed when the link is broken
+              // (account removed) or its sign-in expired.
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="flex-shrink-0 flex items-center">
-                    <Link2
-                      className={`h-3.5 w-3.5 ${
-                        playlist.linkState === 'orphaned' || playlist.linkState === 'needs-reauth'
-                          ? 'text-zinc-600'
-                          : 'text-emerald-500'
-                      }`}
-                    />
+                  <span
+                    className={`flex-shrink-0 flex items-center ${
+                      playlist.linkState === 'orphaned' || playlist.linkState === 'needs-reauth'
+                        ? 'opacity-40'
+                        : ''
+                    }`}
+                  >
+                    <YoutubeIcon className="h-3 w-3" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -112,6 +113,17 @@ export function PlaylistItem({
                       ? t('sidebar.needsReauthTooltip')
                       : t('sidebar.connectedTooltip')}
                 </TooltipContent>
+              </Tooltip>
+            ) : playlist.source === 'spotify' ? (
+              // Spotify playlist — metadata via the Spotify Web API, audio matched and downloaded
+              // from YouTube. Download-only, no write-back, like a plain YouTube playlist.
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex-shrink-0 flex items-center">
+                    <SpotifyIcon className="h-3 w-3" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{t('sidebar.spotifySourceTooltip')}</TooltipContent>
               </Tooltip>
             ) : (
               // Plain YouTube playlist added via a public URL — download-only, no link.

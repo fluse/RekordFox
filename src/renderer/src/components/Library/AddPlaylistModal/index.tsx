@@ -2,12 +2,15 @@ import React from 'react'
 import { Plus, Loader2, X } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
-import { useAddPlaylistForm } from './useAddPlaylistForm'
+import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
+import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
+import SpotifyIcon from '@renderer/components/icons/SpotifyIcon'
+import { useAddPlaylistForm, AddPlaylistPlatform } from './useAddPlaylistForm'
 
 interface AddPlaylistModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (url: string) => Promise<void>
+  onAdd: (url: string, platform: AddPlaylistPlatform) => Promise<void>
 }
 
 export default function AddPlaylistModal({
@@ -16,7 +19,8 @@ export default function AddPlaylistModal({
   onAdd
 }: AddPlaylistModalProps): React.JSX.Element | null {
   const { t } = useLanguage()
-  const { url, loading, error, updateUrl, handleSubmit } = useAddPlaylistForm(onAdd, onClose)
+  const { url, platform, loading, error, updateUrl, setPlatform, handleSubmit } =
+    useAddPlaylistForm(onAdd, onClose)
 
   if (!isOpen) return null
 
@@ -40,11 +44,46 @@ export default function AddPlaylistModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-zinc-400">
+              {t('addPlaylist.platformLabel')}
+            </label>
+            <ToggleGroupField<AddPlaylistPlatform>
+              value={platform}
+              onValueChange={setPlatform}
+              disabled={loading}
+              options={[
+                {
+                  value: 'youtube',
+                  label: (
+                    <>
+                      <YoutubeIcon className="h-3.5 w-3.5" />
+                      {t('addPlaylist.platformYoutube')}
+                    </>
+                  )
+                },
+                {
+                  value: 'spotify',
+                  label: (
+                    <>
+                      <SpotifyIcon className="h-3.5 w-3.5" />
+                      {t('addPlaylist.platformSpotify')}
+                    </>
+                  )
+                }
+              ]}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-zinc-400">
               {t('addPlaylist.label')}
             </label>
             <input
               type="text"
-              placeholder={t('addPlaylist.placeholder')}
+              placeholder={
+                platform === 'spotify'
+                  ? t('addPlaylist.placeholderSpotify')
+                  : t('addPlaylist.placeholder')
+              }
               value={url}
               onChange={(e) => updateUrl(e.target.value)}
               disabled={loading}

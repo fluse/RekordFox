@@ -2,6 +2,7 @@ import { BrowserWindow } from 'electron'
 import { Playlist, getPlaylists } from './db'
 import { syncLocalPlaylist } from './sync'
 import { pullYoutubeOAuthPlaylist } from './youtubeSync'
+import { syncSpotifyPlaylist } from './spotifySync'
 
 // Source-aware sync entry point. Routes each playlist to the path that matches its source so the
 // destructive yt-dlp diff (syncLocalPlaylist, which can't see private/unlisted items) never runs
@@ -11,6 +12,9 @@ import { pullYoutubeOAuthPlaylist } from './youtubeSync'
 export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Promise<void> {
   if (playlist.source === 'youtube-oauth') {
     return pullYoutubeOAuthPlaylist(playlist, win)
+  }
+  if (playlist.source === 'spotify') {
+    return syncSpotifyPlaylist(playlist, win)
   }
   return syncLocalPlaylist(playlist, win)
 }

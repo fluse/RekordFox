@@ -11,6 +11,7 @@ export default function HistoryView({ onFindSimilarTrack }: HistoryViewProps): R
   const { t } = useLanguage()
   const history = usePreviewStore((s) => s.history)
   const historyLimit = usePreviewStore((s) => s.historyLimit)
+  const playNow = usePreviewStore((s) => s.playNow)
   const { contextMenu, open: openContextMenu, close: closeContextMenu } = useTrackContextMenu()
 
   const historyTracks = history.map((entry) => entry.track)
@@ -35,6 +36,7 @@ export default function HistoryView({ onFindSimilarTrack }: HistoryViewProps): R
                 key={entry.historyId}
                 track={entry.track}
                 onContextMenu={openContextMenu}
+                onPlay={(track) => playNow(track, historyTracks)}
               />
             ))}
           </div>

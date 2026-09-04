@@ -1,16 +1,16 @@
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
-import { existsSync, unlinkSync, statSync, mkdirSync, readFileSync } from 'fs'
+import { existsSync, statSync, mkdirSync, readFileSync } from 'fs'
 import {
   Playlist,
   Track,
   addTrack,
-  deleteTrack,
   updatePlaylistStatus,
   getDownloadsDir,
   getCoversDir,
   getTracksForPlaylist,
-  updateTrackDownloadFailed,
+  recordTrackDownloadFailure,
+  isDownloadAbandoned,
   getSettings,
   getTrackFilename,
   getPlaylistFolderName
@@ -78,10 +78,12 @@ export function parseTitleAndArtist(
   return { title, artist }
 }
 
-// Syncs a 'local' (public-URL, yt-dlp scraped, download-only) playlist. Never call this for a
-// 'youtube-oauth' playlist: yt-dlp can't see private/unlisted items, so the diff below would read
-// an owned playlist as empty and wipe every downloaded track. The source-aware dispatcher in
-// syncManager.ts routes OAuth playlists to pullYoutubeOAuthPlaylist instead.
+// Syncs a 'local' (public-URL, yt-dlp scraped, download-only) playlist — and, from
+// pullYoutubeOAuthPlaylist, also used as its fallback when an OAuth playlist's account link isn't
+// usable. Add-only and order-preserving by design: a track missing from the yt-dlp scrape is
+// never deleted (an unauthenticated view may just be incomplete — private/unlisted items, or a
+// track the DJ still wants even though it dropped off the remote playlist), and existing tracks
+// never get repositioned — only brand-new tracks get placed using their remote index.
 export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow): Promise<void> {
   if (!beginPlaylistSync(playlist.id)) {
     console.log(`Sync for playlist ${playlist.id} already running.`)
@@ -129,7 +131,9 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
     const toDownload: typeof ytPlaylist.entries = ytPlaylist.entries.filter((e) => {
       if (!currentLocalTrackIds.has(e.id)) return true
       const track = currentLocalTracks.find((t) => t.id === e.id)
-      if (!track || !existsSync(track.filepath) || !existsSync(track.coverPath)) {
+      if (!track) return true
+      if (isDownloadAbandoned(track)) return false // stop retrying after MAX_DOWNLOAD_ATTEMPTS failures
+      if (!existsSync(track.filepath) || !existsSync(track.coverPath)) {
         return true // Re-download if physical files are missing (required for audio/waveform)
       }
       return false
@@ -142,6 +146,7 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
       if (
         track.source === 'discover' &&
         !ytTracksMap.has(track.id) &&
+        !isDownloadAbandoned(track) &&
         (!existsSync(track.filepath) || !existsSync(track.coverPath))
       ) {
         toDownload.push({
@@ -156,6 +161,31 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
     if (addedPlaceholders) {
       // Send IPC notification so the frontend can reload the track list immediately
       win.webContents.send('sync-status-changed', playlist.id, 'syncing')
+    }
+
+    // Keep title/artist/duration in lockstep with YouTube for every track still present in the
+    // remote playlist — the DJ's local order/rating/bpm/etc. are left untouched, but the video's
+    // own metadata always wins so a rename on YouTube doesn't leave a stale local title forever.
+    for (const track of localTracks) {
+      const entry = ytTracksMap.get(track.id)
+      if (!entry) continue
+      const { title, artist } = parseTitleAndArtist(entry.title, entry.uploader)
+      let trackUpdated = false
+      if (track.title !== title) {
+        track.title = title
+        trackUpdated = true
+      }
+      if (track.artist !== artist) {
+        track.artist = artist
+        trackUpdated = true
+      }
+      if (track.duration !== entry.duration) {
+        track.duration = entry.duration
+        trackUpdated = true
+      }
+      if (trackUpdated) {
+        addTrack(track)
+      }
     }
 
     // Check existing tracks for missing metadata (filesize, bitrate, format)
@@ -188,25 +218,7 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
       }
     }
 
-    // Tracks added via the Discover feature (and any that somehow carry a 'youtube-oauth' source)
-    // are never part of this playlist's public yt-dlp scrape, so excluding them keeps them from
-    // being wiped out as "removed" on every subsequent sync.
-    const toDelete = currentLocalTracks.filter(
-      (t) => !ytTracksMap.has(t.id) && t.source !== 'discover' && t.source !== 'youtube-oauth'
-    )
-
-    // 1. Delete removed tracks
-    for (const track of toDelete) {
-      try {
-        if (existsSync(track.filepath)) unlinkSync(track.filepath)
-        if (existsSync(track.coverPath)) unlinkSync(track.coverPath)
-      } catch (e) {
-        console.error(`Error deleting files for track ${track.id}:`, e)
-      }
-      deleteTrack(track.id, playlist.id)
-    }
-
-    // 2. Download new tracks using concurrent workers based on settings
+    // Download new tracks using concurrent workers based on settings
     const settings = getSettings()
     const maxWorkers = settings.maxWorkers || 1
 
@@ -239,7 +251,7 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
           title,
           trackPos,
           bpm,
-          settings.filenameTemplate || 'default'
+          settings.filenameTemplate || 'custom'
         )
 
         const playlistFolder = getPlaylistFolderName(playlist)
@@ -349,8 +361,9 @@ export async function syncLocalPlaylist(playlist: Playlist, win: BrowserWindow):
         } catch (err) {
           console.error(`Failed to download track ${ytTrack.id}:`, err)
           // Flag the track as undownloadable so it's excluded from queue/shuffle relevance
-          // until a future sync attempt succeeds and clears the flag.
-          updateTrackDownloadFailed(ytTrack.id, playlist.id, true)
+          // until a future sync attempt succeeds and clears the flag. After
+          // MAX_DOWNLOAD_ATTEMPTS failures it's abandoned entirely (see isDownloadAbandoned).
+          recordTrackDownloadFailure(ytTrack.id, playlist.id)
           // Send completion event even on failure so progress bar advances and UI cleans up
           win.webContents.send('download-progress', {
             playlistId: playlist.id,

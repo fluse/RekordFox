@@ -12,7 +12,7 @@ import {
   getSettings,
   getTrackFilename,
   getPlaylistFolderName,
-  updateTrackDownloadFailed
+  recordTrackDownloadFailure
 } from './db'
 import { downloadTrack } from './downloader'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
@@ -211,7 +211,7 @@ export async function downloadDiscoverTrack(
     track.title,
     track.position || 0,
     0,
-    settings.filenameTemplate || 'default'
+    settings.filenameTemplate || 'custom'
   )
   const filepath = join(targetDir, filename)
   const coverPath = join(coversDir, `${playlist.id}_${track.id}.jpg`)
@@ -276,7 +276,7 @@ export async function downloadDiscoverTrack(
     })
   } catch (err) {
     console.error(`Failed to download discovered track ${track.id}:`, err)
-    updateTrackDownloadFailed(track.id, playlist.id, true)
+    recordTrackDownloadFailure(track.id, playlist.id)
     sendProgress(100)
   }
 }

@@ -32,7 +32,7 @@ export function registerSettingsIpc(): void {
   ipcMain.handle('settings:update', (_, settings: Partial<AppSettings>) =>
     ipcTry(() => {
       const oldSettings = getSettings()
-      const oldTemplate = oldSettings.filenameTemplate || 'default'
+      const oldTemplate = oldSettings.filenameTemplate || 'custom'
       const newTemplate = settings.filenameTemplate
 
       if (newTemplate && newTemplate !== oldTemplate && isAnyPlaylistSyncing()) {

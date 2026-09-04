@@ -1,22 +1,28 @@
 import { useState } from 'react'
 import { useLanguage } from '@renderer/i18n'
 
+export type AddPlaylistPlatform = 'youtube' | 'spotify'
+
 export interface UseAddPlaylistFormResult {
   url: string
+  platform: AddPlaylistPlatform
   loading: boolean
   error: string
   updateUrl: (value: string) => void
+  setPlatform: (platform: AddPlaylistPlatform) => void
   handleSubmit: (e: React.FormEvent) => Promise<void>
 }
 
-// Form state for adding a YouTube playlist by URL: validates the `list=` parameter, runs the
-// async add, and surfaces errors. Resets and closes the modal on success.
+// Form state for adding a playlist by URL: validates the URL against the selected platform
+// (YouTube's `list=` parameter, or a Spotify playlist link), runs the async add, and surfaces
+// errors. Resets and closes the modal on success.
 export function useAddPlaylistForm(
-  onAdd: (url: string) => Promise<void>,
+  onAdd: (url: string, platform: AddPlaylistPlatform) => Promise<void>,
   onClose: () => void
 ): UseAddPlaylistFormResult {
   const { t } = useLanguage()
   const [url, setUrl] = useState('')
+  const [platform, setPlatform] = useState<AddPlaylistPlatform>('youtube')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,9 +35,12 @@ export function useAddPlaylistForm(
     e.preventDefault()
     if (!url.trim()) return
 
-    // Simple YouTube playlist validation
-    if (!url.includes('list=')) {
+    if (platform === 'youtube' && !url.includes('list=')) {
       setError(t('addPlaylist.errorInvalidUrl'))
+      return
+    }
+    if (platform === 'spotify' && !url.includes('open.spotify.com/playlist/')) {
+      setError(t('addPlaylist.errorInvalidUrlSpotify'))
       return
     }
 
@@ -39,7 +48,7 @@ export function useAddPlaylistForm(
     setError('')
 
     try {
-      await onAdd(url.trim())
+      await onAdd(url.trim(), platform)
       setUrl('')
       onClose()
     } catch (e: unknown) {
@@ -50,5 +59,5 @@ export function useAddPlaylistForm(
     }
   }
 
-  return { url, loading, error, updateUrl, handleSubmit }
+  return { url, platform, loading, error, updateUrl, setPlatform, handleSubmit }
 }

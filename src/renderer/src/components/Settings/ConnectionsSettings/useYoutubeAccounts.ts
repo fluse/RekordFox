@@ -4,18 +4,25 @@ import type { Playlist } from '@main/db'
 import type { RemotePlaylistSummary } from '@main/youtubeSync'
 import { useLanguage } from '@renderer/i18n'
 import { cacheRemotePlaylists, loadCachedRemotePlaylists } from './cache'
-import type { ConnectAction, ConnectHandler, PublicOAuthAccount } from './types'
+import type {
+  ConnectAction,
+  ConnectHandler,
+  PublicOAuthAccount,
+  TestConnectionResult
+} from './types'
 
 export interface UseYoutubeAccountsResult {
   accounts: PublicOAuthAccount[]
   remotePlaylistsByAccount: Record<string, RemotePlaylistSummary[]>
   activeAction: ConnectAction | null
+  testResult: TestConnectionResult | null
   importingId: string | null
   reconcilingId: string | null
   loadRemotePlaylists: (accountId: string) => Promise<void>
   handleReconcile: (accountId: string) => Promise<void>
   handleConnect: ConnectHandler
   handleCopyLink: ConnectHandler
+  handleTestConnection: ConnectHandler
   handleDisconnect: (accountId: string) => Promise<void>
   handleImport: (accountId: string, remotePlaylistId: string) => Promise<void>
 }
@@ -29,6 +36,7 @@ export function useYoutubeAccounts(
   const { t } = useLanguage()
   const [accounts, setAccounts] = useState<PublicOAuthAccount[]>([])
   const [activeAction, setActiveAction] = useState<ConnectAction | null>(null)
+  const [testResult, setTestResult] = useState<TestConnectionResult | null>(null)
   const [remotePlaylistsByAccount, setRemotePlaylistsByAccount] = useState<
     Record<string, RemotePlaylistSummary[]>
   >({})
@@ -167,6 +175,26 @@ export function useYoutubeAccounts(
     await finishConnect(connectPromise)
   }
 
+  // Validates the entered Client ID/Secret without starting the full browser sign-in — lets the
+  // user confirm they copied both values correctly right after creating the OAuth client.
+  const handleTestConnection: ConnectHandler = async (clientId, clientSecret, saveCredentials) => {
+    if (!clientId.trim() || !clientSecret.trim()) {
+      toast.error(t('connections.missingCredentials'))
+      return
+    }
+    await saveCredentials()
+    setActiveAction('test')
+    setTestResult(null)
+    try {
+      const res = await window.api.testYoutubeConnection(clientId, clientSecret)
+      setTestResult(res.success ? { status: 'success' } : { status: 'error', message: res.error })
+    } catch (err) {
+      setTestResult({ status: 'error', message: String(err) })
+    } finally {
+      setActiveAction(null)
+    }
+  }
+
   const handleDisconnect = async (accountId: string): Promise<void> => {
     try {
       const res = await window.api.disconnectYoutubeAccount(accountId)
@@ -205,12 +233,14 @@ export function useYoutubeAccounts(
     accounts,
     remotePlaylistsByAccount,
     activeAction,
+    testResult,
     importingId,
     reconcilingId,
     loadRemotePlaylists,
     handleReconcile,
     handleConnect,
     handleCopyLink,
+    handleTestConnection,
     handleDisconnect,
     handleImport
   }

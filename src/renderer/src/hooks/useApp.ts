@@ -31,7 +31,7 @@ export interface UseAppReturn {
   settings: AppSettings
   sidebarWidth: number
   activeSyncs: ActiveSyncsMap
-  handleAddPlaylist: (url: string) => Promise<void>
+  handleAddPlaylist: (url: string, platform?: 'youtube' | 'spotify') => Promise<void>
   handleDeletePlaylist: (id: string) => Promise<void>
   handleSyncPlaylist: (id: string) => Promise<void>
   handleRenamePlaylist: (id: string, newTitle: string) => Promise<void>
@@ -413,8 +413,8 @@ export function useApp(): UseAppReturn {
   }, [markTrackPlayed])
 
   const handleAddPlaylist = useCallback(
-    async (url: string): Promise<void> => {
-      const res = await window.api.addPlaylist(url)
+    async (url: string, platform: 'youtube' | 'spotify' = 'youtube'): Promise<void> => {
+      const res = await window.api.addPlaylist(url, platform)
       if (res.success && res.playlist) {
         setPlaylists((prev) => [...prev, res.playlist!])
         setSelectedPlaylistId(res.playlist.id)
@@ -472,8 +472,10 @@ export function useApp(): UseAppReturn {
   const handleSyncPlaylist = useCallback(
     async (id: string): Promise<void> => {
       const res = await window.api.syncPlaylist(id)
-      if (!res.success) {
-        alert(t('actions.errorSyncPlaylist', { error: res.error || '' }))
+      if (res.success) {
+        toast.success(t('tracklist.syncPlaylistSuccess'))
+      } else {
+        toast.error(t('actions.errorSyncPlaylist', { error: res.error || '' }))
       }
     },
     [t]

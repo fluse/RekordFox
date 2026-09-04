@@ -8,6 +8,7 @@ import {
   Playlist
 } from '../db'
 import { getPlaylistInfo } from '../downloader'
+import { getSpotifyPlaylistInfo } from '../spotifyApi'
 import { syncPlaylist } from '../syncManager'
 import { exportPlaylistToUsb } from '../export/m3u8/m3u8Exporter'
 import { ipcTry } from '../errors'
@@ -22,17 +23,18 @@ export function registerPlaylistsIpc(): void {
     return getPlaylistStats()
   })
 
-  ipcMain.handle('playlists:add', (_, url: string) =>
+  ipcMain.handle('playlists:add', (_, url: string, platform: 'youtube' | 'spotify' = 'youtube') =>
     ipcTry(
       async () => {
-        const ytInfo = await getPlaylistInfo(url)
+        const { id, title } =
+          platform === 'spotify' ? await getSpotifyPlaylistInfo(url) : await getPlaylistInfo(url)
         const newPlaylist: Playlist = {
-          id: ytInfo.id,
-          title: ytInfo.title,
-          url: url,
+          id,
+          title,
+          url,
           syncStatus: 'idle',
           lastSync: '',
-          source: 'local'
+          source: platform === 'spotify' ? 'spotify' : 'local'
         }
         addPlaylistToDb(newPlaylist)
 
@@ -62,14 +64,28 @@ export function registerPlaylistsIpc(): void {
     })
   )
 
-  ipcMain.handle('playlists:sync', (_, id: string) => {
+  // Awaits the full sync so the renderer's manual-sync button can show a completion toast
+  // instead of the fire-and-forget "started" response it used to get (the 'syncing' progress
+  // state itself is still driven by the separate sync-status-changed events, sent as soon as the
+  // sync begins, so the spinner isn't affected by this now taking longer to resolve).
+  ipcMain.handle('playlists:sync', async (_, id: string) => {
     const playlist = getPlaylists().find((p) => p.id === id)
     const mainWindow = getMainWindow()
-    if (playlist && mainWindow) {
-      syncPlaylist(playlist, mainWindow).catch((err) => console.error('Manual sync failed:', err))
-      return { success: true }
+    if (!playlist || !mainWindow) {
+      return { success: false, error: 'Playlist not found' }
     }
-    return { success: false, error: 'Playlist not found' }
+    try {
+      await syncPlaylist(playlist, mainWindow)
+    } catch (err) {
+      // e.g. pullYoutubeOAuthPlaylist throwing an actionable "reconnect your account" message
+      // for a needs-reauth/orphaned link — surface it verbatim rather than a generic failure.
+      return { success: false, error: err instanceof Error ? err.message : String(err) }
+    }
+    const finished = getPlaylists().find((p) => p.id === id)
+    if (finished?.syncStatus === 'error') {
+      return { success: false, error: 'Sync failed. Check the logs for details.' }
+    }
+    return { success: true }
   })
 
   ipcMain.handle(

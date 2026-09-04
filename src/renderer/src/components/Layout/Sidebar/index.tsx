@@ -3,7 +3,6 @@ import { Plus, Settings, History, Compass, Loader2 } from 'lucide-react'
 import logo from '@renderer/assets/logo-rekordfox.svg'
 import logoLight from '@renderer/assets/logo-rekordfox-light.svg'
 import { useLanguage } from '@renderer/i18n'
-import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import type { SidebarProps } from './types'
 import { usePlaylistRename } from './usePlaylistRename'
@@ -26,7 +25,6 @@ export default function Sidebar({
   onRenamePlaylist,
   onOpenAddModal,
   onOpenSettings,
-  onOpenYoutubeConnect,
   onDropTrackToPlaylist,
   onMoveTrackToPlaylist,
   isSettingsSelected,
@@ -85,17 +83,6 @@ export default function Sidebar({
             {t('sidebar.playlists')}
           </span>
           <div className="flex items-center gap-0.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={onOpenYoutubeConnect}
-                  className="rounded p-1 cursor-pointer text-zinc-400 hover:bg-zinc-900 opacity-70 hover:opacity-100"
-                >
-                  <YoutubeIcon className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t('sidebar.connectYoutubeTooltip')}</TooltipContent>
-            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button

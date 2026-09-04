@@ -8,7 +8,6 @@ import {
 } from '@renderer/components/Library'
 import { DjMixer } from '@renderer/components/Mixer'
 import SettingsView from '@renderer/components/Settings'
-import YoutubeConnectModal from '@renderer/components/Integrations/YoutubeConnectModal'
 import { DiscoverView, type DiscoverContext } from '@renderer/components/Discover'
 import { OnboardingScreen } from '@renderer/components/Onboarding'
 import { Toaster } from '@renderer/components/ui/sonner'
@@ -24,7 +23,6 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
   const { t } = useLanguage()
   const [showSplash, setShowSplash] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isYoutubeConnectModalOpen, setIsYoutubeConnectModalOpen] = useState(false)
   const [isMixerCollapsed, setIsMixerCollapsed] = useState(true)
   const [viewMode, setViewMode] = useState<'library' | 'history' | 'settings' | 'discover'>(
     'library'
@@ -147,7 +145,6 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             setSettingsCategory('general')
             setViewMode('settings')
           }}
-          onOpenYoutubeConnect={() => setIsYoutubeConnectModalOpen(true)}
           onDropTrackToPlaylist={handleDropTrackToPlaylist}
           onMoveTrackToPlaylist={handleMoveTrackToPlaylist}
           isSettingsSelected={viewMode === 'settings'}
@@ -239,15 +236,6 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddPlaylist}
-      />
-
-      <YoutubeConnectModal
-        isOpen={isYoutubeConnectModalOpen}
-        onClose={() => setIsYoutubeConnectModalOpen(false)}
-        onGoToConnections={() => {
-          setSettingsCategory('connections')
-          setViewMode('settings')
-        }}
       />
 
       <Toaster

@@ -8,11 +8,11 @@ export const de = {
   // Onboarding (first run – shown when no playlists exist)
   'onboarding.welcomeTitle': 'Willkommen bei RekordFox',
   'onboarding.welcomeSubtitle':
-    'Deine DJ-Sync-Station – importiere YouTube-Playlists, verwalte deine Tracks und exportiere sie für CDJs & USB.',
+    'Deine DJ-Sync-Station – importiere YouTube- und Spotify-Playlists, verwalte deine Tracks und exportiere sie für CDJs & USB.',
   'onboarding.whatToExpectTitle': 'Das erwartet dich',
   'onboarding.feature1Title': 'Playlists importieren',
   'onboarding.feature1Desc':
-    'Verbinde dein YouTube-Konto und importiere deine Playlists direkt in RekordFox.',
+    'Importiere deine Playlists von YouTube oder Spotify direkt in RekordFox.',
   'onboarding.feature2Title': 'Tracks verwalten & downloaden',
   'onboarding.feature2Desc':
     'Lade Tracks als MP3 herunter, analysiere BPM & Tonart und sortiere deine Sets harmonisch.',
@@ -52,11 +52,11 @@ export const de = {
   'sidebar.trackAddedToPlaylist': 'Track zur Playlist hinzugefügt.',
   'sidebar.trackAlreadyInPlaylist': 'Dieser Track ist bereits in der Playlist.',
   'sidebar.trackAddFailed': 'Fehler beim Hinzufügen des Tracks: {{error}}',
-  'sidebar.connectYoutubeTooltip': 'YouTube-Konto verbinden',
   'sidebar.youtubeSourceTooltip': 'Importiert von YouTube (OAuth)',
   'sidebar.pushSyncedTooltip': 'Mit YouTube synchronisiert',
   'sidebar.connectedTooltip': 'Mit deinem YouTube-Konto verbunden',
   'sidebar.localSourceTooltip': 'YouTube-Playlist (nur Download)',
+  'sidebar.spotifySourceTooltip': 'Spotify-Playlist (auf YouTube gesucht und heruntergeladen)',
   'sidebar.allDownloadedTooltip': 'Alle {{count}} Tracks heruntergeladen',
   'sidebar.someMissingTooltip': '{{downloaded}} von {{total}} Tracks heruntergeladen',
   'sidebar.syncErrorTooltip': 'Letzte Synchronisierung fehlgeschlagen',
@@ -71,9 +71,14 @@ export const de = {
   'sidebar.deletePlaylistTooltip': 'Playlist löschen',
 
   // Add Playlist Modal
-  'addPlaylist.title': 'YouTube Playlist hinzufügen',
+  'addPlaylist.title': 'Playlist hinzufügen',
+  'addPlaylist.platformLabel': 'Plattform',
+  'addPlaylist.platformYoutube': 'YouTube',
+  'addPlaylist.platformSpotify': 'Spotify',
   'addPlaylist.label': 'Playlist URL',
   'addPlaylist.placeholder': 'https://www.youtube.com/playlist?list=...',
+  'addPlaylist.placeholderSpotify': 'https://open.spotify.com/playlist/...',
+  'addPlaylist.errorInvalidUrlSpotify': 'Bitte eine gültige Spotify-Playlist-URL eingeben.',
   'addPlaylist.errorInvalidUrl':
     'Bitte gib eine gültige YouTube-Playlist-URL ein (muss "list=" enthalten).',
   'addPlaylist.errorAddFailed': 'Fehler beim Hinzufügen der Playlist.',
@@ -191,7 +196,7 @@ export const de = {
   'settings.shortcuts.conflict': 'Bereits belegt von "{{action}}"',
 
   // Connections Settings (YouTube OAuth)
-  'connections.title': 'Verbindungen',
+  'connections.title': 'YouTube',
   'connections.subtitle':
     'Verbinde dein YouTube-Konto, um eigene Playlists zu importieren, harmonisch zu sortieren und die neue Reihenfolge zurück zu synchronisieren.',
   'connections.credentialsTitle': 'Google OAuth Zugangsdaten',
@@ -201,6 +206,21 @@ export const de = {
   'connections.clientSecretPlaceholder': 'GOCSPX-...',
   'connections.credentialsHelp':
     'Erstelle ein OAuth-Client in der Google Cloud Console (Typ „Desktop-App“) mit Zugriff auf die YouTube Data API v3 und trage die Zugangsdaten hier ein.',
+  'connections.spotifyTitle': 'Spotify',
+  'connections.spotifySubtitle':
+    'Füge Spotify-Playlists hinzu — Tracks werden auf YouTube gesucht und von dort heruntergeladen.',
+  'connections.spotifyCredentialsTitle': 'Spotify API Zugangsdaten',
+  'connections.spotifyClientIdLabel': 'Spotify Client-ID',
+  'connections.spotifyClientIdPlaceholder': 'Spotify Client-ID',
+  'connections.spotifyClientSecretLabel': 'Spotify Client-Secret',
+  'connections.spotifyClientSecretPlaceholder': 'Spotify Client-Secret',
+  'connections.spotifyCredentialsHelp':
+    'Erstelle eine App im Spotify Developer Dashboard, trage die in der Anleitung unten gezeigte Redirect-URI ein und hinterlege hier die Client-ID/Secret. Zum Lesen von Playlists muss zusätzlich unten dein Spotify-Konto verbunden werden.',
+  'connections.spotifyConnectButton': 'Mit Spotify verbinden',
+  'connections.spotifyConnectedAccountTitle': 'Verbundenes Konto',
+  'connections.spotifyNoAccount': 'Noch kein Spotify-Konto verbunden.',
+  'connections.errorConnectSpotify': 'Fehler beim Verbinden mit Spotify: {{error}}',
+  'connections.errorDisconnectSpotify': 'Fehler beim Trennen des Spotify-Kontos: {{error}}',
   'connections.connectButton': 'Mit Google verbinden',
   'connections.connecting': 'Warte auf Anmeldung im Browser...',
   'connections.copyLink': 'Link kopieren',
@@ -208,6 +228,10 @@ export const de = {
     'Anmelde-Link in die Zwischenablage kopieren, um ihn in einem beliebigen Browser/Profil zu öffnen',
   'connections.linkCopied': 'Anmelde-Link in die Zwischenablage kopiert.',
   'connections.missingCredentials': 'Bitte zuerst Client-ID und Client-Secret eintragen.',
+  'connections.testConnection': 'Verbindung testen',
+  'connections.testing': 'Wird getestet…',
+  'connections.testSuccess': 'Verbindung erfolgreich — die Zugangsdaten sind gültig.',
+  'connections.testError': 'Verbindung fehlgeschlagen: {{error}}',
   'connections.connectedAccountsTitle': 'Verbundene Konten',
   'connections.disconnectButton': 'Trennen',
   'connections.noAccounts': 'Noch kein YouTube-Konto verbunden.',
@@ -251,8 +275,36 @@ export const de = {
   'oauthGuide.step7.title': '7. Client-ID & Secret übernehmen',
   'oauthGuide.step7.description':
     'Google zeigt dir jetzt Client-ID und Client-Secret an. Kopiere beide Werte und trage sie oben in RekordFox ein.',
+  'oauthGuide.step8.title': '8. Was beim Verbinden passiert',
+  'oauthGuide.step8.description':
+    'Klickst du in RekordFox auf „Verbinden", öffnet sich dein Browser zur Google-Anmeldung. Danach leitet Google dich zu einer Adresse auf deinem eigenen Rechner weiter, z. B. http://127.0.0.1:51234/oauth/callback — diese Seite wird von RekordFox selbst lokal gehostet, nicht von Google, und verlässt deinen Rechner nie. Sie bestätigt die Verbindung und schließt sich nach ein paar Sekunden von selbst; du kannst dann zu RekordFox zurückwechseln.',
 
-  // Generic Setup Guide Stepper (used by Google OAuth & Rekordbox XML guides)
+  // Spotify API Anleitung
+  'spotifyGuide.toggle': 'Anleitung: Spotify-API-Zugang einrichten',
+  'spotifyGuide.openLink': 'Im Spotify Developer Dashboard öffnen',
+  'spotifyGuide.step1.title': '1. Spotify Developer Dashboard öffnen',
+  'spotifyGuide.step1.description':
+    'Melde dich mit deinem normalen Spotify-Konto an — Free oder Premium funktionieren beide, ein spezielles Entwicklerkonto ist nicht nötig.',
+  'spotifyGuide.step2.title': '2. App erstellen',
+  'spotifyGuide.step2.description':
+    'Klicke auf „Create app". Trage einen beliebigen App-Namen und eine Beschreibung ein — beides wird nur dir angezeigt. Bei „Redirect URI" trage genau http://127.0.0.1:8888/callback ein — RekordFox nutzt diese URI, um deine Anmeldung zu empfangen, sie muss also exakt übereinstimmen. Hake „Web API" bei den genutzten APIs an, akzeptiere die Bedingungen und speichere.',
+  'spotifyGuide.step3.title': '3. Wichtig: dich selbst als erlaubten Nutzer hinzufügen',
+  'spotifyGuide.step3.description':
+    'Da die App nicht von Spotify geprüft wurde, funktioniert die Anmeldung nur für hier explizit hinzugefügte Konten (bis zu 25). Öffne die Settings der App, gehe zu „User Management" und trage die E-Mail-Adresse deines eigenen Spotify-Kontos ein — sonst schlägt die Anmeldung fehl.',
+  'spotifyGuide.step4.title': '4. Einstellungen der App öffnen',
+  'spotifyGuide.step4.description':
+    'Klicke auf deine neue App und dann rechts oben auf „Settings".',
+  'spotifyGuide.step5.title': '5. Client-ID kopieren',
+  'spotifyGuide.step5.description':
+    'Kopiere die oben angezeigte Client-ID und trage sie in RekordFox oben in das Feld „Spotify Client-ID" ein.',
+  'spotifyGuide.step6.title': '6. Client-Secret anzeigen und kopieren',
+  'spotifyGuide.step6.description':
+    'Klicke auf „View client secret", kopiere den Wert und trage ihn in das Feld „Spotify Client-Secret" oben ein. Halte ihn geheim — wer ihn kennt, kann dein Spotify-API-Kontingent nutzen.',
+  'spotifyGuide.step7.title': '7. Was beim Verbinden passiert',
+  'spotifyGuide.step7.description':
+    'Klickst du in RekordFox auf „Verbinden", öffnet sich dein Browser zur Spotify-Anmeldung. Danach leitet Spotify dich zu http://127.0.0.1:8888/callback weiter — genau die Adresse, die du in Schritt 2 als Redirect URI eingetragen hast. Diese Seite wird von RekordFox selbst lokal auf deinem Rechner gehostet, nicht von Spotify, und verlässt deinen Rechner nie. Sie bestätigt die Verbindung und schließt sich nach ein paar Sekunden von selbst.',
+
+  // Generic Setup Guide Stepper (used by Google OAuth, Spotify & Rekordbox XML guides)
   'setupGuide.stepIndicator': 'Schritt {{current}} von {{total}}',
   'setupGuide.back': 'Zurück',
   'setupGuide.next': 'Weiter',
@@ -301,13 +353,6 @@ export const de = {
   'pioneerInitGuide.step6.description':
     'Stecke den Stick wieder ein und wähle ihn hier erneut aus. Der Hinweis verschwindet nun, und beim Pioneer-Export werden auch die Waveforms geschrieben, die die CDJs anzeigen. Diese Einrichtung ist nur einmal pro Stick nötig.',
 
-  // YouTube Onboarding Modal
-  'youtubeConnect.title': 'Mit YouTube verbinden',
-  'youtubeConnect.benefit1': 'Sortiere deine YouTube-Sets harmonisch perfekt mit Smart Mode.',
-  'youtubeConnect.benefit2': 'Synchronisiere die neue Track-Reihenfolge zurück zu YouTube.',
-  'youtubeConnect.cta': 'Zu den Verbindungs-Einstellungen',
-  'youtubeConnect.close': 'Später',
-
   // Deck
   'deck.loadingWaveform': 'Dekodiere Welle...',
   'deck.noTrackLoaded': 'Kein Track geladen',
@@ -347,6 +392,7 @@ export const de = {
   'tracklist.syncingToYoutube': 'Synchronisiere...',
   'tracklist.syncToYoutubeSuccess': 'Reihenfolge erfolgreich zu YouTube synchronisiert.',
   'tracklist.syncToYoutubeError': 'Fehler beim Synchronisieren zu YouTube: {{error}}',
+  'tracklist.syncPlaylistSuccess': 'Playlist mit YouTube synchronisiert.',
   'tracklist.previewPlayTooltip': 'Track abspielen',
   'tracklist.previewStopTooltip': 'Wiedergabe stoppen',
   'tracklist.rateTooltip': '{{count}} Sterne vergeben',
@@ -480,7 +526,7 @@ export const de = {
   'discover.addSelected': 'Ausgewählte hinzufügen ({{count}})',
 
   // Track entfernen / verschieben
-  'tracklist.colRemove': '',
+  'tracklist.colRemove': 'Löschen',
   'tracklist.removeTrackTooltip': 'Aus Playlist entfernen',
   'tracklist.trackRemoved': 'Track aus der Playlist entfernt.',
   'tracklist.trackRemoveFailed': 'Fehler beim Entfernen des Tracks: {{error}}',

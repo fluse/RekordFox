@@ -35,5 +35,9 @@ export const STEPS: GuideStepDef[] = [
   {
     titleKey: 'oauthGuide.step7.title',
     descriptionKey: 'oauthGuide.step7.description'
+  },
+  {
+    titleKey: 'oauthGuide.step8.title',
+    descriptionKey: 'oauthGuide.step8.description'
   }
 ]

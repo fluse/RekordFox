@@ -31,7 +31,6 @@ export interface SidebarProps {
   onRenamePlaylist: (id: string, newTitle: string) => void
   onOpenAddModal: () => void
   onOpenSettings: () => void
-  onOpenYoutubeConnect: () => void
   onDropTrackToPlaylist: (track: Track, targetPlaylistId: string) => void
   onMoveTrackToPlaylist: (track: Track, targetPlaylistId: string) => void
   isSettingsSelected: boolean

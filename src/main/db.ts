@@ -14,10 +14,10 @@ import {
 import nodeId3 from 'node-id3'
 import { writeRekordboxXml } from './export/rekordbox/rekordboxXmlExporter'
 
-export type PlaylistSource = 'local' | 'youtube-oauth' | 'soundcloud'
+export type PlaylistSource = 'local' | 'youtube-oauth' | 'soundcloud' | 'spotify'
 
 export interface Playlist {
-  id: string // YouTube playlist ID
+  id: string // YouTube or Spotify playlist ID, depending on `source`
   title: string
   url: string
   syncStatus: 'idle' | 'syncing' | 'error'
@@ -25,6 +25,8 @@ export interface Playlist {
   // 'local': today's behavior — added via public URL, scraped with yt-dlp, download-only, no
   // write-back. 'youtube-oauth': imported from the user's own YouTube account via OAuth2;
   // supports pushing the local track order back to YouTube. 'soundcloud' reserved for future use.
+  // 'spotify': added via a public Spotify playlist URL — metadata comes from the Spotify Web API,
+  // audio is matched and downloaded from YouTube (download-only, no write-back, like 'local').
   source: PlaylistSource
   oauthAccountId?: string // links a 'youtube-oauth' playlist to the OAuthAccount used to import it
   // Health of the OAuth link, authoritative for whether write-back is possible. Only meaningful
@@ -41,8 +43,8 @@ export type PlaylistLinkState = 'linked' | 'orphaned' | 'needs-reauth'
 
 export interface OAuthAccount {
   id: string
-  provider: 'google'
-  label: string // display name shown in the UI — the account's YouTube channel title
+  provider: 'google' | 'spotify'
+  label: string // display name shown in the UI — the account's YouTube channel title, or the Spotify display name
   accessTokenEnc: string // encrypted with Electron safeStorage, base64-encoded
   refreshTokenEnc: string
   expiresAt: number
@@ -67,6 +69,11 @@ export interface Track {
   dateAdded?: string
   played?: boolean
   downloadFailed?: boolean // true if the last download attempt failed; excluded from queue/shuffle relevance
+  // Consecutive failed download attempts; reset to 0 on a successful download. Once it reaches
+  // MAX_DOWNLOAD_ATTEMPTS the track is "abandoned" (see isDownloadAbandoned): sync stops retrying
+  // it and it's hidden from track lists/counts, though it stays in the db so a fresh placeholder
+  // isn't recreated for it on the next sync.
+  downloadAttempts?: number
   // Present (and always 'discover') for tracks added via the Discover feature rather than
   // found in the actual remote YouTube playlist. Sync must never delete these based on the
   // playlist diff, since they will never appear in the remote playlist's entries.
@@ -74,12 +81,21 @@ export interface Track {
   // The YouTube playlistItem ID (distinct from the video ID) — required to push reordering
   // back via playlistItems.update. Only present for tracks in a 'youtube-oauth' playlist.
   youtubePlaylistItemId?: string
+  // The Spotify track ID this track was matched from. Only present for tracks in a 'spotify'
+  // playlist — `id` itself is always the matched YouTube video ID (that's where the audio comes
+  // from), so this is the stable key used to diff "already synced" Spotify tracks, since the
+  // YouTube ID is only known after the search match.
+  spotifyTrackId?: string
 }
 
 export function getPlaylistFolderName(playlist: Playlist): string {
   const cleanTitle = playlist.title.replace(/[\\/:*?"<>|]/g, '').trim() || 'Unknown Playlist'
   const lowercaseUrl = (playlist.url || '').toLowerCase()
-  const provider = lowercaseUrl.includes('soundcloud.com') ? 'soundcloud' : 'youtube'
+  const provider = lowercaseUrl.includes('soundcloud.com')
+    ? 'soundcloud'
+    : lowercaseUrl.includes('spotify.com')
+      ? 'spotify'
+      : 'youtube'
   return `${cleanTitle}-${provider}-${playlist.id}`
 }
 
@@ -110,6 +126,8 @@ export interface AppSettings {
   appShortcuts?: Record<string, string>
   youtubeClientId?: string
   youtubeClientSecret?: string
+  spotifyClientId?: string
+  spotifyClientSecret?: string
   tooltipsEnabled?: boolean
   tooltipDelay?: number
 }
@@ -139,7 +157,7 @@ let dbData: DatabaseSchema = {
     sidebarWidth: 256,
     maxWorkers: 1,
     language: 'de',
-    filenameTemplate: 'default',
+    filenameTemplate: 'custom',
     historyLimit: 50,
     tooltipsEnabled: true,
     tooltipDelay: 600
@@ -169,6 +187,7 @@ export function initDb(): void {
       sidebarWidth: 256,
       maxWorkers: 3,
       language: 'de',
+      filenameTemplate: 'custom',
       rekordboxXmlPath: '',
       historyLimit: 50,
       tooltipsEnabled: true,
@@ -194,7 +213,7 @@ export function initDb(): void {
           sidebarWidth: 256,
           maxWorkers: 3,
           language: 'de',
-          filenameTemplate: 'default',
+          filenameTemplate: 'custom',
           rekordboxXmlPath: '',
           tooltipsEnabled: true,
           tooltipDelay: 600
@@ -206,7 +225,7 @@ export function initDb(): void {
         if (!dbData.settings.sidebarWidth) dbData.settings.sidebarWidth = 256
         if (!dbData.settings.maxWorkers) dbData.settings.maxWorkers = 3
         if (!dbData.settings.language) dbData.settings.language = 'de'
-        if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'default'
+        if (!dbData.settings.filenameTemplate) dbData.settings.filenameTemplate = 'custom'
         if (dbData.settings.rekordboxXmlPath === undefined) dbData.settings.rekordboxXmlPath = ''
         if (dbData.settings.tooltipsEnabled === undefined) dbData.settings.tooltipsEnabled = true
         if (dbData.settings.tooltipDelay === undefined) dbData.settings.tooltipDelay = 600
@@ -493,6 +512,7 @@ export interface PlaylistStats {
 export function getPlaylistStats(): Record<string, PlaylistStats> {
   const stats: Record<string, PlaylistStats> = {}
   for (const track of dbData.tracks) {
+    if (isDownloadAbandoned(track)) continue
     const entry = stats[track.playlistId] || (stats[track.playlistId] = { total: 0, downloaded: 0 })
     entry.total++
     if (track.filepath) entry.downloaded++
@@ -646,6 +666,17 @@ export function getOAuthAccounts(): OAuthAccount[] {
   return dbData.oauthAccounts || []
 }
 
+// Accounts are only ever exposed to the renderer stripped of their encrypted tokens — shared by
+// both the YouTube and Spotify IPC handlers.
+export function toPublicOAuthAccount(
+  account: OAuthAccount
+): Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'> {
+  const { accessTokenEnc, refreshTokenEnc, ...rest } = account
+  void accessTokenEnc
+  void refreshTokenEnc
+  return rest
+}
+
 export function addOAuthAccount(account: OAuthAccount): void {
   if (!dbData.oauthAccounts) dbData.oauthAccounts = []
   const index = dbData.oauthAccounts.findIndex((a) => a.id === account.id)
@@ -763,7 +794,7 @@ export function addTrackToPlaylist(sourceTrackId: string, targetPlaylistId: stri
       sourceTrack.title,
       newPosition,
       sourceTrack.bpm || 0,
-      settings.filenameTemplate || 'default'
+      settings.filenameTemplate || 'custom'
     )
     newFilepath = join(targetDir, filename)
     try {
@@ -862,15 +893,11 @@ export function updateTrackPositions(playlistId: string, trackIds: string[]): Fi
   return changes
 }
 
-export function deleteTrack(trackId: string, playlistId: string): void {
-  dbData.tracks = dbData.tracks.filter((t) => !(t.id === trackId && t.playlistId === playlistId))
-  saveDb()
-}
-
-// User-initiated removal of a single track from a playlist. Unlike deleteTrack (used by the
-// sync flows, which clean up files themselves), this also physically deletes the track's own
+// User-initiated removal of a single track from a playlist. Physically deletes the track's own
 // MP3/Cover copy for that playlist and flags an OAuth-backed playlist as dirty so the change
-// can be pushed back to YouTube.
+// can be pushed back to YouTube. The sync flows never remove tracks themselves (add-only, so a
+// track missing from YouTube is never taken as proof it should be deleted locally) — this is the
+// only path that deletes a track today.
 export function removeTrackFromPlaylist(trackId: string, playlistId: string): void {
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
@@ -1004,14 +1031,28 @@ export function updateTrackPlayed(trackId: string, playlistId: string, played: b
   }
 }
 
-export function updateTrackDownloadFailed(
-  trackId: string,
-  playlistId: string,
-  downloadFailed: boolean
-): void {
+// Number of consecutive failed download attempts after which a track is abandoned — excluded
+// from further retries and hidden from track lists/counts.
+export const MAX_DOWNLOAD_ATTEMPTS = 3
+
+export function isDownloadAbandoned(track: Track): boolean {
+  return (track.downloadAttempts ?? 0) >= MAX_DOWNLOAD_ATTEMPTS
+}
+
+export function recordTrackDownloadFailure(trackId: string, playlistId: string): void {
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
-    track.downloadFailed = downloadFailed
+    track.downloadFailed = true
+    track.downloadAttempts = (track.downloadAttempts ?? 0) + 1
+    saveDb()
+  }
+}
+
+export function recordTrackDownloadSuccess(trackId: string, playlistId: string): void {
+  const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
+  if (track) {
+    track.downloadFailed = false
+    track.downloadAttempts = 0
     saveDb()
   }
 }
