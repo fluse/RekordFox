@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron'
-import { Playlist, getPlaylists } from './db'
+import { Playlist, getPlaylists } from '../db'
 import { syncLocalPlaylist } from './sync'
 import { pullYoutubeOAuthPlaylist } from './youtubeSync'
 import { syncSpotifyPlaylist } from './spotifySync'

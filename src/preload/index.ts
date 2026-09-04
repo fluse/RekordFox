@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer, clipboard } from 'electron'
 import type { AppSettings, Playlist } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
-import type { RecommendedTrack } from '@main/explore'
+import type { RecommendedTrack } from '@main/media/explore'
 
 // Custom APIs for renderer
 const api = {

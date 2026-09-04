@@ -14,9 +14,9 @@ import {
   getSettings,
   getTrackFilename,
   getPlaylistFolderName
-} from './db'
-import { getPlaylistInfo, downloadTrack } from './downloader'
-import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
+} from '../db'
+import { getPlaylistInfo, downloadTrack } from '../media/downloader'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnalysis'
 import nodeId3 from 'node-id3'
 
 // Map of active synchronization tasks. Shared by every sync path (local yt-dlp here and the

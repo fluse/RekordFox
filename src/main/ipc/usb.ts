@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { detectUsbDrives } from '../usb'
+import { detectUsbDrives } from '../media/usb'
 
 export function registerUsbIpc(): void {
   ipcMain.handle('usb:get-drives', async () => {

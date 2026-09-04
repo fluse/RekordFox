@@ -1,5 +1,5 @@
 import type { Track } from '@main/db'
-import type { RecommendedTrack } from '@main/explore'
+import type { RecommendedTrack } from '@main/media/explore'
 import { usePreviewStore } from '@renderer/store/usePreviewStore'
 import { getYoutubeStreamUrl } from '@renderer/utils/audio'
 

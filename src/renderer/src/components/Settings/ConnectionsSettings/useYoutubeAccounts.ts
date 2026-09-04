@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { Playlist } from '@main/db'
-import type { RemotePlaylistSummary } from '@main/youtubeSync'
+import type { RemotePlaylistSummary } from '@main/sync/youtubeSync'
 import { useLanguage } from '@renderer/i18n'
 import { cacheRemotePlaylists, loadCachedRemotePlaylists } from './cache'
 import type {

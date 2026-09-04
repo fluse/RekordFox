@@ -1,8 +1,8 @@
 import type { ElectronAPI } from '@electron-toolkit/preload'
 import { Playlist, Track, AppSettings, StorageStats, OAuthAccount, PlaylistStats } from '@main/db'
 import type { WaveformPeak } from '@main/export/pioneer/ExportQueueManager'
-import type { RecommendedTrack } from '@main/explore'
-import type { RemotePlaylistSummary } from '@main/youtubeSync'
+import type { RecommendedTrack } from '@main/media/explore'
+import type { RemotePlaylistSummary } from '@main/sync/youtubeSync'
 
 type PublicOAuthAccount = Omit<OAuthAccount, 'accessTokenEnc' | 'refreshTokenEnc'>
 

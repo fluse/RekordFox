@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
-import { getTracks, Track } from './db'
+import { getTracks, Track } from '../db'
 import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
-import { getMainWindow } from './window'
+import { getMainWindow } from '../app/window'
 
 const STARTUP_DELAY_MS = 3000
 const KEY_ANALYSIS_STAGGER_MS = 1000

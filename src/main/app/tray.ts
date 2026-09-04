@@ -1,5 +1,5 @@
 import { app, ipcMain, Menu, nativeImage, Tray } from 'electron'
-import trayIconAsset from '../../resources/trayIconTemplate.png?asset'
+import trayIconAsset from '../../../resources/trayIconTemplate.png?asset'
 import { sendToRenderer, withMainWindow } from './window'
 
 interface TrayPlayerState {

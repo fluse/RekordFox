@@ -1,4 +1,4 @@
-import type { RemotePlaylistSummary } from '@main/youtubeSync'
+import type { RemotePlaylistSummary } from '@main/sync/youtubeSync'
 import { REMOTE_PLAYLISTS_CACHE_PREFIX } from './constants'
 
 // Lets the last-known list of a connected account's YouTube playlists show up instantly, before

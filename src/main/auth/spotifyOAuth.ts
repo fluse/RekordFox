@@ -8,7 +8,7 @@ import {
   addOAuthAccount,
   updateOAuthAccountTokens,
   removeOAuthAccount
-} from './db'
+} from '../db'
 import { renderOAuthCallbackPage } from './oauthCallbackPage'
 
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token'

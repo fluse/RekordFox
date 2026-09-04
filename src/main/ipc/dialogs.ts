@@ -1,5 +1,5 @@
 import { dialog, ipcMain } from 'electron'
-import { getMainWindow } from '../window'
+import { getMainWindow } from '../app/window'
 
 export function registerDialogsIpc(): void {
   ipcMain.handle('dialog:select-directory', async () => {

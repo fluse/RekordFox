@@ -13,10 +13,10 @@ import {
   getTrackFilename,
   getPlaylistFolderName,
   recordTrackDownloadFailure
-} from './db'
+} from '../db'
 import { downloadTrack } from './downloader'
-import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
-import { getErrorMessage } from './errors'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnalysis'
+import { getErrorMessage } from '../utils/errors'
 
 export interface RecommendedTrack {
   videoId: string

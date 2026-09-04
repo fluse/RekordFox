@@ -7,12 +7,12 @@ import {
   renamePlaylist,
   Playlist
 } from '../db'
-import { getPlaylistInfo } from '../downloader'
-import { getSpotifyPlaylistInfo } from '../spotifyApi'
-import { syncPlaylist } from '../syncManager'
+import { getPlaylistInfo } from '../media/downloader'
+import { getSpotifyPlaylistInfo } from '../auth/spotifyApi'
+import { syncPlaylist } from '../sync/syncManager'
 import { exportPlaylistToUsb } from '../export/m3u8/m3u8Exporter'
-import { ipcTry } from '../errors'
-import { getMainWindow } from '../window'
+import { ipcTry } from '../utils/errors'
+import { getMainWindow } from '../app/window'
 
 export function registerPlaylistsIpc(): void {
   ipcMain.handle('playlists:get', () => {

@@ -7,9 +7,9 @@ import {
   getStorageStats,
   AppSettings
 } from '../db'
-import { isAnyPlaylistSyncing } from '../sync'
-import { ipcTry } from '../errors'
-import { sendToRenderer } from '../window'
+import { isAnyPlaylistSyncing } from '../sync/sync'
+import { ipcTry } from '../utils/errors'
+import { sendToRenderer } from '../app/window'
 
 function getFilenameFormatChangeBlockedMessage(language: string | undefined): string {
   switch (language) {

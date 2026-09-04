@@ -15,12 +15,12 @@ import {
   getSettings,
   getTrackFilename,
   getPlaylistFolderName
-} from './db'
-import { getPlaylistInfo, downloadTrack, YtVideo } from './downloader'
-import { getSpotifyPlaylistInfo, SpotifyTrackInfo } from './spotifyApi'
-import { hasSpotifyAccount } from './spotifyOAuth'
+} from '../db'
+import { getPlaylistInfo, downloadTrack, YtVideo } from '../media/downloader'
+import { getSpotifyPlaylistInfo, SpotifyTrackInfo } from '../auth/spotifyApi'
+import { hasSpotifyAccount } from '../auth/spotifyOAuth'
 import { beginPlaylistSync, endPlaylistSync } from './sync'
-import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnalysis'
 import nodeId3 from 'node-id3'
 
 // How many YouTube search results to consider per track when picking the closest duration match.

@@ -10,9 +10,9 @@ import {
   addTrackToPlaylist,
   removeTrackFromPlaylist
 } from '../db'
-import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../trackAnalysis'
-import { ipcTry } from '../errors'
-import { getMainWindow, sendToRenderer } from '../window'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnalysis'
+import { ipcTry } from '../utils/errors'
+import { getMainWindow, sendToRenderer } from '../app/window'
 
 export function registerTracksIpc(): void {
   ipcMain.handle('tracks:get', (_, playlistId?: string) => {

@@ -14,10 +14,10 @@ import {
   getRecommendationsForPlaylist,
   downloadDiscoverTrack,
   RecommendedTrack
-} from '../explore'
-import { getStreamUrl } from '../downloader'
-import { ipcTry } from '../errors'
-import { getMainWindow } from '../window'
+} from '../media/explore'
+import { getStreamUrl } from '../media/downloader'
+import { ipcTry } from '../utils/errors'
+import { getMainWindow } from '../app/window'
 
 // How many seed tracks to use when no single track is specified — more seeds gives broader,
 // better-ranked recommendations at the cost of extra requests.

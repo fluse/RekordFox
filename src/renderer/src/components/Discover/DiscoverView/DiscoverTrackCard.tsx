@@ -1,6 +1,6 @@
 import React from 'react'
 import { Ban, Check, Loader2, Music, Pause, Play, Plus } from 'lucide-react'
-import type { RecommendedTrack } from '@main/explore'
+import type { RecommendedTrack } from '@main/media/explore'
 import { useLanguage } from '@renderer/i18n'
 import { formatDuration } from '@renderer/utils/audio'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'

@@ -4,15 +4,15 @@ import {
   startYoutubeOAuthFlow,
   disconnectYoutubeAccount,
   testYoutubeCredentials
-} from '../youtubeOAuth'
+} from '../auth/youtubeOAuth'
 import {
   listMyRemotePlaylists,
   importYoutubePlaylist,
   pushPlaylistOrderToYoutube,
   reconcileLocalPlaylistsWithAccount
-} from '../youtubeSync'
-import { ipcTry } from '../errors'
-import { getMainWindow } from '../window'
+} from '../sync/youtubeSync'
+import { ipcTry } from '../utils/errors'
+import { getMainWindow } from '../app/window'
 
 // Reconciliation is a bonus on top of whatever triggered it (a fresh connect, a manual re-check,
 // app startup) — never let an API error from the ownership check itself fail that caller.

@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron'
-import { testSpotifyCredentials } from '../spotifyApi'
-import { startSpotifyOAuthFlow, disconnectSpotifyAccount } from '../spotifyOAuth'
+import { testSpotifyCredentials } from '../auth/spotifyApi'
+import { startSpotifyOAuthFlow, disconnectSpotifyAccount } from '../auth/spotifyOAuth'
 import { getOAuthAccounts, toPublicOAuthAccount } from '../db'
-import { ipcTry } from '../errors'
+import { ipcTry } from '../utils/errors'
 
 export function registerSpotifyIpc(): void {
   ipcMain.handle('spotify:test-connection', (_, clientId: string, clientSecret: string) =>

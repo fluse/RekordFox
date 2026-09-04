@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { ExportQueueManager } from '../export/pioneer/ExportQueueManager'
-import { getMainWindow } from '../window'
+import { getMainWindow } from '../app/window'
 
 export function registerPioneerExportIpc(exportQueueManager: ExportQueueManager): void {
   ipcMain.handle('pioneer:export-start', async (_, playlistId: string, usbPath: string) => {

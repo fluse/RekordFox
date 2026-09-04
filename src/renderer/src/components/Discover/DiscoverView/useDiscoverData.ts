@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { Playlist } from '@main/db'
-import type { RecommendedTrack } from '@main/explore'
+import type { RecommendedTrack } from '@main/media/explore'
 import { useLanguage } from '@renderer/i18n'
 
 export interface UseDiscoverDataResult {

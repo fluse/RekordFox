@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { getPlaylists, getSettings, getTracks } from '../db'
 import { writeRekordboxXml } from '../export/rekordbox/rekordboxXmlExporter'
-import { getErrorMessage, ipcTry } from '../errors'
+import { getErrorMessage, ipcTry } from '../utils/errors'
 
 export function registerRekordboxIpc(): void {
   ipcMain.handle('rekordbox:export-xml', () =>

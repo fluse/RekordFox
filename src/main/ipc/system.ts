@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { withMainWindow } from '../window'
+import { withMainWindow } from '../app/window'
 
 export function registerSystemIpc(): void {
   ipcMain.on('log-error', (_, msg) => {

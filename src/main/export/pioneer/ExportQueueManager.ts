@@ -5,7 +5,7 @@ import { join, extname, dirname } from 'path'
 import { getTracksForPlaylist, getPlaylists } from '../../db'
 import { AnlzBuilder } from './AnlzBuilder'
 import { copyFileData, ensureWritable } from '../fsCopy'
-import { findPioneerPdb } from '../../usb'
+import { findPioneerPdb } from '../../media/usb'
 import { mergePlaylist, MergeTrackInput } from './pdb/PdbMerger'
 
 export interface WaveformPeak {

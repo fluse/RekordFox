@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { analyzeBpm } from './bpm'
 import { analyzeKey } from './key'
-import { updateTrackBpm, updateTrackKey } from './db'
+import { updateTrackBpm, updateTrackKey } from '../db'
 
 function notify(win: BrowserWindow | null, channel: string, ...args: unknown[]): void {
   if (win && !win.isDestroyed()) {

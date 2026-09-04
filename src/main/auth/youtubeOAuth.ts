@@ -11,11 +11,11 @@ import {
   updateOAuthAccountTokens,
   removeOAuthAccount,
   orphanPlaylistsForAccount
-} from './db'
+} from '../db'
 import { renderOAuthCallbackPage } from './oauthCallbackPage'
 
 // Broadcasts to every open window directly via BrowserWindow, rather than importing the
-// sendToRenderer helper from './window' — that module also pulls in the app icon asset (a
+// sendToRenderer helper from '../app/window' — that module also pulls in the app icon asset (a
 // Vite-only `?asset` import), which the renderer's separate tsconfig can't resolve once anything
 // under src/renderer transitively imports a type from this file (as RemotePlaylistSummary does).
 function broadcastToAllWindows(channel: string, ...args: unknown[]): void {

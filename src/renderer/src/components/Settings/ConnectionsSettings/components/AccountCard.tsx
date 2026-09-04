@@ -3,7 +3,7 @@ import { Loader2, Trash2, Download, RefreshCw } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { Label } from '@renderer/components/ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
-import type { RemotePlaylistSummary } from '@main/youtubeSync'
+import type { RemotePlaylistSummary } from '@main/sync/youtubeSync'
 import { useLanguage } from '@renderer/i18n'
 import type { PublicOAuthAccount } from '../types'
 

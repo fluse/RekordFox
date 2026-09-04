@@ -23,11 +23,11 @@ import {
   linkPlaylistToOauthAccount,
   linkTrackToYoutubePlaylistItem,
   getOAuthAccounts
-} from './db'
-import { downloadTrack } from './downloader'
-import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from './trackAnalysis'
+} from '../db'
+import { downloadTrack } from '../media/downloader'
+import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnalysis'
 import { parseTitleAndArtist, beginPlaylistSync, endPlaylistSync, syncLocalPlaylist } from './sync'
-import { getYoutubeClientForAccount, isAuthError, isQuotaError } from './youtubeOAuth'
+import { getYoutubeClientForAccount, isAuthError, isQuotaError } from '../auth/youtubeOAuth'
 
 // Playlists whose link is healthy enough to talk to YouTube. Orphaned (account removed) and
 // needs-reauth (token revoked) playlists must never hit the API — the caller surfaces a clear,
