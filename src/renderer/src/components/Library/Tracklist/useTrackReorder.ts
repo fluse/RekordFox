@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Track } from '@main/db'
 
 export const PLACEHOLDER_KEY = '__reorder-placeholder__'
@@ -11,6 +11,10 @@ interface UseTrackReorderOptions {
   tracks: Track[]
   enabled: boolean
   onReorder: (draggedId: string, targetId: string, position: 'above' | 'below') => void
+  // The scrollable element the rows live in. When the pointer drags near its top/bottom
+  // edge during a reorder, that element auto-scrolls so rows outside the viewport come
+  // into view. Optional — omit it and dragging just has no auto-scroll.
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>
 }
 
 interface UseTrackReorderResult {
@@ -27,6 +31,12 @@ interface UseTrackReorderResult {
 // directly and picking the nearest row by distance has no enter/leave step, so it can't loop.
 const DRAG_THRESHOLD_PX = 4
 
+// Auto-scroll while dragging near the top/bottom edge of the scroll container. Speed ramps
+// up quadratically with proximity to the edge, so it starts gently and gets much faster
+// right at the edge rather than a flat linear ramp.
+const AUTO_SCROLL_EDGE_PX = 60
+const AUTO_SCROLL_MAX_SPEED_PX = 30
+
 interface DragState {
   draggedId: string | null
   overId: string | null
@@ -36,7 +46,8 @@ interface DragState {
 export function useTrackReorder({
   tracks,
   enabled,
-  onReorder
+  onReorder,
+  scrollContainerRef
 }: UseTrackReorderOptions): UseTrackReorderResult {
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [hasStarted, setHasStarted] = useState(false)
@@ -48,6 +59,9 @@ export function useTrackReorder({
   const ghostElRef = useRef<HTMLDivElement | null>(null)
   const grabOffsetRef = useRef({ x: 0, y: 0 })
   const originRef = useRef({ x: 0, y: 0 })
+  const autoScrollRafRef = useRef<number | null>(null)
+  const autoScrollSpeedRef = useRef(0)
+  const lastPointerYRef = useRef(0)
 
   const registerRow = useCallback(
     (key: string) =>
@@ -90,6 +104,66 @@ export function useTrackReorder({
     [tracks]
   )
 
+  const stopAutoScroll = useCallback((): void => {
+    if (autoScrollRafRef.current !== null) {
+      cancelAnimationFrame(autoScrollRafRef.current)
+      autoScrollRafRef.current = null
+    }
+    autoScrollSpeedRef.current = 0
+  }, [])
+
+  // Scrolling moves rows without a pointermove event firing, so each step re-runs the
+  // same nearest-row lookup the pointermove handler uses to keep the placeholder in sync.
+  const runAutoScrollStep = useCallback((): void => {
+    const container = scrollContainerRef?.current
+    const speed = autoScrollSpeedRef.current
+    if (!container || speed === 0) {
+      autoScrollRafRef.current = null
+      return
+    }
+
+    container.scrollTop += speed
+
+    const draggedTrackId = stateRef.current.draggedId
+    if (draggedTrackId) {
+      const target = findClosestTarget(lastPointerYRef.current, draggedTrackId)
+      if (
+        target &&
+        (target.id !== stateRef.current.overId || target.position !== stateRef.current.overPosition)
+      ) {
+        setOver(target.id, target.position)
+      }
+    }
+
+    autoScrollRafRef.current = requestAnimationFrame(runAutoScrollStep)
+  }, [findClosestTarget, scrollContainerRef])
+
+  const updateAutoScroll = useCallback(
+    (clientY: number): void => {
+      lastPointerYRef.current = clientY
+      const container = scrollContainerRef?.current
+      if (!container) return
+
+      const rect = container.getBoundingClientRect()
+      let speed = 0
+      if (clientY < rect.top + AUTO_SCROLL_EDGE_PX) {
+        const proximity = (rect.top + AUTO_SCROLL_EDGE_PX - clientY) / AUTO_SCROLL_EDGE_PX
+        speed = -Math.ceil(proximity * proximity * AUTO_SCROLL_MAX_SPEED_PX)
+      } else if (clientY > rect.bottom - AUTO_SCROLL_EDGE_PX) {
+        const proximity = (clientY - (rect.bottom - AUTO_SCROLL_EDGE_PX)) / AUTO_SCROLL_EDGE_PX
+        speed = Math.ceil(proximity * proximity * AUTO_SCROLL_MAX_SPEED_PX)
+      }
+
+      autoScrollSpeedRef.current = speed
+      if (speed !== 0 && autoScrollRafRef.current === null) {
+        autoScrollRafRef.current = requestAnimationFrame(runAutoScrollStep)
+      }
+    },
+    [runAutoScrollStep, scrollContainerRef]
+  )
+
+  useEffect(() => stopAutoScroll, [stopAutoScroll])
+
   const createGhost = (rowEl: HTMLTableRowElement, clientX: number, clientY: number): void => {
     const rect = rowEl.getBoundingClientRect()
     const sourceTable = rowEl.closest('table')
@@ -130,6 +204,7 @@ export function useTrackReorder({
   }
 
   const cleanup = useCallback((): void => {
+    stopAutoScroll()
     ghostElRef.current?.remove()
     ghostElRef.current = null
     document.body.style.removeProperty('cursor')
@@ -139,7 +214,7 @@ export function useTrackReorder({
     setHasStarted(false)
     setOverId(null)
     setOverPosition(null)
-  }, [])
+  }, [stopAutoScroll])
 
   // Both listeners are (re-)created per drag gesture, inside onRowPointerDown, rather than as
   // top-level useCallbacks. That sidesteps a circular reference (pointerup needs to remove
@@ -183,6 +258,8 @@ export function useTrackReorder({
         ) {
           setOver(target.id, target.position)
         }
+
+        updateAutoScroll(moveEvent.clientY)
       }
 
       function handlePointerUp(): void {
@@ -200,7 +277,7 @@ export function useTrackReorder({
       window.addEventListener('pointerup', handlePointerUp)
       window.addEventListener('pointercancel', handlePointerUp)
     },
-    [enabled, findClosestTarget, onReorder, cleanup]
+    [enabled, findClosestTarget, onReorder, cleanup, updateAutoScroll]
   )
 
   const displayItems = useMemo((): DisplayItem[] => {

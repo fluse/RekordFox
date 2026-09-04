@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { Play, ListPlus, Search, Disc3, SquarePlay, ExternalLink, Compass } from 'lucide-react'
 import type { Playlist, Track } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
@@ -147,10 +147,13 @@ export default function Tracklist({
     )
   }
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
   const { displayItems, registerRow, onRowPointerDown } = useTrackReorder({
     tracks: filteredAndSortedTracks,
     enabled: isReorderEnabled,
-    onReorder: handleReorder
+    onReorder: handleReorder,
+    scrollContainerRef
   })
 
   const handleSort = (field: SortField): void => {
@@ -218,7 +221,7 @@ export default function Tracklist({
           currentTrackB={currentTrackB}
         />
       ) : (
-        <div className="flex-1 overflow-auto pl-0 pr-6 pb-4 min-h-0">
+        <div ref={scrollContainerRef} className="flex-1 overflow-auto pl-0 pr-6 pb-4 min-h-0">
           <table
             className="w-full text-left border-collapse min-w-full"
             style={{ tableLayout: 'fixed' }}
