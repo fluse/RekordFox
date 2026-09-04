@@ -64,7 +64,10 @@ export function registerSettingsIpc(): void {
 
   ipcMain.handle('settings:migrate', (_, newPath: string, moveFiles: boolean) =>
     ipcTry(async () => {
-      await migrateDownloadsFolder(newPath, moveFiles)
+      const changes = await migrateDownloadsFolder(newPath, moveFiles)
+      if (changes.length > 0) {
+        sendToRenderer('tracks-filepath-changed', changes)
+      }
       return {}
     })
   )

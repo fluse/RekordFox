@@ -1184,10 +1184,15 @@ export async function renameAllTracksFilenameAsync(
 }
 
 // Folder migration logic
-export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean): Promise<void> {
+export async function migrateDownloadsFolder(
+  newPath: string,
+  moveFiles: boolean
+): Promise<FilepathChange[]> {
   if (!existsSync(newPath)) {
     mkdirSync(newPath, { recursive: true })
   }
+
+  const changes: FilepathChange[] = []
 
   if (moveFiles) {
     for (const track of dbData.tracks) {
@@ -1206,13 +1211,20 @@ export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean
         try {
           copyFileSync(track.filepath, targetPath)
           unlinkSync(track.filepath)
-          track.filepath = targetPath
+          if (track.filepath !== targetPath) {
+            track.filepath = targetPath
+            changes.push({ id: track.id, filepath: targetPath })
+          }
         } catch (e) {
           console.error(`Failed to move file ${track.filepath} to ${targetPath}:`, e)
         }
       } else {
         // Just update path mapping anyway
-        track.filepath = join(targetDir, basename(track.filepath))
+        const targetPath = join(targetDir, basename(track.filepath))
+        if (track.filepath !== targetPath) {
+          track.filepath = targetPath
+          changes.push({ id: track.id, filepath: targetPath })
+        }
       }
     }
   } else {
@@ -1221,7 +1233,11 @@ export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean
       const playlist = dbData.playlists.find((p) => p.id === track.playlistId)
       const playlistFolder = playlist ? getPlaylistFolderName(playlist) : ''
       const targetDir = playlistFolder ? join(newPath, playlistFolder) : newPath
-      track.filepath = join(targetDir, basename(track.filepath))
+      const targetPath = join(targetDir, basename(track.filepath))
+      if (track.filepath !== targetPath) {
+        track.filepath = targetPath
+        changes.push({ id: track.id, filepath: targetPath })
+      }
     }
   }
 
@@ -1230,4 +1246,5 @@ export async function migrateDownloadsFolder(newPath: string, moveFiles: boolean
   }
 
   saveDb()
+  return changes
 }
