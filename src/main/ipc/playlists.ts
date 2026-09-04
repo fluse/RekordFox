@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import { randomUUID } from 'crypto'
 import {
   getPlaylists,
   getPlaylistStats,
@@ -48,6 +49,24 @@ export function registerPlaylistsIpc(): void {
       },
       { onError: (e) => console.error('Error adding playlist:', e) }
     )
+  )
+
+  // Creates an empty, manually-managed playlist (source 'local', no `url`) — nothing to scrape
+  // and nothing for background sync to pull, tracks are added to it only via drag/copy from
+  // other playlists.
+  ipcMain.handle('playlists:create-empty', (_, title: string) =>
+    ipcTry(() => {
+      const newPlaylist: Playlist = {
+        id: randomUUID(),
+        title: title.trim(),
+        url: '',
+        syncStatus: 'idle',
+        lastSync: '',
+        source: 'local'
+      }
+      addPlaylistToDb(newPlaylist)
+      return { playlist: newPlaylist }
+    })
   )
 
   ipcMain.handle('playlists:delete', (_, id: string) =>

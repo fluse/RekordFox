@@ -16,6 +16,9 @@ declare global {
         url: string,
         platform?: 'youtube' | 'spotify'
       ) => Promise<{ success: boolean; playlist?: Playlist; error?: string }>
+      createEmptyPlaylist: (
+        title: string
+      ) => Promise<{ success: boolean; playlist?: Playlist; error?: string }>
       deletePlaylist: (id: string) => Promise<{ success: boolean; error?: string }>
       syncPlaylist: (id: string) => Promise<{ success: boolean; error?: string }>
       renamePlaylist: (

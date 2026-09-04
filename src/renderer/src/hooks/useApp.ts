@@ -32,6 +32,7 @@ export interface UseAppReturn {
   sidebarWidth: number
   activeSyncs: ActiveSyncsMap
   handleAddPlaylist: (url: string, platform?: 'youtube' | 'spotify') => Promise<void>
+  handleCreateEmptyPlaylist: (title: string) => Promise<void>
   handleDeletePlaylist: (id: string) => Promise<void>
   handleSyncPlaylist: (id: string) => Promise<void>
   handleRenamePlaylist: (id: string, newTitle: string) => Promise<void>
@@ -421,6 +422,20 @@ export function useApp(): UseAppReturn {
         refreshPlaylistStats()
       } else {
         throw new Error(res.error || 'Failed to add playlist')
+      }
+    },
+    [refreshPlaylistStats]
+  )
+
+  const handleCreateEmptyPlaylist = useCallback(
+    async (title: string): Promise<void> => {
+      const res = await window.api.createEmptyPlaylist(title)
+      if (res.success && res.playlist) {
+        setPlaylists((prev) => [...prev, res.playlist!])
+        setSelectedPlaylistId(res.playlist.id)
+        refreshPlaylistStats()
+      } else {
+        throw new Error(res.error || 'Failed to create playlist')
       }
     },
     [refreshPlaylistStats]
@@ -828,6 +843,7 @@ export function useApp(): UseAppReturn {
     sidebarWidth,
     activeSyncs,
     handleAddPlaylist,
+    handleCreateEmptyPlaylist,
     handleDeletePlaylist,
     handleSyncPlaylist,
     handleRenamePlaylist,

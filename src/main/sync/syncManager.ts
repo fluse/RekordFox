@@ -13,6 +13,9 @@ export async function syncPlaylist(playlist: Playlist, win: BrowserWindow): Prom
   if (playlist.source === 'youtube-oauth') {
     return pullYoutubeOAuthPlaylist(playlist, win)
   }
+  // 'local'/'spotify' playlists with no `url` are manually-created empty playlists — there's no
+  // remote to pull from, so both the manual sync button and the background scheduler are no-ops.
+  if (!playlist.url) return
   if (playlist.source === 'spotify') {
     return syncSpotifyPlaylist(playlist, win)
   }

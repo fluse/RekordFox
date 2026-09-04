@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, CheckCircle2, Download, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, ListMusic, Loader2 } from 'lucide-react'
 import type { Playlist, PlaylistStats } from '@main/db'
 import { useLanguage } from '@renderer/i18n'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
@@ -122,7 +122,7 @@ export function PlaylistItem({
                 </TooltipTrigger>
                 <TooltipContent>{t('sidebar.spotifySourceTooltip')}</TooltipContent>
               </Tooltip>
-            ) : (
+            ) : playlist.url ? (
               // Plain YouTube playlist added via a public URL — download-only, no link.
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -131,6 +131,17 @@ export function PlaylistItem({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>{t('sidebar.localSourceTooltip')}</TooltipContent>
+              </Tooltip>
+            ) : (
+              // Manually created, empty playlist (no remote URL) — populated only by dragging or
+              // copying tracks in from other playlists.
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex-shrink-0 flex items-center">
+                    <ListMusic className="h-3 w-3" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{t('sidebar.manualSourceTooltip')}</TooltipContent>
               </Tooltip>
             )}
             <span className="truncate">{playlist.title}</span>

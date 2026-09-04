@@ -9,6 +9,7 @@ const api = {
   getPlaylistStats: () => ipcRenderer.invoke('playlists:stats'),
   addPlaylist: (url: string, platform?: 'youtube' | 'spotify') =>
     ipcRenderer.invoke('playlists:add', url, platform),
+  createEmptyPlaylist: (title: string) => ipcRenderer.invoke('playlists:create-empty', title),
   deletePlaylist: (id: string) => ipcRenderer.invoke('playlists:delete', id),
   syncPlaylist: (id: string) => ipcRenderer.invoke('playlists:sync', id),
   renamePlaylist: (id: string, newTitle: string) =>

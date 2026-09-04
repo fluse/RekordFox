@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLanguage } from '@renderer/i18n'
 
-export type AddPlaylistPlatform = 'youtube' | 'spotify'
+export type AddPlaylistPlatform = 'youtube' | 'spotify' | 'empty'
 
 export interface UseAddPlaylistFormResult {
   url: string
@@ -13,11 +13,13 @@ export interface UseAddPlaylistFormResult {
   handleSubmit: (e: React.FormEvent) => Promise<void>
 }
 
-// Form state for adding a playlist by URL: validates the URL against the selected platform
-// (YouTube's `list=` parameter, or a Spotify playlist link), runs the async add, and surfaces
-// errors. Resets and closes the modal on success.
+// Form state for the Add Playlist modal. For 'youtube'/'spotify' it validates `url` against the
+// selected platform (YouTube's `list=` parameter, or a Spotify playlist link) and delegates to
+// onAdd; for 'empty' the same field holds a plain title (just needs to be non-blank) and
+// delegates to onCreateEmpty instead. Resets and closes the modal on success.
 export function useAddPlaylistForm(
-  onAdd: (url: string, platform: AddPlaylistPlatform) => Promise<void>,
+  onAdd: (url: string, platform: 'youtube' | 'spotify') => Promise<void>,
+  onCreateEmpty: (title: string) => Promise<void>,
   onClose: () => void
 ): UseAddPlaylistFormResult {
   const { t } = useLanguage()
@@ -48,7 +50,11 @@ export function useAddPlaylistForm(
     setError('')
 
     try {
-      await onAdd(url.trim(), platform)
+      if (platform === 'empty') {
+        await onCreateEmpty(url.trim())
+      } else {
+        await onAdd(url.trim(), platform)
+      }
       setUrl('')
       onClose()
     } catch (e: unknown) {

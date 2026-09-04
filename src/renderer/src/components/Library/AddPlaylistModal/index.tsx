@@ -1,26 +1,29 @@
 import React from 'react'
-import { Plus, Loader2, X } from 'lucide-react'
+import { Plus, Loader2, X, ListMusic } from 'lucide-react'
 import { useLanguage } from '@renderer/i18n'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import ToggleGroupField from '@renderer/components/common/ToggleGroupField'
 import YoutubeIcon from '@renderer/components/icons/YoutubeIcon'
 import SpotifyIcon from '@renderer/components/icons/SpotifyIcon'
-import { useAddPlaylistForm, AddPlaylistPlatform } from './useAddPlaylistForm'
+import { useAddPlaylistForm } from './useAddPlaylistForm'
 
 interface AddPlaylistModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (url: string, platform: AddPlaylistPlatform) => Promise<void>
+  onAdd: (url: string, platform: 'youtube' | 'spotify') => Promise<void>
+  onCreateEmpty: (title: string) => Promise<void>
 }
 
 export default function AddPlaylistModal({
   isOpen,
   onClose,
-  onAdd
+  onAdd,
+  onCreateEmpty
 }: AddPlaylistModalProps): React.JSX.Element | null {
   const { t } = useLanguage()
   const { url, platform, loading, error, updateUrl, setPlatform, handleSubmit } =
-    useAddPlaylistForm(onAdd, onClose)
+    useAddPlaylistForm(onAdd, onCreateEmpty, onClose)
+  const isEmpty = platform === 'empty'
 
   if (!isOpen) return null
 
@@ -46,7 +49,7 @@ export default function AddPlaylistModal({
             <label className="mb-1.5 block text-sm font-medium text-zinc-400">
               {t('addPlaylist.platformLabel')}
             </label>
-            <ToggleGroupField<AddPlaylistPlatform>
+            <ToggleGroupField<typeof platform>
               value={platform}
               onValueChange={setPlatform}
               disabled={loading}
@@ -68,6 +71,15 @@ export default function AddPlaylistModal({
                       {t('addPlaylist.platformSpotify')}
                     </>
                   )
+                },
+                {
+                  value: 'empty',
+                  label: (
+                    <>
+                      <ListMusic className="h-3.5 w-3.5" />
+                      {t('addPlaylist.platformEmpty')}
+                    </>
+                  )
                 }
               ]}
             />
@@ -75,14 +87,16 @@ export default function AddPlaylistModal({
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-zinc-400">
-              {t('addPlaylist.label')}
+              {isEmpty ? t('addPlaylist.labelEmpty') : t('addPlaylist.label')}
             </label>
             <input
               type="text"
               placeholder={
-                platform === 'spotify'
-                  ? t('addPlaylist.placeholderSpotify')
-                  : t('addPlaylist.placeholder')
+                isEmpty
+                  ? t('addPlaylist.placeholderEmpty')
+                  : platform === 'spotify'
+                    ? t('addPlaylist.placeholderSpotify')
+                    : t('addPlaylist.placeholder')
               }
               value={url}
               onChange={(e) => updateUrl(e.target.value)}

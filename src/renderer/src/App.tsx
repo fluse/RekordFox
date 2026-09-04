@@ -71,6 +71,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
     sidebarWidth,
     activeSyncs,
     handleAddPlaylist,
+    handleCreateEmptyPlaylist,
     handleDeletePlaylist,
     handleSyncPlaylist,
     handleRenamePlaylist,
@@ -237,6 +238,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddPlaylist}
+        onCreateEmpty={handleCreateEmptyPlaylist}
       />
 
       <Toaster
