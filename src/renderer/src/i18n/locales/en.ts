@@ -449,6 +449,8 @@ export const en = {
   'preview.controls.pause': 'Pause',
   'preview.controls.mute': 'Mute',
   'preview.controls.unmute': 'Unmute',
+  'preview.pitch.label': 'Pitch',
+  'preview.pitch.reset': 'Reset pitch',
   'preview.smartMode.bpmTolerance.label': 'BPM tolerance',
   'preview.smartMode.bpmTolerance.strict': 'Strict',
   'preview.smartMode.bpmTolerance.normal': 'Normal',

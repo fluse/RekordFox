@@ -453,6 +453,8 @@ export const es = {
   'preview.controls.pause': 'Pausar',
   'preview.controls.mute': 'Silenciar',
   'preview.controls.unmute': 'Quitar silencio',
+  'preview.pitch.label': 'Tono',
+  'preview.pitch.reset': 'Restablecer tono',
   'preview.smartMode.bpmTolerance.label': 'Tolerancia de BPM',
   'preview.smartMode.bpmTolerance.strict': 'Estricta',
   'preview.smartMode.bpmTolerance.normal': 'Normal',

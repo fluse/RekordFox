@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Track } from '@main/db'
 import { getMediaUrl } from '@renderer/utils/audio'
+import { clampAndSnapPitch } from './pitchUtils'
 
 const VOLUME_STORAGE_KEY = 'rekordfox_preview_volume'
+const PITCH_STORAGE_KEY = 'rekordfox_preview_pitch'
 
 interface UseAudioPlayerResult {
   audioRef: React.RefObject<HTMLAudioElement | null>
@@ -10,6 +12,7 @@ interface UseAudioPlayerResult {
   duration: number
   volume: number
   isMuted: boolean
+  pitch: number
   handleVolumeChange: (volume: number) => void
   toggleMute: () => void
   handleTimeUpdate: () => void
@@ -17,6 +20,7 @@ interface UseAudioPlayerResult {
   handleAudioEnded: () => void
   handleSeek: (e: React.ChangeEvent<HTMLInputElement>) => void
   seekTo: (time: number) => void
+  handlePitchChange: (pitch: number) => void
 }
 
 export function useAudioPlayer(
@@ -40,6 +44,11 @@ export function useAudioPlayer(
     return savedVolume ? parseFloat(savedVolume) : 0.8
   })
   const [isMuted, setIsMuted] = useState(false)
+  const [pitch, setPitch] = useState<number>(() => {
+    const savedPitch = localStorage.getItem(PITCH_STORAGE_KEY)
+    const parsed = savedPitch ? parseFloat(savedPitch) : 1.0
+    return Number.isFinite(parsed) ? clampAndSnapPitch(parsed) : 1.0
+  })
 
   // Load and play/pause preview track sync
   useEffect(() => {
@@ -89,6 +98,15 @@ export function useAudioPlayer(
     localStorage.setItem(VOLUME_STORAGE_KEY, String(volume))
   }, [volume, isMuted])
 
+  // Handle pitch/tempo changes. Applied here (not just after load()) so
+  // dragging the slider updates a currently playing track immediately.
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = pitch
+    }
+    localStorage.setItem(PITCH_STORAGE_KEY, String(pitch))
+  }, [pitch])
+
   const handleTimeUpdate = (): void => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime)
@@ -103,6 +121,9 @@ export function useAudioPlayer(
         setCurrentTime(initialPosition)
       }
       initialPositionConsumed.current = true
+      // load() resets playbackRate to defaultPlaybackRate (1.0) internally,
+      // so the pitch slider's value must be re-applied on every new track.
+      audioRef.current.playbackRate = pitch
     }
   }
 
@@ -136,18 +157,24 @@ export function useAudioPlayer(
     setCurrentTime(time)
   }
 
+  const handlePitchChange = (newPitch: number): void => {
+    setPitch(clampAndSnapPitch(newPitch))
+  }
+
   return {
     audioRef,
     currentTime,
     duration,
     volume,
     isMuted,
+    pitch,
     handleVolumeChange,
     toggleMute,
     handleTimeUpdate,
     handleLoadedMetadata,
     handleAudioEnded,
     handleSeek,
-    seekTo
+    seekTo,
+    handlePitchChange
   }
 }

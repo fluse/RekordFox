@@ -456,6 +456,8 @@ export const de = {
   'preview.controls.pause': 'Pause',
   'preview.controls.mute': 'Stumm schalten',
   'preview.controls.unmute': 'Stummschaltung aufheben',
+  'preview.pitch.label': 'Pitch',
+  'preview.pitch.reset': 'Pitch zurücksetzen',
   'preview.smartMode.bpmTolerance.label': 'BPM-Toleranz',
   'preview.smartMode.bpmTolerance.strict': 'Streng',
   'preview.smartMode.bpmTolerance.normal': 'Normal',

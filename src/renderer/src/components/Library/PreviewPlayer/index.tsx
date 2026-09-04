@@ -13,6 +13,7 @@ import PreviewPlayerHeader from './PreviewPlayerHeader'
 import PreviewPlayerTrackInfo from './PreviewPlayerTrackInfo'
 import PreviewPlayerProgress from './PreviewPlayerProgress'
 import PreviewPlayerControls from './PreviewPlayerControls'
+import PreviewPlayerPitch from './PreviewPlayerPitch'
 import PreviewPlayerQueue, { QUEUE_ID_MIME } from './PreviewPlayerQueue'
 import PreviewPlayerSmartModePanel from './PreviewPlayerSmartModePanel'
 
@@ -55,13 +56,15 @@ export default function PreviewPlayer({
     duration,
     volume,
     isMuted,
+    pitch,
     handleVolumeChange,
     toggleMute,
     handleTimeUpdate,
     handleLoadedMetadata,
     handleAudioEnded,
     handleSeek,
-    seekTo
+    seekTo,
+    handlePitchChange
   } = useAudioPlayer(
     previewTrack,
     isPlaying,
@@ -203,6 +206,14 @@ export default function PreviewPlayer({
             onToggleSmartMode={toggleSmartMode}
             smartModeEnableLabel={t('preview.controls.smartModeEnable')}
             smartModeDisableLabel={t('preview.controls.smartModeDisable')}
+          />
+
+          <PreviewPlayerPitch
+            track={previewTrack}
+            pitch={pitch}
+            onPitchChange={handlePitchChange}
+            label={t('preview.pitch.label')}
+            resetLabel={t('preview.pitch.reset')}
           />
         </div>
 
