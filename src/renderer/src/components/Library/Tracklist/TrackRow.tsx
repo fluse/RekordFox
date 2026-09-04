@@ -165,7 +165,7 @@ const TrackRow = React.forwardRef<HTMLTableRowElement, TrackRowProps>(function T
         isPlaceholder
           ? 'opacity-60 cursor-not-allowed select-none'
           : 'cursor-grab active:cursor-grabbing'
-      } ${isPlayingA || isPlayingB ? 'bg-primary/5 row-playing' : ''}`}
+      } ${isPlayingA || isPlayingB || isCurrentlyPlaying ? 'bg-primary/5 row-playing' : ''}`}
     >
       {visibleColumns.map((colId) => {
         const cell = ((): React.ReactElement<

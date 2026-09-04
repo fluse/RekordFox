@@ -415,20 +415,20 @@ p {
 
 /* Playing state */
 .row-playing .sticky-position-cell {
-  background-color: color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--background))) !important;
-  color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
 }
 
 .light .row-playing .sticky-position-cell {
-  background-color: color-mix(in srgb, hsl(var(--primary)) 8%, #ffffff) !important;
-  color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
 }
 
 /* Playing + Hover state */
 .row-playing.group:hover .sticky-position-cell {
-  background-color: color-mix(in srgb, hsl(var(--primary)) 12%, hsl(var(--background))) !important;
+  background-color: hsl(var(--primary)) !important;
 }
 
 .light .row-playing.group:hover .sticky-position-cell {
-  background-color: color-mix(in srgb, hsl(var(--primary)) 14%, #ffffff) !important;
+  background-color: hsl(var(--primary)) !important;
 }
