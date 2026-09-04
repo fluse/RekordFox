@@ -58,8 +58,6 @@ export const es = {
   'sidebar.allDownloadedTooltip': 'Los {{count}} temas descargados',
   'sidebar.someMissingTooltip': '{{downloaded}} de {{total}} temas descargados',
   'sidebar.syncErrorTooltip': 'La última sincronización falló',
-  'sidebar.orphanedTooltip':
-    'Cuenta de YouTube desconectada — vuelve a conectarla en Ajustes para sincronizar de nuevo',
   'sidebar.needsReauthTooltip':
     'La sesión de YouTube expiró — vuelve a conectar la cuenta en Ajustes',
   'sidebar.pushPendingTooltip': 'Cambios sin guardar — aún no sincronizados con YouTube',

@@ -786,15 +786,13 @@ export function useApp(): UseAppReturn {
     })
 
     // Listen for playlists the main process unlinked (their YouTube account was disconnected, or
-    // found gone on startup): keep them, but reflect the orphaned state so the UI disables
-    // write-back and stops showing a pending "sync to YouTube" prompt against a dead account.
+    // found gone on startup): they're demoted to plain 'local' playlists (see
+    // unlinkPlaylistsForAccount) — kept, with tracks/downloads intact, but no longer OAuth-backed
+    // at all. Replace them wholesale with what the main process sent rather than patching in a
+    // link state ourselves.
     const cleanupPlaylistsUnlinked = window.api.onYoutubePlaylistsUnlinked((unlinkedPlaylists) => {
-      const orphanedIds = new Set(unlinkedPlaylists.map((p) => p.id))
-      setPlaylists((prev) =>
-        prev.map((p) =>
-          orphanedIds.has(p.id) ? { ...p, linkState: 'orphaned', pendingRemoteChanges: false } : p
-        )
-      )
+      const byId = new Map(unlinkedPlaylists.map((p) => [p.id, p]))
+      setPlaylists((prev) => prev.map((p) => byId.get(p.id) ?? p))
     })
 
     return (): void => {

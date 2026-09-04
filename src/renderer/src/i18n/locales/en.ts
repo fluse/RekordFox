@@ -58,8 +58,6 @@ export const en = {
   'sidebar.allDownloadedTooltip': 'All {{count}} tracks downloaded',
   'sidebar.someMissingTooltip': '{{downloaded}} of {{total}} tracks downloaded',
   'sidebar.syncErrorTooltip': 'Last sync failed',
-  'sidebar.orphanedTooltip':
-    'YouTube account disconnected — reconnect it in Settings to sync again',
   'sidebar.needsReauthTooltip': 'YouTube sign-in expired — reconnect the account in Settings',
   'sidebar.pushPendingTooltip': 'Unsaved changes — not yet synced to YouTube',
   'sidebar.addPlaylistTooltip': 'Add playlist',

@@ -78,7 +78,7 @@ export function registerPlaylistsIpc(): void {
       await syncPlaylist(playlist, mainWindow)
     } catch (err) {
       // e.g. pullYoutubeOAuthPlaylist throwing an actionable "reconnect your account" message
-      // for a needs-reauth/orphaned link — surface it verbatim rather than a generic failure.
+      // for a needs-reauth link — surface it verbatim rather than a generic failure.
       return { success: false, error: err instanceof Error ? err.message : String(err) }
     }
     const finished = getPlaylists().find((p) => p.id === id)

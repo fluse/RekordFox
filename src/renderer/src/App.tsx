@@ -219,6 +219,7 @@ function AppContent({ appState }: { appState: UseAppReturn }): React.JSX.Element
             currentTrackA={loadedTrackA}
             currentTrackB={loadedTrackB}
             activeDownloads={activeSyncs[selectedPlaylistId]?.activeDownloads}
+            isMixerCollapsed={isMixerCollapsed}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center bg-zinc-900/10 text-zinc-500 text-sm">

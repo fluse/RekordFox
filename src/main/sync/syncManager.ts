@@ -25,9 +25,11 @@ export async function syncPlaylistById(id: string, win: BrowserWindow): Promise<
   return syncPlaylist(playlist, win)
 }
 
-// Background cron sync across all playlists. Safe for every source now that it dispatches: an
-// orphaned/needs-reauth OAuth playlist is skipped inside pullYoutubeOAuthPlaylist, and the shared
-// active-sync guard keeps a scheduled run from colliding with a manual one on the same playlist.
+// Background cron sync across all playlists. Safe for every source now that it dispatches: a
+// needs-reauth OAuth playlist falls back to a plain scrape inside pullYoutubeOAuthPlaylist (an
+// account-removed one isn't 'youtube-oauth' any more, so it goes straight through syncLocalPlaylist
+// like any other playlist), and the shared active-sync guard keeps a scheduled run from colliding
+// with a manual one on the same playlist.
 let syncInterval: NodeJS.Timeout | null = null
 
 export function startBackgroundSync(win: BrowserWindow, intervalMs = 30 * 60 * 1000): void {

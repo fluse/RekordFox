@@ -46,6 +46,7 @@ interface TracklistProps {
   currentTrackA: Track | null
   currentTrackB: Track | null
   activeDownloads?: Record<string, { trackId: string; title: string; percent: number }>
+  isMixerCollapsed: boolean
 }
 
 export default function Tracklist({
@@ -68,7 +69,8 @@ export default function Tracklist({
   onFindSimilarTrack,
   currentTrackA,
   currentTrackB,
-  activeDownloads
+  activeDownloads,
+  isMixerCollapsed
 }: TracklistProps): React.JSX.Element {
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<SortField>('position')
@@ -79,6 +81,18 @@ export default function Tracklist({
   const { t } = useLanguage()
   const { contextMenu, open: openContextMenu, close: closeContextMenu } = useTrackContextMenu()
   const { visibleColumns, visibleCols, columnWidths, toggleColumn, startResize } = useColumnConfig()
+
+  // The "Load into Deck" column only makes sense while the mixer is open, so hide it
+  // from the actual table regardless of the user's saved column preference — the
+  // preference itself (and its toggle in the column menu) stays untouched.
+  const effectiveVisibleColumns = useMemo(
+    () => (isMixerCollapsed ? visibleColumns.filter((id) => id !== 'loadDeck') : visibleColumns),
+    [visibleColumns, isMixerCollapsed]
+  )
+  const effectiveVisibleCols = useMemo(
+    () => (isMixerCollapsed ? visibleCols.filter((col) => col.id !== 'loadDeck') : visibleCols),
+    [visibleCols, isMixerCollapsed]
+  )
 
   // Background scanning of missing BPMs/Keys
   const scanningBpm = useTrackScanner(tracks, playlistId, onUpdateBpm, onUpdateKey)
@@ -188,8 +202,8 @@ export default function Tracklist({
       {isSearching ? (
         <TracklistSearchResults
           groups={searchGroups}
-          visibleCols={visibleCols}
-          visibleColumns={visibleColumns}
+          visibleCols={effectiveVisibleCols}
+          visibleColumns={effectiveVisibleColumns}
           columnWidths={columnWidths}
           sortField={sortField}
           sortOrder={sortOrder}
@@ -210,7 +224,7 @@ export default function Tracklist({
             style={{ tableLayout: 'fixed' }}
           >
             <colgroup>
-              {visibleCols.map((col) => (
+              {effectiveVisibleCols.map((col) => (
                 <col
                   key={col.id}
                   style={{ width: `${columnWidths[col.id] ?? col.defaultWidth}px` }}
@@ -218,7 +232,7 @@ export default function Tracklist({
               ))}
             </colgroup>
             <TracklistTableHead
-              visibleCols={visibleCols}
+              visibleCols={effectiveVisibleCols}
               sortField={sortField}
               sortOrder={sortOrder}
               onSort={handleSort}
@@ -230,7 +244,7 @@ export default function Tracklist({
                   <TrackRowPlaceholder
                     key={item.key}
                     ref={registerRow(item.key)}
-                    colSpan={visibleColumns.length}
+                    colSpan={effectiveVisibleColumns.length}
                   />
                 ) : (
                   <TrackRow
@@ -250,14 +264,14 @@ export default function Tracklist({
                     isReorderEnabled={isReorderEnabled}
                     isDragging={item.isDragging}
                     onReorderPointerDown={onRowPointerDown}
-                    visibleColumns={visibleColumns}
+                    visibleColumns={effectiveVisibleColumns}
                   />
                 )
               )}
               {filteredAndSortedTracks.length === 0 && (
                 <tr>
                   <td
-                    colSpan={visibleColumns.length}
+                    colSpan={effectiveVisibleColumns.length}
                     className="py-8 text-center text-zinc-600 text-sm"
                   >
                     {t('tracklist.noTracksFound')}

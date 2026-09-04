@@ -10,7 +10,7 @@ import {
   addOAuthAccount,
   updateOAuthAccountTokens,
   removeOAuthAccount,
-  orphanPlaylistsForAccount
+  unlinkPlaylistsForAccount
 } from '../db'
 import { renderOAuthCallbackPage } from './oauthCallbackPage'
 
@@ -302,9 +302,9 @@ export function getYoutubeClientForAccount(accountId: string): youtube_v3.Youtub
 }
 
 // Disconnects an account: best-effort token revocation, then removes it. Any playlists that were
-// linked to it are orphaned (kept, but write-back disabled) and returned so the caller can push
-// the change to the renderer — without this they'd keep 'youtube-oauth' + a dead oauthAccountId
-// and every "sync to YouTube" would fail with "account not found".
+// linked to it are demoted to plain 'local' playlists (kept, but write-back disabled) and returned
+// so the caller can push the change to the renderer — without this they'd keep 'youtube-oauth' + a
+// dead oauthAccountId and every "sync to YouTube" would fail with "account not found".
 export async function disconnectYoutubeAccount(accountId: string): Promise<Playlist[]> {
   const account = getOAuthAccounts().find((a) => a.id === accountId)
   if (account) {
@@ -318,10 +318,10 @@ export async function disconnectYoutubeAccount(accountId: string): Promise<Playl
     }
   }
   invalidateYoutubeClient(accountId)
-  const orphaned = orphanPlaylistsForAccount(accountId)
+  const unlinked = unlinkPlaylistsForAccount(accountId)
   removeOAuthAccount(accountId)
-  if (orphaned.length > 0) {
-    broadcastToAllWindows('youtube-oauth:playlists-unlinked', orphaned)
+  if (unlinked.length > 0) {
+    broadcastToAllWindows('youtube-oauth:playlists-unlinked', unlinked)
   }
-  return orphaned
+  return unlinked
 }

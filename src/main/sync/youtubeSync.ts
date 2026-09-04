@@ -15,6 +15,7 @@ import {
   isDownloadAbandoned,
   clearPlaylistDirty,
   setPlaylistLinkState,
+  unlinkPlaylistFromOauth,
   getSettings,
   getDownloadsDir,
   getCoversDir,
@@ -29,9 +30,10 @@ import { analyzeAndNotifyBpm, analyzeAndNotifyKey } from '../analysis/trackAnaly
 import { parseTitleAndArtist, beginPlaylistSync, endPlaylistSync, syncLocalPlaylist } from './sync'
 import { getYoutubeClientForAccount, isAuthError, isQuotaError } from '../auth/youtubeOAuth'
 
-// Playlists whose link is healthy enough to talk to YouTube. Orphaned (account removed) and
-// needs-reauth (token revoked) playlists must never hit the API — the caller surfaces a clear,
-// actionable error instead of a raw "account not found" / 401.
+// Playlists whose link is healthy enough to talk to YouTube. A needs-reauth (token revoked)
+// playlist must never hit the API — the caller surfaces a clear, actionable error instead of a
+// raw 401 (an account-removed playlist isn't 'youtube-oauth' at all any more, see
+// unlinkPlaylistsForAccount, so it's excluded by the source check alone).
 function isLinkUsable(playlist: Playlist): boolean {
   return (
     playlist.source === 'youtube-oauth' &&
@@ -151,14 +153,15 @@ export async function reconcileLocalPlaylistsWithAccount(accountId: string): Pro
 
   // Only (re-)claim a playlist for this account when doing so can't "steal" it from another,
   // still-connected account. A YouTube playlist ID is owned by exactly one channel, so a match
-  // here is either: a 'local' one we can adopt, an 'orphaned' one whose account is gone, or one
+  // here is either: a 'local' one we can adopt (including one demoted from 'youtube-oauth' after
+  // its old account was removed, see unlinkPlaylistsForAccount), a 'needs-reauth' one, or one
   // pointing at an oauthAccountId that no longer exists. A playlist already linked to a *different
   // but still-connected* account is left alone — that's the same channel connected twice, and
   // relinking it on every reconcile would ping-pong it between the two account IDs.
   const candidates = getPlaylists().filter((p) => {
     if (!ownRemoteIds.has(p.id) || p.oauthAccountId === accountId) return false
     if (p.source === 'local') return true
-    if (p.linkState === 'orphaned' || p.linkState === 'needs-reauth') return true
+    if (p.linkState === 'needs-reauth') return true
     return !p.oauthAccountId || !connectedAccountIds.has(p.oauthAccountId)
   })
   if (candidates.length === 0) return []
@@ -191,21 +194,22 @@ export async function reconcileLocalPlaylistsWithAccount(accountId: string): Pro
 }
 
 // Self-heals link state that drifted while the app was closed: any 'youtube-oauth' playlist whose
-// oauthAccountId no longer belongs to a connected account is marked 'orphaned'. This covers the
-// case where the account file was edited/removed out-of-band, or an older build never orphaned on
-// disconnect. Returns the playlists it changed so the caller can notify the renderer.
+// oauthAccountId no longer belongs to a connected account gets demoted to a plain 'local' playlist
+// (see unlinkPlaylistFromOauth) — same as if its account had just been disconnected. This covers
+// the case where the account file was edited/removed out-of-band, or an older build never demoted
+// it on disconnect. Returns the playlists it changed so the caller can notify the renderer.
 export function reconcilePlaylistLinkStates(): Playlist[] {
   const connectedAccountIds = new Set(getOAuthAccounts().map((a) => a.id))
-  const orphaned: Playlist[] = []
+  const unlinked: Playlist[] = []
   for (const p of getPlaylists()) {
     if (p.source !== 'youtube-oauth') continue
     const healthy = !!p.oauthAccountId && connectedAccountIds.has(p.oauthAccountId)
-    if (!healthy && p.linkState !== 'orphaned') {
-      setPlaylistLinkState(p.id, 'orphaned')
-      orphaned.push({ ...p, linkState: 'orphaned' })
+    if (!healthy) {
+      unlinkPlaylistFromOauth(p.id)
+      unlinked.push({ ...p })
     }
   }
-  return orphaned
+  return unlinked
 }
 
 // Runs once at app startup for every already-connected account, covering the case where a
@@ -214,11 +218,11 @@ export function reconcilePlaylistLinkStates(): Playlist[] {
 // any newly-linked playlists to the given window so the renderer can pick them up without a
 // manual refresh.
 export async function reconcileAllConnectedAccounts(win: BrowserWindow): Promise<void> {
-  // First flag any playlist whose account vanished while closed, so the UI shows the right state
-  // even if no account is currently connected to adopt it.
-  const orphaned = reconcilePlaylistLinkStates()
-  if (orphaned.length > 0) {
-    win.webContents.send('youtube-oauth:playlists-unlinked', orphaned)
+  // First demote any playlist whose account vanished while closed, so the UI shows the right
+  // state even if no account is currently connected to adopt it.
+  const unlinked = reconcilePlaylistLinkStates()
+  if (unlinked.length > 0) {
+    win.webContents.send('youtube-oauth:playlists-unlinked', unlinked)
   }
 
   for (const account of getOAuthAccounts().filter((a) => a.provider === 'google')) {
@@ -278,8 +282,9 @@ export async function importYoutubePlaylist(
     linkState: 'linked'
   }
   // addPlaylist is a no-op when the ID already exists (e.g. it was added earlier as a 'local'
-  // public-URL playlist, or is a stale orphaned OAuth one). In that case link it to this account
-  // explicitly instead, so we upgrade in place rather than silently leaving a mismatched source.
+  // public-URL playlist, or was demoted to one after its old OAuth account was removed). In that
+  // case link it to this account explicitly instead, so we upgrade in place rather than silently
+  // leaving a mismatched source.
   if (getPlaylists().some((p) => p.id === remotePlaylistId)) {
     linkPlaylistToOauthAccount(remotePlaylistId, accountId)
   } else {
@@ -512,9 +517,9 @@ async function downloadItemsIntoPlaylist(
 // Pulls the current state of a 'youtube-oauth' playlist from the authenticated Data API and
 // reconciles it into the local db. This is the ONLY correct way to fully refresh an OAuth
 // playlist — the yt-dlp path (syncLocalPlaylist) can't see private/unlisted items. When the
-// account link itself isn't usable (orphaned/needs-reauth), this falls back to that same yt-dlp
-// path anyway — best-effort membership updates (new tracks only) instead of no updates at all
-// until the DJ reconnects the account.
+// account link itself isn't usable (needs-reauth), this falls back to that same yt-dlp path
+// anyway — best-effort membership updates (new tracks only) instead of no updates at all until
+// the DJ reconnects the account.
 //
 // Reconciliation rules: YouTube is authoritative for adding new tracks and refreshing each
 // track's own metadata, but never for removing tracks or for local order — so a pull never fights
@@ -532,9 +537,9 @@ export async function pullYoutubeOAuthPlaylist(
   win: BrowserWindow
 ): Promise<void> {
   if (!isLinkUsable(playlist)) {
-    // Orphaned / needs-reauth / not actually OAuth-backed: the Data API is off-limits, but the
-    // playlist may still be publicly reachable, so fall back to the same yt-dlp scrape 'local'
-    // playlists use. This way new tracks keep flowing in even while the account link is broken.
+    // Needs-reauth (or not actually OAuth-backed): the Data API is off-limits, but the playlist
+    // may still be publicly reachable, so fall back to the same yt-dlp scrape 'local' playlists
+    // use. This way new tracks keep flowing in even while the account link is broken.
     await syncLocalPlaylist(playlist, win)
     const afterFallback = getPlaylists().find((p) => p.id === playlist.id)
     if (afterFallback?.syncStatus !== 'error') return
@@ -656,7 +661,7 @@ export async function pushPlaylistOrderToYoutube(
   if (!playlist || playlist.source !== 'youtube-oauth') {
     throw new Error('Playlist is not linked to a YouTube account.')
   }
-  if (playlist.linkState === 'orphaned' || !playlist.oauthAccountId) {
+  if (!playlist.oauthAccountId) {
     throw new Error(
       'This playlist is no longer linked to a YouTube account. Reconnect the account in Settings to sync it again.'
     )

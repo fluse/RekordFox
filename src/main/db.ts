@@ -31,15 +31,17 @@ export interface Playlist {
   oauthAccountId?: string // links a 'youtube-oauth' playlist to the OAuthAccount used to import it
   // Health of the OAuth link, authoritative for whether write-back is possible. Only meaningful
   // for source === 'youtube-oauth'; undefined is treated as 'linked' for backward compatibility.
+  // A playlist whose account is gone for good isn't represented here at all — it's demoted to a
+  // plain 'local' playlist instead (see unlinkPlaylistsForAccount), so there's nothing left to
+  // track: 'needs-reauth' is the only unhealthy state a 'youtube-oauth' playlist can be in.
   //  - 'linked':       oauthAccountId points at a connected account that owns this playlist.
-  //  - 'orphaned':     the linked account was disconnected/removed — no write-back until re-linked.
   //  - 'needs-reauth': the account still exists but its token is invalid (revoked/expired refresh).
   linkState?: PlaylistLinkState
   pendingRemoteChanges?: boolean // true once the local order diverges from the last YouTube push
   lastPushToYoutube?: string
 }
 
-export type PlaylistLinkState = 'linked' | 'orphaned' | 'needs-reauth'
+export type PlaylistLinkState = 'linked' | 'needs-reauth'
 
 export interface OAuthAccount {
   id: string
@@ -584,8 +586,9 @@ export function updatePlaylistStatus(
 export function markPlaylistDirty(playlistId: string): void {
   const playlist = dbData.playlists.find((p) => p.id === playlistId)
   // Only OAuth-backed playlists with a healthy link can push back, so only they track pending
-  // changes — flagging an orphaned/needs-reauth one would light up a "sync to YouTube" prompt that
-  // can't succeed until the account is reconnected.
+  // changes — flagging a needs-reauth one would light up a "sync to YouTube" prompt that can't
+  // succeed until the account is reconnected (an unlinked-account playlist isn't 'youtube-oauth'
+  // at all any more, see unlinkPlaylistsForAccount, so it's excluded by the source check alone).
   if (
     playlist &&
     playlist.source === 'youtube-oauth' &&
@@ -606,9 +609,11 @@ export function clearPlaylistDirty(playlistId: string, timestamp: string): void 
   }
 }
 
-// Upgrades a 'local' (public-URL, download-only) playlist to 'youtube-oauth' — or re-links an
-// 'orphaned'/'needs-reauth' one to a (re)connected account — once it's been confirmed to actually
-// belong to that account, restoring write-back support and clearing any stale link problem.
+// Upgrades a 'local' (public-URL, download-only) playlist to 'youtube-oauth' — or re-links a
+// 'needs-reauth' one to a (re)connected account — once it's been confirmed to actually belong to
+// that account, restoring write-back support and clearing any stale link problem. A playlist
+// whose account was fully removed goes through this same 'local' path, since that's what it was
+// demoted to (see unlinkPlaylistsForAccount).
 export function linkPlaylistToOauthAccount(playlistId: string, accountId: string): void {
   const playlist = dbData.playlists.find((p) => p.id === playlistId)
   if (playlist) {
@@ -629,22 +634,40 @@ export function setPlaylistLinkState(playlistId: string, state: PlaylistLinkStat
   }
 }
 
-// Marks every 'youtube-oauth' playlist tied to the given account as 'orphaned' when that account
-// is disconnected: keeps the source/tracks/downloads intact so the user can re-link later, but
-// stops write-back (the push path refuses anything that isn't 'linked') and clears the pending
-// flag so no stale "sync to YouTube" prompt lingers against an account that no longer exists.
-// Returns the affected playlists so the caller can tell the renderer to update.
-export function orphanPlaylistsForAccount(accountId: string): Playlist[] {
+// A removed OAuth account is never coming back under the same ID, so there is nothing left to
+// "re-link" to — rather than parking its playlists in a permanently-broken 'orphaned' state,
+// demote them straight to a plain 'local' one, dropping out of OAuth entirely. They keep their
+// source/tracks/downloads and behave exactly like a playlist added by URL from here on (synced by
+// scraping, not the Data API), including staying eligible for automatic (re-)adoption later if the
+// same channel is ever connected under a new account (see reconcileLocalPlaylistsWithAccount).
+function demoteToLocalPlaylist(playlist: Playlist): void {
+  playlist.source = 'local'
+  delete playlist.oauthAccountId
+  delete playlist.linkState
+  playlist.pendingRemoteChanges = false
+}
+
+// Demotes every 'youtube-oauth' playlist tied to the given account when it's disconnected. Returns
+// the affected playlists so the caller can tell the renderer to update.
+export function unlinkPlaylistsForAccount(accountId: string): Playlist[] {
   const affected = dbData.playlists.filter(
     (p) => p.source === 'youtube-oauth' && p.oauthAccountId === accountId
   )
   if (affected.length === 0) return []
-  for (const playlist of affected) {
-    playlist.linkState = 'orphaned'
-    playlist.pendingRemoteChanges = false
-  }
+  affected.forEach(demoteToLocalPlaylist)
   saveDb()
   return affected
+}
+
+// Single-playlist counterpart to unlinkPlaylistsForAccount, used by the startup self-heal (see
+// reconcilePlaylistLinkStates) which discovers stale links one playlist at a time rather than by
+// account. No-op for playlists that aren't OAuth-backed.
+export function unlinkPlaylistFromOauth(playlistId: string): void {
+  const playlist = dbData.playlists.find((p) => p.id === playlistId)
+  if (playlist && playlist.source === 'youtube-oauth') {
+    demoteToLocalPlaylist(playlist)
+    saveDb()
+  }
 }
 
 // Attaches the remote playlistItem ID a track needs for reorder push-back, once its parent

@@ -60,8 +60,6 @@ export const de = {
   'sidebar.allDownloadedTooltip': 'Alle {{count}} Tracks heruntergeladen',
   'sidebar.someMissingTooltip': '{{downloaded}} von {{total}} Tracks heruntergeladen',
   'sidebar.syncErrorTooltip': 'Letzte Synchronisierung fehlgeschlagen',
-  'sidebar.orphanedTooltip':
-    'YouTube-Konto getrennt — erneut in den Einstellungen verbinden, um wieder zu synchronisieren',
   'sidebar.needsReauthTooltip':
     'YouTube-Anmeldung abgelaufen — Konto in den Einstellungen erneut verbinden',
   'sidebar.pushPendingTooltip': 'Ungespeicherte Änderungen — noch nicht zu YouTube synchronisiert',

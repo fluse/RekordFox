@@ -92,26 +92,23 @@ export function PlaylistItem({
           >
             {playlist.source === 'youtube-oauth' ? (
               // Account-connected (OAuth) playlist: still a YouTube playlist, so it gets the
-              // YouTube icon rather than a "connected" glyph. Dimmed when the link is broken
-              // (account removed) or its sign-in expired.
+              // YouTube icon rather than a "connected" glyph. Dimmed while its sign-in has
+              // expired — a disconnected account instead demotes the playlist to a plain 'local'
+              // one (see unlinkPlaylistsForAccount), so there's no separate "broken link" case here.
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span
                     className={`flex-shrink-0 flex items-center ${
-                      playlist.linkState === 'orphaned' || playlist.linkState === 'needs-reauth'
-                        ? 'opacity-40'
-                        : ''
+                      playlist.linkState === 'needs-reauth' ? 'opacity-40' : ''
                     }`}
                   >
                     <YoutubeIcon className="h-3 w-3" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {playlist.linkState === 'orphaned'
-                    ? t('sidebar.orphanedTooltip')
-                    : playlist.linkState === 'needs-reauth'
-                      ? t('sidebar.needsReauthTooltip')
-                      : t('sidebar.connectedTooltip')}
+                  {playlist.linkState === 'needs-reauth'
+                    ? t('sidebar.needsReauthTooltip')
+                    : t('sidebar.connectedTooltip')}
                 </TooltipContent>
               </Tooltip>
             ) : playlist.source === 'spotify' ? (
