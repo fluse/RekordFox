@@ -13,6 +13,7 @@ asarUnpack:
   - resources/**
   # ffmpeg ships as a native binary and must live outside the asar archive to be spawnable.
   - node_modules/@ffmpeg-installer/**
+afterPack: build/afterPack.js
 win:
   executableName: RekordFox
 nsis:
@@ -22,7 +23,6 @@ nsis:
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
-  afterPack: build/afterPack.js
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
