@@ -648,17 +648,26 @@ export function useApp(): UseAppReturn {
   }, [settings.colorScheme, settings.customAccentColor])
 
   // 3. Fetch tracks when selected playlist changes
-  useEffect((): void => {
+  useEffect((): (() => void) => {
+    let cancelled = false
+
     if (!selectedPlaylistId) {
       Promise.resolve().then(() => {
+        if (cancelled) return
         setTracks((prev) => (prev.length > 0 ? [] : prev))
       })
-      return
+      return () => {
+        cancelled = true
+      }
     }
 
     const fetchTracks = async (): Promise<void> => {
       try {
         const list = await window.api.getTracks(selectedPlaylistId)
+        // The user may have already switched to a different playlist by the time this
+        // resolves — ignore a stale response instead of overwriting the current selection's
+        // tracks with the previous playlist's.
+        if (cancelled) return
         setTracks(list)
       } catch (e) {
         console.error(`Failed to load tracks for playlist ${selectedPlaylistId}:`, e)
@@ -666,6 +675,9 @@ export function useApp(): UseAppReturn {
     }
 
     fetchTracks()
+    return () => {
+      cancelled = true
+    }
   }, [selectedPlaylistId])
 
   // 4. Register IPC event listeners

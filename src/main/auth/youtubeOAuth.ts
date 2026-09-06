@@ -248,12 +248,15 @@ export function invalidateYoutubeClient(accountId: string): void {
 }
 
 // True for the OAuth errors that mean the account's authorization is gone and re-consent is
-// required (revoked/expired refresh token), as opposed to a transient/quota/network error.
+// required — either a revoked/expired refresh token, or a token minted under an older, narrower
+// scope list (e.g. before YOUTUBE_SCOPES gained a scope) that Google now rejects as insufficient.
+// Both are fixed the same way: re-running the OAuth consent flow for the account. Distinct from a
+// transient/quota/network error.
 export function isAuthError(err: unknown): boolean {
   const anyErr = err as { response?: { data?: { error?: string } }; message?: string } | undefined
   const code = anyErr?.response?.data?.error || ''
   const msg = anyErr?.message || ''
-  return /invalid_grant|invalid_token|unauthorized|401/i.test(`${code} ${msg}`)
+  return /invalid_grant|invalid_token|unauthorized|401|insufficient.*scope/i.test(`${code} ${msg}`)
 }
 
 // True when the error is a YouTube Data API quota / rate-limit rejection, so callers can back off
