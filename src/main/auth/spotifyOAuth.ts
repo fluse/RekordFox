@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto'
 import * as http from 'http'
-import { shell, safeStorage, BrowserWindow } from 'electron'
+import { shell } from 'electron'
 import {
   OAuthAccount,
   getSettings,
@@ -10,6 +10,8 @@ import {
   removeOAuthAccount
 } from '../db'
 import { renderOAuthCallbackPage } from './oauthCallbackPage'
+import { OAUTH_TIMEOUT_MS, broadcastToAllWindows, focusMainWindow } from './oauthShared'
+import { encryptSecret, decryptSecret } from './secretCrypto'
 
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token'
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize'
@@ -34,43 +36,6 @@ const SPOTIFY_REDIRECT_URI = `http://127.0.0.1:${SPOTIFY_REDIRECT_PORT}/callback
 // non-extended-quota apps apparently applies regardless of whether the playlist is public or
 // whose it is. These two scopes are the ones Spotify documents for playlist reads.
 const SPOTIFY_SCOPES = ['playlist-read-private', 'playlist-read-collaborative']
-
-const OAUTH_TIMEOUT_MS = 5 * 60 * 1000
-
-function broadcastToAllWindows(channel: string, ...args: unknown[]): void {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) {
-      win.webContents.send(channel, ...args)
-    }
-  }
-}
-
-function focusMainWindow(): void {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) {
-      if (win.isMinimized()) win.restore()
-      win.show()
-      win.focus()
-    }
-  }
-}
-
-function encryptSecret(value: string): string {
-  if (safeStorage.isEncryptionAvailable()) {
-    return 'enc:' + safeStorage.encryptString(value).toString('base64')
-  }
-  return 'plain:' + Buffer.from(value, 'utf-8').toString('base64')
-}
-
-function decryptSecret(stored: string): string {
-  if (stored.startsWith('enc:')) {
-    return safeStorage.decryptString(Buffer.from(stored.slice(4), 'base64'))
-  }
-  if (stored.startsWith('plain:')) {
-    return Buffer.from(stored.slice(6), 'base64').toString('utf-8')
-  }
-  return ''
-}
 
 function getClientCredentials(): { clientId: string; clientSecret: string } {
   const settings = getSettings()

@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto'
 import * as http from 'http'
-import { shell, safeStorage, BrowserWindow } from 'electron'
+import { shell } from 'electron'
 import { google, youtube_v3 } from 'googleapis'
 import {
   OAuthAccount,
@@ -13,31 +13,8 @@ import {
   unlinkPlaylistsForAccount
 } from '../db'
 import { renderOAuthCallbackPage } from './oauthCallbackPage'
-
-// Broadcasts to every open window directly via BrowserWindow, rather than importing the
-// sendToRenderer helper from '../app/window' — that module also pulls in the app icon asset (a
-// Vite-only `?asset` import), which the renderer's separate tsconfig can't resolve once anything
-// under src/renderer transitively imports a type from this file (as RemotePlaylistSummary does).
-function broadcastToAllWindows(channel: string, ...args: unknown[]): void {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) {
-      win.webContents.send(channel, ...args)
-    }
-  }
-}
-
-// Electron doesn't automatically bring the app back to the foreground once the browser finishes
-// the OAuth redirect — without this, the user has no obvious signal that the flow completed and
-// has to remember to alt-tab back manually.
-function focusMainWindow(): void {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) {
-      if (win.isMinimized()) win.restore()
-      win.show()
-      win.focus()
-    }
-  }
-}
+import { OAUTH_TIMEOUT_MS, broadcastToAllWindows, focusMainWindow } from './oauthShared'
+import { encryptSecret, decryptSecret } from './secretCrypto'
 
 // The userinfo scopes are non-sensitive and need no extra setup in the Google Cloud Console —
 // they're what gives every connected account a real, distinguishing label (name/email) instead
@@ -47,25 +24,6 @@ const YOUTUBE_SCOPES = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email'
 ]
-
-const OAUTH_TIMEOUT_MS = 5 * 60 * 1000
-
-function encryptSecret(value: string): string {
-  if (safeStorage.isEncryptionAvailable()) {
-    return 'enc:' + safeStorage.encryptString(value).toString('base64')
-  }
-  return 'plain:' + Buffer.from(value, 'utf-8').toString('base64')
-}
-
-function decryptSecret(stored: string): string {
-  if (stored.startsWith('enc:')) {
-    return safeStorage.decryptString(Buffer.from(stored.slice(4), 'base64'))
-  }
-  if (stored.startsWith('plain:')) {
-    return Buffer.from(stored.slice(6), 'base64').toString('utf-8')
-  }
-  return ''
-}
 
 function getClientCredentials(): { clientId: string; clientSecret: string } {
   const settings = getSettings()
