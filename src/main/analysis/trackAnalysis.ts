@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron'
-import { analyzeBpm } from './bpm'
+import { analyzeBeatGrid } from './bpm'
 import { analyzeKey } from './key'
 import { updateTrackBpm, updateTrackKey } from '../db'
 
@@ -17,9 +17,9 @@ export async function analyzeAndNotifyBpm(
   filepath: string,
   win: BrowserWindow | null
 ): Promise<number> {
-  const bpm = await analyzeBpm(filepath)
+  const { bpm, gridOffset } = await analyzeBeatGrid(filepath)
   if (bpm > 0) {
-    const change = updateTrackBpm(trackId, playlistId, bpm)
+    const change = updateTrackBpm(trackId, playlistId, bpm, gridOffset)
     notify(win, 'bpm-analyzed', trackId, playlistId, bpm)
     if (change) {
       notify(win, 'tracks-filepath-changed', [change])

@@ -224,12 +224,14 @@ export function removeTrackFromPlaylist(trackId: string, playlistId: string): vo
 export function updateTrackBpm(
   trackId: string,
   playlistId: string,
-  bpm: number
+  bpm: number,
+  gridOffset?: number
 ): FilepathChange | null {
   const track = dbData.tracks.find((t) => t.id === trackId && t.playlistId === playlistId)
   if (track) {
     const oldFilepath = track.filepath
     track.bpm = bpm
+    if (gridOffset !== undefined) track.gridOffset = gridOffset
     saveDb()
 
     // Write BPM to the ID3 tags of the local file

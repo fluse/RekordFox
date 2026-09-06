@@ -17,6 +17,7 @@ interface ExportTrack {
   filesize?: number
   duration: number
   bpm: number
+  gridOffset?: number
   key: string
   bitrate?: number
   rating: number
@@ -88,9 +89,16 @@ export function generateRekordboxXml(playlists: ExportPlaylist[], tracks: Export
     const rating = track.rating || 0
     const kind = track.filepath.toLowerCase().endsWith('.wav') ? 'WAV File' : 'MP3 File'
 
-    lines.push(
-      `    <TRACK TrackID="${numericId}" Name="${name}" Artist="${artist}" Kind="${kind}" Size="${size}" TotalTime="${duration}" AverageBpm="${bpm}" Tonality="${key}" DateAdded="${todayStr}" BitRate="${bitrate}" SampleRate="44100" Rating="${rating}" Location="${location}" />`
-    )
+    const trackAttrs = `TrackID="${numericId}" Name="${name}" Artist="${artist}" Kind="${kind}" Size="${size}" TotalTime="${duration}" AverageBpm="${bpm}" Tonality="${key}" DateAdded="${todayStr}" BitRate="${bitrate}" SampleRate="44100" Rating="${rating}" Location="${location}"`
+
+    if (track.bpm) {
+      const inizio = (track.gridOffset ?? 0).toFixed(3)
+      lines.push(`    <TRACK ${trackAttrs}>`)
+      lines.push(`      <TEMPO Inizio="${inizio}" Bpm="${bpm}" Metro="4/4" Battito="1" />`)
+      lines.push('    </TRACK>')
+    } else {
+      lines.push(`    <TRACK ${trackAttrs} />`)
+    }
   }
 
   lines.push('  </COLLECTION>')
@@ -116,7 +124,7 @@ export function generateRekordboxXml(playlists: ExportPlaylist[], tracks: Export
     for (const track of sortedTracks) {
       const numericId = trackIdMap.get(track.id)
       if (numericId !== undefined) {
-        lines.push(`        <TRACK Key="TrackID" Value="${numericId}" />`)
+        lines.push(`        <TRACK Key="${numericId}" />`)
       }
     }
 

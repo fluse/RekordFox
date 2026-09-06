@@ -43,6 +43,9 @@ export interface Track {
   title: string
   artist: string
   bpm: number
+  // Seconds; phase of the beat grid from BPM analysis, used as the TEMPO Inizio in the
+  // Rekordbox XML export. Undefined for tracks analyzed before this field existed.
+  gridOffset?: number
   key: string // Camelot notation, e.g. "8A", "10B" – empty string if not yet analyzed
   duration: number // in seconds
   filepath: string // absolute local path to MP3

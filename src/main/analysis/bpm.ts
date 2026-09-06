@@ -1,23 +1,31 @@
 import { spawn } from 'child_process'
 import ffmpegPath from '@ffmpeg-installer/ffmpeg'
 
+export interface BeatGridResult {
+  bpm: number
+  // Seconds; position of a beat that lies exactly on the detected tempo grid. Since the grid
+  // repeats every beat period, this is only ever the *phase* of the grid (mod one beat), not
+  // necessarily the track's first audible beat — Rekordbox extrapolates forward/backward from
+  // it using the constant BPM, so any on-grid position is equally valid as a TEMPO Inizio.
+  gridOffset: number
+}
+
 /**
- * Analyzes the BPM of an audio file using FFmpeg for decoding
+ * Analyzes the BPM and beat grid phase of an audio file using FFmpeg for decoding
  * and a Harmonic Product Spectrum (HPS) approach on the autocorrelation.
  * Analyzes the first 60 seconds (like Rekordbox).
  */
-export async function analyzeBpm(filepath: string): Promise<number> {
+export async function analyzeBeatGrid(filepath: string): Promise<BeatGridResult> {
   const SAMPLE_RATE = 22050
   const TOTAL_SAMPLES = SAMPLE_RATE * 60
 
   const pcmData = await decodeToPcm(filepath, SAMPLE_RATE, TOTAL_SAMPLES)
 
   if (pcmData.length < SAMPLE_RATE * 4) {
-    return 0
+    return { bpm: 0, gridOffset: 0 }
   }
 
-  const bpm = detectBpmHps(pcmData, SAMPLE_RATE)
-  return bpm
+  return detectBeatGrid(pcmData, SAMPLE_RATE)
 }
 
 /**
@@ -71,7 +79,7 @@ function decodeToPcm(
 }
 
 /**
- * BPM detection using Harmonic Product Spectrum (HPS) on the autocorrelation.
+ * BPM and beat grid phase detection using Harmonic Product Spectrum (HPS) on the autocorrelation.
  *
  * The core idea: the autocorrelation of a beat signal has peaks at the beat period
  * AND at its multiples (half-tempo, quarter-tempo, etc.). A naive search finds the
@@ -82,8 +90,10 @@ function decodeToPcm(
  * the true tempo peak (which aligns at all harmonic levels) is reinforced.
  *
  * This is the same principle used in Ableton Live and professional BPM analyzers.
+ * Once the beat period is known, the same onset envelope is reused to find the
+ * grid's phase (see step 7) so the caller can anchor a constant-tempo beat grid.
  */
-function detectBpmHps(samples: Float32Array, sampleRate: number): number {
+export function detectBeatGrid(samples: Float32Array, sampleRate: number): BeatGridResult {
   // --- Step 1: Compute onset strength envelope ---
   // Use a small hop for high temporal resolution.
   const HOP = 256
@@ -177,12 +187,55 @@ function detectBpmHps(samples: Float32Array, sampleRate: number): number {
 
   // --- Step 6: Octave correction ---
   // Normalize into the 80–185 BPM range by doubling/halving.
-  // This handles edge cases where the HPS still finds a sub-octave.
+  // This handles edge cases where the HPS still finds a sub-octave. Track the
+  // applied scale so the beat *period* used for grid phase detection (step 7)
+  // stays in sync with the reported BPM — otherwise the phase search below
+  // would look for onsets every 2 (or every half) beats instead of every beat.
   let bpm = rawBpm
-  while (bpm < 80) bpm *= 2
-  while (bpm > 185) bpm /= 2
+  let periodScale = 1
+  while (bpm < 80) {
+    bpm *= 2
+    periodScale /= 2
+  }
+  while (bpm > 185) {
+    bpm /= 2
+    periodScale *= 2
+  }
 
-  return Math.round(bpm * 100) / 100
+  // --- Step 7: Beat grid phase detection ---
+  // With the beat period known, find the frame offset (mod one period) whose
+  // onset energy, summed across the whole analyzed window, is strongest —
+  // i.e. the phase most consistently hit by real beats. This is a comb filter
+  // over the same onset envelope from step 1, no extra decoding needed.
+  const gridPeriodFrames = Math.max(1, Math.round(refinedLag * periodScale))
+  const gridPhaseFrame = findGridPhaseFrame(onset, gridPeriodFrames)
+  const gridOffset = Math.round(((gridPhaseFrame * HOP) / sampleRate) * 1000) / 1000
+
+  return { bpm: Math.round(bpm * 100) / 100, gridOffset }
+}
+
+/**
+ * Finds the frame offset in [0, period) that maximizes the summed onset energy
+ * at offset, offset+period, offset+2*period, ... — i.e. the beat grid's phase.
+ */
+function findGridPhaseFrame(onset: Float32Array, period: number): number {
+  if (period <= 0 || period >= onset.length) return 0
+
+  let bestPhase = 0
+  let bestScore = -Infinity
+
+  for (let phase = 0; phase < period; phase++) {
+    let score = 0
+    for (let i = phase; i < onset.length; i += period) {
+      score += onset[i]
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestPhase = phase
+    }
+  }
+
+  return bestPhase
 }
 
 /**
