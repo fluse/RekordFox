@@ -36,16 +36,42 @@ jobs:
         # Falls dein Build-Befehl in der package.json anders heißt (z.B. npm run build:electron),
         # musst du das hier entsprechend anpassen.
 
+      # electron-builders eigener CSC_LINK/CSC_KEY_PASSWORD-Mechanismus importiert das
+      # Zertifikat zwar in eine temporäre Keychain, markiert es dabei aber nicht als
+      # vertrauenswürdig — für ein selbst-signiertes (nicht von Apple ausgestelltes)
+      # Zertifikat findet codesign es dann trotzdem nicht ("no identity found").
+      # Deshalb übernehmen wir Import + Trust hier selbst.
+      - name: Import & trust code signing certificate (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/rekordfox-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
+          CERT_PATH="$RUNNER_TEMP/rekordfox-cert.p12"
+
+          echo "$CSC_LINK" | base64 --decode > "$CERT_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Der eigentlich fehlende Schritt: ohne "trusted" findet codesign die Identität nicht.
+          security add-trusted-cert -r trustRoot -p codeSign -k "$KEYCHAIN_PATH" "$CERT_PATH"
+
+          EXISTING_KEYCHAINS=$(security list-keychains -d user | sed 's/[\" ]//g')
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $EXISTING_KEYCHAINS
+
+          rm "$CERT_PATH"
+
       - name: Build & Publish to GitHub Releases
         env:
           # Der Token wird von GitHub automatisch bereitgestellt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Code-Signing-Zertifikat für macOS (selbst-signiert, siehe README/Doku).
-          # Ohne diese Secrets signiert electron-builder nur ad-hoc — das reicht zum
-          # Starten der App, aber macOS vergisst dann bei jedem Release die einmal
-          # erteilte USB-/Wechseldatenträger-Freigabe wieder.
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           # Muss exakt dem "CN" (Common Name) entsprechen, mit dem das Zertifikat
           # erstellt wurde — steuert unseren afterPack-Hook (build/afterPack.js),
           # der die App damit nachsigniert.
