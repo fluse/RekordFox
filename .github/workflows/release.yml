@@ -40,5 +40,15 @@ jobs:
         env:
           # Der Token wird von GitHub automatisch bereitgestellt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Code-Signing-Zertifikat für macOS (selbst-signiert, siehe README/Doku).
+          # Ohne diese Secrets signiert electron-builder nur ad-hoc — das reicht zum
+          # Starten der App, aber macOS vergisst dann bei jedem Release die einmal
+          # erteilte USB-/Wechseldatenträger-Freigabe wieder.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          # Muss exakt dem "CN" (Common Name) entsprechen, mit dem das Zertifikat
+          # erstellt wurde — steuert unseren afterPack-Hook (build/afterPack.js),
+          # der die App damit nachsigniert.
+          CSC_NAME: RekordFox Code Signing
         # Dieser Befehl baut die App und lädt sie direkt ins GitHub Release hoch
         run: npx electron-builder --publish always
