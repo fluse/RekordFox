@@ -3,7 +3,8 @@ import { existsSync, rmSync } from 'fs'
 import { mkdir, readFile, writeFile, rename, copyFile } from 'fs/promises'
 import { join, extname, dirname } from 'path'
 import { getTracksForPlaylist, getPlaylists } from '../../db'
-import { AnlzBuilder } from './AnlzBuilder'
+import { buildWavePreviewDat, buildWaveScrollExt } from './AnlzBuilder'
+import { synthesizeBeatGrid } from './beatGrid'
 import { copyFileData, ensureWritable } from '../fsCopy'
 import { findPioneerPdb } from '../../media/usb'
 import { mergePlaylist, MergeTrackInput } from './pdb/PdbMerger'
@@ -218,57 +219,18 @@ export class ExportQueueManager {
         // instead of freezing the window ("Keine Rückmeldung").
         await copyFileData(track.filepath, absAudioPath)
 
-        // 4. Build standard DAT (PMAI + PWV3 overview)
-        const datBuilder = new AnlzBuilder(512)
-        // PMAI Header Block (24 bytes)
-        datBuilder.writeString('PMAI', 4)
-        datBuilder.writeUInt32(0) // placeholder for total file size (offset 4)
-        for (let k = 0; k < 16; k++) datBuilder.writeUInt8(0) // zero padded remaining header
-
-        // PWV3 Overview Block (424 bytes)
-        datBuilder.writeString('PWV3', 4)
-        datBuilder.writeUInt32(424) // block size
-        for (let k = 0; k < 16; k++) datBuilder.writeUInt8(0) // subheader
-
-        // Downsample analysis peaks to exactly 400 overview bins
+        // 4. Build standard DAT (PMAI + PQTZ beat grid + PWAV overview, per
+        // Pioneer's ANLZ format). Downsample to exactly 400 overview bins,
+        // one byte each (5-bit height, matching every Pioneer player's
+        // expectations).
         const overviewPeaks = downsamplePeaks(analysis.peaks, 400)
-        // Write 400 bytes (each byte represents 'all' peak scaled to 5 bits)
-        for (let k = 0; k < 400; k++) {
-          const val = scaleFloatToBits(overviewPeaks[k]?.all || 0, 5)
-          datBuilder.writeUInt8(val)
-        }
+        const overviewHeights = overviewPeaks.map((p) => scaleFloatToBits(p?.all || 0, 5))
+        const beats = synthesizeBeatGrid(track.bpm || 0, track.gridOffset ?? 0, track.duration || 0)
+        await writeFile(absAnlzPath, buildWavePreviewDat(overviewHeights, beats))
 
-        // Complete size retroactively
-        const totalDatSize = datBuilder.getOffset()
-        datBuilder.setUInt32(4, totalDatSize)
-        await datBuilder.saveToFile(absAnlzPath)
-
-        // 5. Build EXT file (PMAI + PWV6 scrolling detail)
-        const extBuilder = new AnlzBuilder(1024)
-        // PMAI Header
-        extBuilder.writeString('PMAI', 4)
-        extBuilder.writeUInt32(0) // size placeholder (offset 4)
-        for (let k = 0; k < 16; k++) extBuilder.writeUInt8(0)
-
-        // PWV6 Block
-        const numDetailBins = analysis.peaks.length
-        const pwv6Size = 24 + numDetailBins * 4
-        extBuilder.writeString('PWV6', 4)
-        extBuilder.writeUInt32(pwv6Size)
-        for (let k = 0; k < 16; k++) extBuilder.writeUInt8(0)
-
-        // Write detail scrolling peaks (each entry is 4 bytes: low, mid, high, all - each 5 bits)
-        for (let k = 0; k < numDetailBins; k++) {
-          const p = analysis.peaks[k]
-          extBuilder.writeUInt8(scaleFloatToBits(p.low, 5))
-          extBuilder.writeUInt8(scaleFloatToBits(p.mid, 5))
-          extBuilder.writeUInt8(scaleFloatToBits(p.high, 5))
-          extBuilder.writeUInt8(scaleFloatToBits(p.all, 5))
-        }
-
-        const totalExtSize = extBuilder.getOffset()
-        extBuilder.setUInt32(4, totalExtSize)
-        await extBuilder.saveToFile(absExtPath)
+        // 5. Build EXT file (PMAI + PWV3 scrolling detail waveform).
+        const detailHeights = analysis.peaks.map((p) => scaleFloatToBits(p.all, 5))
+        await writeFile(absExtPath, buildWaveScrollExt(detailHeights))
 
         // 6. Collect this track's metadata for the pdb merge (done once, after
         // all files are on disk).

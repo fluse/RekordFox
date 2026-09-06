@@ -154,3 +154,103 @@ export class AnlzBuilder {
     await writeFile(targetPath, data)
   }
 }
+
+/**
+ * Writes the PMAI file header shared by every ANLZ file: magic, a fixed
+ * 0x1C-byte header length, a size-placeholder for the total file length
+ * (patched by {@link patchFileLength} once the file is complete), and the
+ * zero-padding needed to reach the header length.
+ *
+ * Layout verified against Deep Symmetry's crate-digger `rekordbox_anlz.ksy`:
+ * the header has *two* length fields (header length, then file length) —
+ * a single merged field here would misalign every tag a real player reads.
+ */
+function writePmaiHeader(b: AnlzBuilder): void {
+  b.writeString('PMAI', 4)
+  b.writeUInt32(0x1c) // len_header: fixed size of this header
+  b.writeUInt32(0) // len_file: placeholder, patched below
+  for (let k = 0; k < 16; k++) b.writeUInt8(0) // pad up to len_header (0x1c = 28 bytes)
+}
+
+function patchFileLength(b: AnlzBuilder): void {
+  b.setUInt32(8, b.getOffset()) // len_file, at offset 8 (len_header at offset 4 stays 0x1c)
+}
+
+/** A single beat grid entry, as stored in a Pioneer `PQTZ` (beat grid) tag. */
+export interface BeatGridEntry {
+  /** Position of this beat within its musical bar; 1 is the down beat. Cycles 1-4. */
+  beatNumber: number
+  /** Tempo at this beat, in BPM * 100. */
+  tempo: number
+  /** Position of this beat in the track, in milliseconds, at 100% pitch. */
+  timeMs: number
+}
+
+/**
+ * Writes a `PQTZ` (beat grid) tag: a fixed 12-byte body header (two unknown
+ * u32s — the second is a constant observed as 0x80000 — plus a beat count)
+ * followed by one 8-byte entry per beat (beat_number:u2, tempo:u2, time:u4).
+ */
+function writeBeatGridTag(b: AnlzBuilder, beats: BeatGridEntry[]): void {
+  b.writeString('PQTZ', 4)
+  b.writeUInt32(0x18) // tag len_header: fourcc+len_header+len_tag+2 unknown u4s+num_beats
+  b.writeUInt32(0x18 + beats.length * 8) // tag len_tag: header + 8 bytes/beat
+  b.writeUInt32(0) // unknown
+  b.writeUInt32(0x80000) // unknown (observed constant per spec)
+  b.writeUInt32(beats.length) // num_beats
+  for (const beat of beats) {
+    b.writeUInt16(beat.beatNumber)
+    b.writeUInt16(beat.tempo)
+    b.writeUInt32(Math.round(beat.timeMs))
+  }
+}
+
+/**
+ * Builds a standard `ANLZ0000.DAT` file: a PMAI header, an optional `PQTZ`
+ * (beat grid) tag, and a `PWAV` (wave_preview) tag — the low-resolution
+ * waveform shown above the touch strip, supported by every Pioneer player.
+ *
+ * Each waveform entry byte packs height in bits 0-4 (0-31) and "whiteness"
+ * in bits 5-7; `heights` values must already be in 0-31 and are written
+ * with whiteness left at 0. `beats` is omitted (no `PQTZ` tag written) when
+ * empty — e.g. the track has no reliable BPM/grid-phase analysis yet.
+ */
+export function buildWavePreviewDat(heights: number[], beats: BeatGridEntry[] = []): Buffer {
+  const b = new AnlzBuilder(64 + heights.length + beats.length * 8)
+  writePmaiHeader(b)
+
+  if (beats.length > 0) writeBeatGridTag(b, beats)
+
+  b.writeString('PWAV', 4)
+  b.writeUInt32(0x14) // tag len_header: fourcc+len_header+len_tag+len_data+reserved
+  b.writeUInt32(0x14 + heights.length) // tag len_tag: header + data
+  b.writeUInt32(heights.length) // len_data
+  b.writeUInt32(0x10000) // reserved (observed constant per spec)
+  for (const h of heights) b.writeUInt8(h)
+
+  patchFileLength(b)
+  return b.build()
+}
+
+/**
+ * Builds a standard `ANLZ0000.EXT` file: a PMAI header followed by a single
+ * `PWV3` (wave_scroll) tag — the higher-resolution waveform that scrolls as
+ * the track plays.
+ *
+ * Same per-byte height/whiteness packing as {@link buildWavePreviewDat}.
+ */
+export function buildWaveScrollExt(heights: number[]): Buffer {
+  const b = new AnlzBuilder(64 + heights.length)
+  writePmaiHeader(b)
+
+  b.writeString('PWV3', 4)
+  b.writeUInt32(0x18) // tag len_header: fourcc+len_header+len_tag+len_entry_bytes+len_entries+reserved
+  b.writeUInt32(0x18 + heights.length) // tag len_tag: header + (len_entry_bytes=1) * entries
+  b.writeUInt32(1) // len_entry_bytes
+  b.writeUInt32(heights.length) // len_entries
+  b.writeUInt32(0x960000) // reserved (observed constant per spec)
+  for (const h of heights) b.writeUInt8(h)
+
+  patchFileLength(b)
+  return b.build()
+}

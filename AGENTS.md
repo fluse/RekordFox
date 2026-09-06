@@ -59,7 +59,7 @@ Rules of thumb for where logic goes:
 ## Data persistence
 
 - [src/main/db.ts](src/main/db.ts) is a single JSON file, fully re-serialized (`JSON.stringify(dbData, null, 2)`) and written via `writeFileSync` on every write. There is no schema versioning — structural changes must keep older `dbData` files loadable (see `migrateDownloadsFolder` as an example migration).
-- `better-sqlite3` is used **only** for the Pioneer/Rekordbox USB export (writing `.pdb` files). New app features persist through `db.ts`, not a new SQLite instance.
+- The Pioneer/Rekordbox USB export (writing `export.pdb`) does **not** use SQLite — [src/main/export/pioneer/pdb/](src/main/export/pioneer/pdb/) is a from-scratch binary reader/writer for the DeviceSQL `.pdb` page/row format (verified against Deep Symmetry's crate-digger `rekordbox_pdb.ksy`), appending new pages rather than touching existing ones. New app features persist through `db.ts`, not a SQLite instance.
 
 ## Security
 
