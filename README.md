@@ -18,12 +18,19 @@ RekordFox was born out of a simple frustration: established DJ software like Rek
 
 **RekordFox puts an end to this.** It is a lightweight, cross-platform (Windows, macOS, Linux) Electron app focused on what truly matters: managing your music library efficiently, quickly, and with an outstanding user experience.
 
-## ✨ Features (Planned / In Development)
+## ✨ Features
 
-- **🎧 Intuitive UI:** No visual noise. A clean interface that doesn't distract you.
-- **⚡ Lightning-fast Search:** Find tracks in milliseconds, even within massive libraries.
-- **📂 Drag & Drop Workflow:** Seamless import of tracks and folder structures.
-- **🏷️ Smart Tagging & Playlists:** Easily manage cue points, BPM, keys, and metadata.
+- **🎧 Intuitive UI:** No visual noise. A clean, custom-titlebar interface with light/dark mode and multiple accent color schemes.
+- **⚡ Fast, Cross-Playlist Search:** Find tracks in milliseconds, across your whole library, with clickable artist links.
+- **📂 Drag & Drop Workflow:** Reorder tracks, drag them between playlists, and build local playlists on the fly.
+- **🎵 Playlists:** Create local playlists, sync playlists from Spotify, or link a YouTube playlist/URL and download it for offline playback.
+- **🔍 Discover:** Find tracks similar to a given track or playlist to keep exploring your library.
+- **🎚️ Analysis:** Automatic BPM, beatgrid, key (Camelot), and energy analysis for every track.
+- **▶️ Preview Player:** A floating, draggable preview player with BPM/pitch control that persists across app restarts.
+- **🔀 Smart Harmonic Shuffle:** Queue mode that chains tracks by harmonic (Camelot) compatibility and energy.
+- **💿 CDJ / USB Export:** Export playlists straight into a rekordbox `export.pdb` on a USB stick, with auto-detected drives and a guided one-time CDJ/USB setup.
+- **📤 rekordbox XML Export:** Export your library/playlists as a rekordbox-compatible XML.
+- **🌍 Multi-language:** Available in English, German, Spanish, and French.
 - **💻 Cross-Platform:** Built with Electron, runs smoothly on Mac, Windows, and Linux.
 
 ## 🚀 Installation & Development
