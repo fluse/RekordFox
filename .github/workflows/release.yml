@@ -64,7 +64,7 @@ jobs:
           # add-trusted-cert braucht ein reines Zertifikat (DER/PEM), keine PKCS#12-Bundle,
           # daher hier erst das Zertifikat aus der .p12 extrahieren.
           CERT_PEM="$RUNNER_TEMP/rekordfox-cert.pem"
-          openssl pkcs12 -in "$CERT_PATH" -clcerts -nokeys -passin "pass:$CSC_KEY_PASSWORD" -out "$CERT_PEM"
+          openssl pkcs12 -legacy -in "$CERT_PATH" -clcerts -nokeys -passin "pass:$CSC_KEY_PASSWORD" -out "$CERT_PEM"
           security add-trusted-cert -r trustRoot -p codeSign -k "$KEYCHAIN_PATH" "$CERT_PEM"
 
           EXISTING_KEYCHAINS=$(security list-keychains -d user | sed 's/[\" ]//g')
